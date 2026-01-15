@@ -11,43 +11,32 @@ class Database extends Config
 
     public array $default = [
         'DSN'          => '',
-        'hostname'     => '',
+        'hostname'     => 'localhost',
         'username'     => '',
         'password'     => '',
         'database'     => '',
+        'schema'       => 'public',
         'DBDriver'     => 'Postgre',
         'DBPrefix'     => '',
         'pConnect'     => false,
         'DBDebug'      => true,
         'charset'      => 'utf8',
-        'DBCollat'     => 'utf8_general_ci',
         'swapPre'      => '',
-        'encrypt'      => false,
-        'compress'     => false,
-        'strictOn'     => false,
         'failover'     => [],
-        'port'         => 6543,
+        'port'         => 5432,
+        'dateFormat'   => [
+            'date'     => 'Y-m-d',
+            'datetime' => 'Y-m-d H:i:s',
+            'time'     => 'H:i:s',
+        ],
     ];
 
     public function __construct()
     {
         parent::__construct();
 
-        // Intentar leer de nombres con puntos (CodeIgniter style) 
-        // o nombres simples (Render/Standard style)
-        $this->default['hostname'] = getenv('DB_HOSTNAME') ?: getenv('database.default.hostname');
-        $this->default['database'] = getenv('DB_DATABASE') ?: getenv('database.default.database');
-        $this->default['username'] = getenv('DB_USERNAME') ?: getenv('database.default.username');
-        $this->default['password'] = getenv('DB_PASSWORD') ?: getenv('database.default.password');
-        
-        $port = getenv('DB_PORT') ?: getenv('database.default.port');
-        if ($port) {
-            $this->default['port'] = (int)$port;
-        }
-
-        // Si después de todo el hostname sigue vacío, forzamos el de Supabase para que no de error de socket
-        if (empty($this->default['hostname'])) {
-            $this->default['hostname'] = 'aws-0-us-west-2.pooler.supabase.com';
+        if (ENVIRONMENT === 'testing') {
+            $this->defaultGroup = 'tests';
         }
     }
 }

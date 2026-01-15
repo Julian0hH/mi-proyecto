@@ -1,9 +1,7 @@
 <?php
-
 use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
 $routes->get('/', 'Home::index');
+$routes->get('registro', 'Home::registro');
 $routes->post('guardar', 'Home::guardar');
+$routes->get('eliminar/(:num)', 'Home::eliminar/$1');

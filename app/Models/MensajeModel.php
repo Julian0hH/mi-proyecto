@@ -12,7 +12,7 @@ class MensajeModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $allowedFields    = ['nombre', 'mensaje'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
