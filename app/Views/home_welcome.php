@@ -1,5 +1,4 @@
 <?= $this->extend('layout/main') ?>
-
 <?= $this->section('content') ?>
 <div class="container mt-4">
     <?php if(session()->getFlashdata('error')): ?>
@@ -8,7 +7,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif; ?>
-
     <div class="card p-5 text-center">
         <div class="card-body">
             <h1 class="display-5 fw-bold text-dark">Bienvenido al Sistema</h1>

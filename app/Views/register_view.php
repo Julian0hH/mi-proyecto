@@ -1,16 +1,13 @@
 <?= $this->extend('layout/main') ?>
-
 <?= $this->section('content') ?>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Gestión de Usuarios</h2>
         <span class="badge bg-success p-2">Conexión Activa</span>
     </div>
-
     <?php if(session()->getFlashdata('success')): ?>
         <div class="alert alert-success border-0 shadow-sm"><?= session()->getFlashdata('success') ?></div>
     <?php endif; ?>
-
     <div class="row">
         <div class="col-md-4">
             <div class="card p-4">
@@ -29,7 +26,6 @@
                 </form>
             </div>
         </div>
-
         <div class="col-md-8">
             <div class="card p-4">
                 <h5 class="mb-3">Listado de Usuarios</h5>
