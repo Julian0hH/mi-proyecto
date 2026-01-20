@@ -9,8 +9,12 @@ class Home extends BaseController
 
     public function __construct()
     {
-        $this->supabaseUrl = env('supabase.url');
-        $this->supabaseKey = env('supabase.service_role_key');
+        $this->supabaseUrl = getenv('SUPABASE_URL') ?: env('supabase.url');
+        $this->supabaseKey = getenv('SUPABASE_KEY') ?: env('supabase.service_role_key');
+        
+        if (empty($this->supabaseUrl)) {
+            die("Error: La URL de Supabase no está configurada en las variables de entorno.");
+        }
     }
 
     public function index()
