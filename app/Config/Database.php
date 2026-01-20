@@ -17,7 +17,7 @@ class Database extends Config
         'database'     => '',
         'schema'       => 'public',
         'DBDriver'     => 'Postgre',
-        'encrypt'  => true,
+        'DBDebug'      => true,
         'DBPrefix'     => '',
         'pConnect'     => false,
         'DBDebug'      => true,
@@ -29,7 +29,8 @@ class Database extends Config
             'date'     => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',
             'time'     => 'H:i:s',
-        ],
+            ],
+        'encrypt'  => true,
     ];
 
     public function __construct()
