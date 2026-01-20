@@ -32,9 +32,10 @@ class Home extends BaseController
                 ]
             ]);
             $data['usuarios'] = json_decode($response->getBody(), true);
-        } catch (\Exception $e) {
-            return redirect()->to('/')->with('error', 'Error al conectar con la base de datos.');
-        }
+        } 
+        catch (\Exception $e) {
+            die("Error técnico: " . $e->getMessage());
+        }        
         $data['sitekey'] = env('recaptcha.sitekey');
         $data['breadcrumbs'] = [
             ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
