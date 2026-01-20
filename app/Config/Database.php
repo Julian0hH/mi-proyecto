@@ -17,6 +17,7 @@ class Database extends Config
         'database'     => '',
         'schema'       => 'public',
         'DBDriver'     => 'Postgre',
+        'encrypt'  => true,
         'DBPrefix'     => '',
         'pConnect'     => false,
         'DBDebug'      => true,
