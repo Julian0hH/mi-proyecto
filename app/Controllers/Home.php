@@ -9,16 +9,11 @@ class Home extends BaseController
 
     public function __construct()
     {
-        // CI4: usar SOLO env()
         $this->supabaseUrl = getenv('SUPABASE_URL');
         $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY');
 
-        if (empty($this->supabaseUrl)) {
-            die('Error: La URL de Supabase no está configurada en las variables de entorno.');
-        }
-
-        if (empty($this->supabaseKey)) {
-            die('Error: La key de Supabase no está configurada en las variables de entorno.');
+        if (empty($this->supabaseUrl) || empty($this->supabaseKey)) {
+            die('Error: Credenciales de Supabase no configuradas.');
         }
     }
 
@@ -46,10 +41,10 @@ class Home extends BaseController
 
             $data['usuarios'] = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
-            die('Error técnico: ' . $e->getMessage());
+            $data['error'] = 'Error al cargar usuarios.';
         }
 
-        $data['sitekey'] = env('recaptcha.sitekey');
+        $data['sitekey'] = getenv('recaptcha.sitekey');
         $data['breadcrumbs'] = [
             ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
             ['name' => 'Registro', 'url' => base_url('registro'), 'active' => true]
@@ -61,25 +56,29 @@ class Home extends BaseController
     public function guardar()
     {
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-        $secretKey = env('recaptcha.secretkey');
-
-        $verify = file_get_contents(
-            'https://www.google.com/recaptcha/api/siteverify?' .
-            http_build_query([
-                'secret'   => $secretKey,
-                'response' => $recaptchaResponse
-            ])
-        );
-
-        $response = json_decode($verify);
-
-        if (!$response->success) {
-            return redirect()->back()->with('error', 'Validación reCAPTCHA fallida.');
+        
+        if (!$recaptchaResponse) {
+            return redirect()->back()->with('error', 'Debes completar el captcha.');
         }
 
+        $secretKey = getenv('recaptcha.secretkey');
         $client = \Config\Services::curlrequest();
 
         try {
+            $verifyResponse = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+                'form_params' => [
+                    'secret'   => $secretKey,
+                    'response' => $recaptchaResponse,
+                    'remoteip' => $this->request->getIPAddress(),
+                ]
+            ]);
+
+            $verifyBody = json_decode($verifyResponse->getBody());
+
+            if (!$verifyBody->success) {
+                return redirect()->back()->with('error', 'Error de validación del captcha.');
+            }
+
             $client->request('POST', $this->supabaseUrl . '/rest/v1/usuarios', [
                 'headers' => [
                     'apikey'        => $this->supabaseKey,
@@ -93,9 +92,10 @@ class Home extends BaseController
                 ]
             ]);
 
-            return redirect()->to('/registro')->with('success', 'Usuario guardado en Supabase.');
+            return redirect()->to('/registro')->with('success', 'Usuario guardado correctamente.');
+
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al guardar datos.');
+            return redirect()->back()->with('error', 'Ocurrió un error técnico: ' . $e->getMessage());
         }
     }
 
@@ -110,10 +110,37 @@ class Home extends BaseController
                     'Authorization' => 'Bearer ' . $this->supabaseKey,
                 ]
             ]);
-
-            return redirect()->to('/registro')->with('success', 'Eliminado correctamente.');
+            return redirect()->to('/registro')->with('success', 'Usuario eliminado.');
         } catch (\Exception $e) {
-            return redirect()->to('/registro')->with('error', 'Error al eliminar.');
+            return redirect()->to('/registro')->with('error', 'Error al eliminar usuario.');
         }
+    }
+
+    public function servicios()
+    {
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Servicios', 'url' => '#', 'active' => true]
+        ];
+        return view('servicios_view', $data);
+    }
+
+    public function validacion()
+    {
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Validación', 'url' => '#', 'active' => true]
+        ];
+        return view('validacion_view', $data);
+    }
+
+    public function detalles()
+    {
+        return view('detalles_view');
+    }
+
+    public function procesar_validacion()
+    {
+        return redirect()->to('/validacion')->with('success', 'Datos procesados (Simulación).');
     }
 }

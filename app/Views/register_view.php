@@ -5,9 +5,15 @@
         <h2>Gestión de Usuarios</h2>
         <span class="badge bg-success p-2">Conexión Activa</span>
     </div>
+
     <?php if(session()->getFlashdata('success')): ?>
         <div class="alert alert-success border-0 shadow-sm"><?= session()->getFlashdata('success') ?></div>
     <?php endif; ?>
+
+    <?php if(session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger border-0 shadow-sm"><?= session()->getFlashdata('error') ?></div>
+    <?php endif; ?>
+
     <div class="row">
         <div class="col-md-4">
             <div class="card p-4">
@@ -21,7 +27,9 @@
                         <label class="form-label">Email</label>
                         <input type="email" name="email" class="form-control" required>
                     </div>
+                    
                     <div class="g-recaptcha mb-4" data-sitekey="<?= $sitekey ?>"></div>
+                    
                     <button type="submit" class="btn btn-primary w-100">Guardar Usuario</button>
                 </form>
             </div>
@@ -39,17 +47,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($usuarios as $user): ?>
-                            <tr>
-                                <td class="fw-bold"><?= $user['nombre'] ?></td>
-                                <td><?= $user['email'] ?></td>
-                                <td class="text-end">
-                                    <a href="<?= base_url('eliminar/'.$user['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Eliminar?')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                            <?php if(!empty($usuarios) && is_array($usuarios)): ?>
+                                <?php foreach($usuarios as $user): ?>
+                                <tr>
+                                    <td class="fw-bold"><?= esc($user['nombre']) ?></td>
+                                    <td><?= esc($user['email']) ?></td>
+                                    <td class="text-end">
+                                        <a href="<?= base_url('eliminar/'.$user['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Eliminar?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay usuarios registrados</td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
