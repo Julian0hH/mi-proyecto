@@ -7,62 +7,68 @@
     </div>
 
     <?php if(session()->getFlashdata('success')): ?>
-        <div class="alert alert-success border-0 shadow-sm"><?= session()->getFlashdata('success') ?></div>
+        <div class="alert alert-success shadow-sm border-0"><?= session()->getFlashdata('success') ?></div>
     <?php endif; ?>
-
     <?php if(session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger border-0 shadow-sm"><?= session()->getFlashdata('error') ?></div>
+        <div class="alert alert-danger shadow-sm border-0"><?= session()->getFlashdata('error') ?></div>
+    <?php endif; ?>
+    <?php if(session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger shadow-sm border-0">
+            <ul class="mb-0 ps-3">
+            <?php foreach(session()->getFlashdata('errors') as $e): ?>
+                <li><?= esc($e) ?></li>
+            <?php endforeach; ?>
+            </ul>
+        </div>
     <?php endif; ?>
 
     <div class="row">
         <div class="col-md-4">
             <div class="card p-4">
                 <h5 class="mb-3">Nuevo Registro</h5>
-                <form action="<?= base_url('guardar') ?>" method="POST">
+                <form action="<?= base_url('guardar') ?>" method="POST" autocomplete="off">
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
-                        <input type="text" name="nombre" class="form-control" required>
+                        <input type="text" name="nombre" class="form-control" 
+                               required maxlength="50"
+                               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
+                               value="<?= old('nombre') ?>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" required>
+                        <input type="email" name="email" class="form-control" 
+                               required maxlength="100"
+                               value="<?= old('email') ?>">
                     </div>
                     
-                    <div class="g-recaptcha mb-4" data-sitekey="<?= $sitekey ?>"></div>
+                    <div class="g-recaptcha mb-4" data-sitekey="<?= $sitekey ?? '' ?>"></div>
                     
                     <button type="submit" class="btn btn-primary w-100">Guardar Usuario</button>
                 </form>
             </div>
         </div>
+
         <div class="col-md-8">
             <div class="card p-4">
-                <h5 class="mb-3">Listado de Usuarios</h5>
+                <h5 class="mb-3">Usuarios Registrados</h5>
                 <div class="table-responsive">
                     <table class="table align-middle">
-                        <thead class="text-muted">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th class="text-end">Acciones</th>
-                            </tr>
+                        <thead>
+                            <tr><th>Nombre</th><th>Email</th><th class="text-end">Acción</th></tr>
                         </thead>
                         <tbody>
-                            <?php if(!empty($usuarios) && is_array($usuarios)): ?>
-                                <?php foreach($usuarios as $user): ?>
+                            <?php if(!empty($usuarios)): ?>
+                                <?php foreach($usuarios as $u): ?>
                                 <tr>
-                                    <td class="fw-bold"><?= esc($user['nombre']) ?></td>
-                                    <td><?= esc($user['email']) ?></td>
+                                    <td><?= esc($u['nombre']) ?></td>
+                                    <td><?= esc($u['email']) ?></td>
                                     <td class="text-end">
-                                        <a href="<?= base_url('eliminar/'.$user['id']) ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Eliminar?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <a href="<?= base_url('eliminar/'.$u['id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Borrar?')"><i class="bi bi-trash"></i></a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">No hay usuarios registrados</td>
-                                </tr>
+                                <tr><td colspan="3" class="text-center text-muted">Sin datos</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>

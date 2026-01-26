@@ -9,6 +9,7 @@ class Home extends BaseController
 
     public function __construct()
     {
+        helper(['form', 'url', 'date']);
         $this->supabaseUrl = getenv('SUPABASE_URL');
         $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -19,9 +20,7 @@ class Home extends BaseController
 
     public function index()
     {
-        $data['breadcrumbs'] = [
-            ['name' => 'Inicio', 'url' => base_url(), 'active' => true]
-        ];
+        $data['breadcrumbs'] = [['name' => 'Inicio', 'url' => base_url(), 'active' => true]];
         return view('home_welcome', $data);
     }
 
@@ -31,34 +30,56 @@ class Home extends BaseController
         $data['usuarios'] = [];
 
         try {
-            $response = $client->request('GET', $this->supabaseUrl . '/rest/v1/usuarios?select=*', [
-                'headers' => [
-                    'apikey'        => $this->supabaseKey,
-                    'Authorization' => 'Bearer ' . $this->supabaseKey,
-                    'Content-Type'  => 'application/json',
-                ]
-            ]);
-
-            $data['usuarios'] = json_decode($response->getBody(), true);
-        } catch (\Exception $e) {
-            $data['error'] = 'Error al cargar usuarios.';
-        }
+            if ($this->supabaseUrl && $this->supabaseKey) {
+                $response = $client->request('GET', $this->supabaseUrl . '/rest/v1/usuarios?select=*', [
+                    'headers' => [
+                        'apikey'        => $this->supabaseKey,
+                        'Authorization' => 'Bearer ' . $this->supabaseKey,
+                        'Content-Type'  => 'application/json',
+                    ],
+                    'http_errors' => false
+                ]);
+                if ($response->getStatusCode() === 200) {
+                    $data['usuarios'] = json_decode($response->getBody(), true);
+                }
+            }
+        } catch (\Exception $e) { }
 
         $data['sitekey'] = getenv('RECAPTCHA_SITEKEY');
+        
         $data['breadcrumbs'] = [
             ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
             ['name' => 'Registro', 'url' => base_url('registro'), 'active' => true]
         ];
+        $data['validation'] = \Config\Services::validation();
 
         return view('register_view', $data);
     }
 
     public function guardar()
     {
+        $rules = [
+            'nombre' => [
+                'label' => 'Nombre',
+                'rules' => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
+                'errors' => [
+                    'regex_match' => 'El nombre solo puede contener letras.',
+                    'max_length' => 'El nombre es muy largo (máximo 50 caracteres).'
+                ]
+            ],
+            'email' => [
+                'label' => 'Email',
+                'rules' => 'required|valid_email|max_length[100]',
+            ]
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-        
         if (!$recaptchaResponse) {
-            return redirect()->back()->with('error', 'Debes completar el captcha.');
+            return redirect()->back()->withInput()->with('error', 'Por favor completa el captcha.');
         }
 
         $secretKey = getenv('RECAPTCHA_SECRETKEY');
@@ -76,7 +97,7 @@ class Home extends BaseController
             $verifyBody = json_decode($verifyResponse->getBody());
 
             if (!$verifyBody->success) {
-                return redirect()->back()->with('error', 'Error de validación del captcha.');
+                return redirect()->back()->with('error', 'Captcha inválido.');
             }
 
             $client->request('POST', $this->supabaseUrl . '/rest/v1/usuarios', [
@@ -87,22 +108,21 @@ class Home extends BaseController
                     'Prefer'        => 'return=minimal',
                 ],
                 'json' => [
-                    'nombre' => $this->request->getPost('nombre'),
-                    'email'  => $this->request->getPost('email'),
+                    'nombre' => esc($this->request->getPost('nombre')),
+                    'email'  => esc($this->request->getPost('email')),
                 ]
             ]);
 
-            return redirect()->to('/registro')->with('success', 'Usuario guardado correctamente.');
+            return redirect()->to('/registro')->with('success', 'Usuario registrado correctamente.');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocurrió un error técnico: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Error de conexión.');
         }
     }
 
     public function eliminar($id)
     {
         $client = \Config\Services::curlrequest();
-
         try {
             $client->request('DELETE', $this->supabaseUrl . '/rest/v1/usuarios?id=eq.' . $id, [
                 'headers' => [
@@ -112,17 +132,8 @@ class Home extends BaseController
             ]);
             return redirect()->to('/registro')->with('success', 'Usuario eliminado.');
         } catch (\Exception $e) {
-            return redirect()->to('/registro')->with('error', 'Error al eliminar usuario.');
+            return redirect()->to('/registro')->with('error', 'No se pudo eliminar.');
         }
-    }
-
-    public function servicios()
-    {
-        $data['breadcrumbs'] = [
-            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
-            ['name' => 'Servicios', 'url' => '#', 'active' => true]
-        ];
-        return view('servicios_view', $data);
     }
 
     public function validacion()
@@ -134,21 +145,62 @@ class Home extends BaseController
         return view('validacion_view', $data);
     }
 
+    public function procesar_validacion()
+    {
+        $fechaNac = $this->request->getPost('fecha_nac');
+        $edadInput = $this->request->getPost('edad');
+
+        $rules = [
+            'nombre' => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
+            'email' => 'required|valid_email',
+            'telefono' => 'required|numeric|exact_length[10]',
+            'edad' => 'required|integer|greater_than_equal_to[18]|less_than_equal_to[99]',
+            'fecha_nac' => 'required|valid_date',
+            'sitio_web' => 'required|valid_url',
+            'password' => 'required|min_length[8]|regex_match[/^(?=.*[A-Z])(?=.*\d).+$/]',
+            'pass_conf' => 'required|matches[password]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        if ($fechaNac && $edadInput) {
+            $nacimiento = new \DateTime($fechaNac);
+            $hoy = new \DateTime();
+            $edadReal = $hoy->diff($nacimiento)->y;
+
+            if ($edadReal != $edadInput) {
+                return redirect()->back()->withInput()->with('errors', [
+                    "Error de lógica: La fecha de nacimiento indica que tienes {$edadReal} años, no {$edadInput}."
+                ]);
+            }
+        }
+
+        return redirect()->to('/validacion')->with('success', 'Validación exitosa.');
+    }
+
+    public function servicios()
+    {
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Servicios', 'url' => '#', 'active' => true]
+        ];
+        return view('servicios_view', $data);
+    }
+
     public function detalles()
     {
         $data['breadcrumbs'] = [
             ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
             ['name' => 'Servicios', 'url' => base_url('servicios'), 'active' => false],
-            ['name' => 'Detalles Web', 'url' => '#', 'active' => true] // Página actual
+            ['name' => 'Detalles', 'url' => '#', 'active' => true]
         ];
-                
         return view('detalles_view', $data);
     }
 
-    public function procesar_validacion()
+    public function prueba_error()
     {
-        return redirect()->to('/validacion')->with('success', 'Datos procesados (Simulación).');
+        throw new \RuntimeException("Esta es una prueba de la pantalla de error genérico.");
     }
-
-    
 }

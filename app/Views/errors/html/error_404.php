@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        /* Copia mínima de tus estilos para mantener coherencia si el layout falla */
         :root { --bg-body: #f2f5f4; --text-main: #2f3640; --accent-color: #26a69a; }
         [data-theme="dark"] { --bg-body: #1e272e; --text-main: #f5f6fa; }
         

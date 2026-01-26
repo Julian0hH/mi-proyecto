@@ -9,3 +9,4 @@ $routes->get('servicios', 'Home::servicios');
 $routes->get('detalles', 'Home::detalles');
 $routes->get('validacion', 'Home::validacion');
 $routes->post('procesar_validacion', 'Home::procesar_validacion');
+$routes->get('prueba_error', 'Home::prueba_error');
