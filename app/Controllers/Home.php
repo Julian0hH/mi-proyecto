@@ -4,8 +4,8 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
-    private string $supabaseUrl;
-    private string $supabaseKey;
+    private ?string $supabaseUrl = null;
+    private ?string $supabaseKey = null;
 
     public function __construct()
     {
