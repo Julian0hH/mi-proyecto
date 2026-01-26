@@ -10,8 +10,8 @@ class Home extends BaseController
     public function __construct()
     {
         // CI4: usar SOLO env()
-        $this->supabaseUrl = env('supabase.url');
-        $this->supabaseKey = env('supabase.service_role_key');
+        $this->supabaseUrl = getenv('SUPABASE_URL');
+        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY');
 
         if (empty($this->supabaseUrl)) {
             die('Error: La URL de Supabase no está configurada en las variables de entorno.');
