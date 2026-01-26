@@ -136,11 +136,19 @@ class Home extends BaseController
 
     public function detalles()
     {
-        return view('detalles_view');
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Servicios', 'url' => base_url('servicios'), 'active' => false],
+            ['name' => 'Detalles Web', 'url' => '#', 'active' => true] // Página actual
+        ];
+                
+        return view('detalles_view', $data);
     }
 
     public function procesar_validacion()
     {
         return redirect()->to('/validacion')->with('success', 'Datos procesados (Simulación).');
     }
+
+    
 }

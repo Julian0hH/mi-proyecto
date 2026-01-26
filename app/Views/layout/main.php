@@ -89,6 +89,20 @@
         #sidebar.collapsed .theme-toggle { justify-content: center; padding: 15px 0; }
         #sidebar.collapsed .theme-toggle span { display: none; }
         #sidebar-toggle { cursor: pointer; color: #fff; font-size: 1.4rem; }
+        .breadcrumb-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb-item.active {
+            color: var(--text-muted);
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>

@@ -1,12 +1,21 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
-<div class="container">
-    <div class="card p-5">
-        <h1>Detalles del Servicio</h1>
-        <p class="text-muted">Esta es la tercera pantalla (Nivel 3) de los Breadcrumbs.</p>
-        <hr>
-        <p>Información detallada sobre el servicio seleccionado.</p>
-        <a href="<?= base_url('servicios') ?>" class="btn btn-secondary btn-sm">Volver a Servicios</a>
+
+<div class="container-fluid">
+    <div class="card p-5 text-center border-0 shadow-sm" style="background: var(--bg-card);">
+        <div class="mb-4">
+            <i class="bi bi-laptop fs-1" style="color: var(--accent-color);"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Desarrollo Web Full Stack</h2>
+        <p class="text-muted mb-4" style="max-width: 600px; margin: 0 auto;">
+            Ofrecemos soluciones completas utilizando CodeIgniter 4, bases de datos optimizadas 
+            y interfaces modernas que se adaptan a cualquier dispositivo.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-primary px-4">Contratar Ahora</button>
+            <a href="<?= base_url('servicios') ?>" class="btn btn-outline-secondary px-4">Volver</a>
+        </div>
     </div>
 </div>
+
 <?= $this->endSection() ?>
