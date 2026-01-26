@@ -44,7 +44,7 @@ class Home extends BaseController
             $data['error'] = 'Error al cargar usuarios.';
         }
 
-        $data['sitekey'] = getenv('recaptcha.sitekey');
+        $data['sitekey'] = getenv('RECAPTCHA_SITEKEY');
         $data['breadcrumbs'] = [
             ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
             ['name' => 'Registro', 'url' => base_url('registro'), 'active' => true]
@@ -61,7 +61,7 @@ class Home extends BaseController
             return redirect()->back()->with('error', 'Debes completar el captcha.');
         }
 
-        $secretKey = getenv('recaptcha.secretkey');
+        $secretKey = getenv('RECAPTCHA_SECRETKEY');
         $client = \Config\Services::curlrequest();
 
         try {
