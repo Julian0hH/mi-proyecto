@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 animate-slide-in">
     <div>
         <h2 class="fw-bold m-0">Validación Avanzada</h2>
-        <p class="text-muted small mb-0">Laboratorio de pruebas de formularios seguros</p>
+        <p class="text-muted small mb-0">Laboratorio de pruebas con bloqueo de caracteres en tiempo real</p>
     </div>
     <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
         <i class="bi bi-shield-check me-2"></i>Modo Estricto
@@ -38,14 +38,17 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-muted">NOMBRE</label>
-                            <input type="text" name="nombre" class="form-control" required pattern="[a-zA-Z\s]+" 
-                                   oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                            <input type="text" name="nombre" class="form-control" 
+                                   required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" 
+                                   oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
                                    value="<?= old('nombre') ?>" placeholder="Ej. Roberto">
                         </div>
+                        
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-muted">APELLIDOS</label>
-                            <input type="text" name="apellido" class="form-control" required pattern="[a-zA-Z\s]+" 
-                                   oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                            <input type="text" name="apellido" class="form-control" 
+                                   required pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" 
+                                   oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
                                    value="<?= old('apellido') ?>" placeholder="Ej. Gómez">
                         </div>
                         
@@ -53,7 +56,10 @@
                             <label class="form-label small fw-bold text-muted">EMAIL</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" required value="<?= old('email') ?>">
+                                <input type="email" name="email" class="form-control" 
+                                       required 
+                                       oninput="this.value = this.value.replace(/\s/g, '')"
+                                       value="<?= old('email') ?>">
                             </div>
                         </div>
 
@@ -65,8 +71,10 @@
                                     <option value="+1">US</option>
                                     <option value="+34">ES</option>
                                 </select>
-                                <input type="tel" name="telefono" class="form-control" required pattern="[0-9]{10}" maxlength="10" 
-                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" value="<?= old('telefono') ?>">
+                                <input type="tel" name="telefono" class="form-control" 
+                                       required pattern="[0-9]{10}" maxlength="10" 
+                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" 
+                                       value="<?= old('telefono') ?>" placeholder="10 dígitos">
                             </div>
                         </div>
 
@@ -97,9 +105,13 @@
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">CONTRASEÑA</label>
                         <div class="input-group">
-                            <input type="password" name="password" id="p1" class="form-control" required minlength="8">
+                            <input type="password" name="password" id="p1" class="form-control" 
+                                   required minlength="8" 
+                                   pattern="(?=.*\d)(?=.*[A-Z]).{8,}"
+                                   title="Mínimo 8 caracteres, al menos 1 mayúscula y 1 número">
                             <button class="btn btn-light border" type="button" onclick="togglePass('p1')"><i class="bi bi-eye"></i></button>
                         </div>
+                        <div class="form-text small">Min. 8 chars, 1 Mayus, 1 Num</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">CONFIRMAR</label>
@@ -126,7 +138,10 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">WEB</label>
-                        <input type="url" name="sitio_web" class="form-control" placeholder="https://" required value="<?= old('sitio_web') ?>">
+                        <input type="url" name="sitio_web" class="form-control" 
+                               placeholder="https://" required 
+                               oninput="this.value = this.value.replace(/\s/g, '')"
+                               value="<?= old('sitio_web') ?>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">DOCUMENTO</label>
@@ -155,7 +170,17 @@
 <script>
 function togglePass(id) {
     const el = document.getElementById(id);
-    el.type = el.type === 'password' ? 'text' : 'password';
+    const icon = el.nextElementSibling.querySelector('i');
+    
+    if (el.type === 'password') {
+        el.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        el.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
 }
 </script>
 
