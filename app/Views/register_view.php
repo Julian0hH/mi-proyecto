@@ -35,8 +35,10 @@
     <div class="col-lg-4">
         <div class="card p-4 h-100 border-0 shadow-sm hover-card">
             <h5 class="fw-bold mb-4 border-bottom pb-2">Registrar Nuevo</h5>
+            
             <form action="<?= base_url('guardar') ?>" method="POST" autocomplete="off">
-                <?= csrf_field() ?>        
+                <?= csrf_field() ?>
+                
                 <div class="mb-3">
                     <label class="form-label text-muted small fw-bold">NOMBRE</label>
                     <div class="input-group">
@@ -56,7 +58,7 @@
                         <input type="email" name="email" class="form-control" 
                                required maxlength="100"
                                pattern="^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                               oninput="this.value = this.value.replace(/\s/g, '')"
+                               oninput="this.value = this.value.replace(/[^a-zA-Z0-9@._+-]/g, '')"
                                placeholder="correo@ejemplo.com" value="<?= old('email') ?>">
                     </div>
                 </div>
