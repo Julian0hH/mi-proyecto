@@ -36,29 +36,33 @@
         <div class="card p-4 h-100 border-0 shadow-sm hover-card">
             <h5 class="fw-bold mb-4 border-bottom pb-2">Registrar Nuevo</h5>
             <form action="<?= base_url('guardar') ?>" method="POST" autocomplete="off">
+                <?= csrf_field() ?>        
                 <div class="mb-3">
                     <label class="form-label text-muted small fw-bold">NOMBRE</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
                         <input type="text" name="nombre" class="form-control" 
                                required minlength="3" maxlength="50"
-                               pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                               pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"
                                oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
                                placeholder="Nombre completo" value="<?= old('nombre') ?>">
                     </div>
                 </div>
+                
                 <div class="mb-4">
                     <label class="form-label text-muted small fw-bold">EMAIL</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                         <input type="email" name="email" class="form-control" 
                                required maxlength="100"
+                               pattern="^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                               oninput="this.value = this.value.replace(/\s/g, '')"
                                placeholder="correo@ejemplo.com" value="<?= old('email') ?>">
                     </div>
                 </div>
                 
                 <div class="mb-4">
-                    <div class="g-recaptcha" data-sitekey="<?= $sitekey ?? '' ?>"></div>
+                    <div class="g-recaptcha" data-sitekey="<?= esc($sitekey ?? '') ?>"></div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
@@ -96,7 +100,7 @@
                                 </td>
                                 <td class="text-muted"><?= esc($u['email']) ?></td>
                                 <td class="text-end pe-4">
-                                    <a href="<?= base_url('eliminar/'.$u['id']) ?>" class="btn btn-sm btn-light text-danger" title="Eliminar">
+                                    <a href="<?= base_url('eliminar/'.$u['id']) ?>" class="btn btn-sm btn-light text-danger" title="Eliminar" onclick="return confirm('¿Confirma que desea eliminar este usuario permanentemente?');">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>

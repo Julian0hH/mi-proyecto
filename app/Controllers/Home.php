@@ -59,19 +59,22 @@ class Home extends BaseController
     {
         $rules = [
             'nombre' => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
-            'email'  => 'required|valid_email|max_length[100]',
+            'email'  => [
+                'rules'  => 'required|max_length[100]|regex_match[/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/]',
+                'errors' => ['regex_match' => 'Format invalid or dangerous symbols detected.']
+            ],
             'g-recaptcha-response' => 'required'
         ];
-
+    
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
-
-        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+    
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         if (!$this->verificarCaptcha($recaptchaResponse)) {
-            return redirect()->back()->withInput()->with('error', 'Captcha inválido.');
+            return redirect()->back()->withInput()->with('error', 'Security check failed.');
         }
-
+    
         try {
             $client = \Config\Services::curlrequest();
             $client->request('POST', $this->supabaseUrl . '/rest/v1/usuarios', [
@@ -86,9 +89,9 @@ class Home extends BaseController
                     'email'  => esc($this->request->getPost('email')),
                 ]
             ]);
-            return redirect()->to('/registro')->with('success', 'Usuario registrado correctamente.');
+            return redirect()->to('/registro')->with('success', 'OK');
         } catch (\Throwable $e) {
-            return redirect()->back()->withInput()->with('error', 'Error de conexión.');
+            return redirect()->back()->withInput()->with('error', 'Service unavailable.');
         }
     }
 
@@ -120,41 +123,36 @@ class Home extends BaseController
     public function procesar_validacion()
     {
         $rules = [
-            'nombre'    => 'required|min_length[2]|regex_match[/^[a-zA-Z\s]+$/]',
-            'apellido'  => 'required|min_length[2]|regex_match[/^[a-zA-Z\s]+$/]',
+            'nombre'    => 'required|min_length[2]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
+            'apellido'  => 'required|min_length[2]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
             'sexo'      => 'required|in_list[masculino,femenino,otro]',
-            'email'     => 'required|valid_email',
-            'pais'      => 'required',
-            'telefono'  => 'required|numeric|min_length[7]|max_length[15]',
-            'edad'      => 'required|integer|greater_than_equal_to[18]',
-            'fecha_nac' => 'required|valid_date',
-            'sitio_web' => 'required|valid_url_strict',
-            'archivo'   => 'uploaded[archivo]|max_size[archivo,2048]|is_image[archivo]',
-            'password'  => 'required|min_length[8]|regex_match[/^(?=.*[A-Z])(?=.*\d).+$/]',
+            'email'     => 'required|max_length[100]|regex_match[/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/]',
+            'pais'      => 'required|alpha',
+            'telefono'  => 'required|regex_match[/^[0-9]{7,15}$/]',
+            'edad'      => 'required|integer|greater_than_equal_to[18]|less_than[120]',
+            'fecha_nac' => 'required|valid_date[Y-m-d]',
+            'sitio_web' => 'required|valid_url_strict[https]',
+            'archivo'   => 'uploaded[archivo]|max_size[archivo,2048]|is_image[archivo]|mime_in[archivo,image/jpg,image/jpeg,image/png]|ext_in[archivo,jpg,jpeg,png]',
+            'password'  => 'required|min_length[12]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/]',
             'pass_conf' => 'required|matches[password]',
-            'terminos'  => 'required'
+            'terminos'  => 'required|in_list[1,on]'
         ];
-
+    
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
-
+    
         $fechaNac = $this->request->getPost('fecha_nac');
-        $edadInput = $this->request->getPost('edad');
-
-        if ($fechaNac && $edadInput) {
-            try {
-                $nacimiento = new \DateTime($fechaNac);
-                $hoy = new \DateTime();
-                $edadReal = $hoy->diff($nacimiento)->y;
-                if ($edadReal != $edadInput) {
-                    return redirect()->back()->withInput()->with('errors', ["Error lógico: La fecha indica {$edadReal} años."]);
-                }
-            } catch (\Exception $e) {
-                return redirect()->back()->withInput()->with('error', 'Fecha inválida.');
-            }
+        $edadInput = (int)$this->request->getPost('edad');
+    
+        $nacimiento = new \DateTime($fechaNac);
+        $edadReal = (new \DateTime())->diff($nacimiento)->y;
+        
+        if ($edadReal !== $edadInput) {
+            return redirect()->back()->withInput()->with('errors', ['Integrity error: age mismatch.']);
         }
-        return redirect()->to('/validacion')->with('success', 'Validación correcta.');
+    
+        return redirect()->to('/validacion')->with('success', 'Validated');
     }
 
     public function servicios()
