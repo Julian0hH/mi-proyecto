@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Profesional</title>
+    <title>Sistema Profesional - AdminPanel</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="<?= base_url('css/style.css') ?>" rel="stylesheet">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
@@ -26,34 +27,40 @@
         <ul>
             <li>
                 <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
-                    <i class="bi bi-speedometer2"></i><span>Inicio</span>
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Inicio</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
-                    <i class="bi bi-people"></i><span>Usuarios</span>
+                    <i class="bi bi-people"></i>
+                    <span>Usuarios</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') ? 'active' : '' ?>">
-                    <i class="bi bi-grid"></i><span>Servicios</span>
+                    <i class="bi bi-grid"></i>
+                    <span>Servicios</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('validacion') ?>" class="<?= url_is('validacion*') ? 'active' : '' ?>">
-                    <i class="bi bi-shield-check"></i><span>Validación</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
-                    <i class="bi bi-images"></i><span>Carrusel</span>
+                    <i class="bi bi-shield-check"></i>
+                    <span>Validación</span>
                 </a>
             </li>
             
             <?php if (session()->get('admin_logueado')): ?>
             <li>
+                <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
+                    <i class="bi bi-images"></i>
+                    <span>Carrusel</span>
+                </a>
+            </li>
+            <li>
                 <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
-                    <i class="bi bi-folder"></i><span>Mis Proyectos</span>
+                    <i class="bi bi-folder"></i>
+                    <span>Mis Proyectos</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -70,19 +77,21 @@
                         </div>
                     </div>
                     <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm w-100">
-                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Cerrar Sesión</span>
                     </a>
                 </div>
             <?php else: ?>
                 <a href="<?= base_url('login') ?>" class="btn btn-primary w-100">
-                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Iniciar Sesión</span>
                 </a>
             <?php endif; ?>
         </div>
 
         <div class="theme-toggle" id="theme-switch">
             <i class="bi bi-moon-stars" id="theme-icon"></i>
-            <span class="ms-2 theme-label">Tema</span>
+            <span class="ms-2 theme-label">Tema Oscuro</span>
         </div>
     </nav>
 
@@ -122,59 +131,69 @@
         </div>
 
         <div class="animate-fade-in">
-            <?= $content ?? '' ?>
+            <?= $this->renderSection('content') ?>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const html = document.documentElement;
-    const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content');
-    const overlay = document.getElementById('sidebar-overlay');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    const mobileOpener = document.getElementById('mobile-opener');
-    
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
+const html = document.documentElement;
+const sidebar = document.getElementById('sidebar');
+const content = document.getElementById('content');
+const overlay = document.getElementById('sidebar-overlay');
+const toggleBtn = document.getElementById('sidebar-toggle');
+const mobileOpener = document.getElementById('mobile-opener');
 
-    document.getElementById('theme-switch').addEventListener('click', () => {
-        const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-    });
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
 
-    function setTheme(theme) {
-        html.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        document.getElementById('theme-icon').className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+document.getElementById('theme-switch').addEventListener('click', () => {
+    const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+});
+
+function setTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    const icon = document.getElementById('theme-icon');
+    const label = document.querySelector('.theme-label');
+    if (theme === 'dark') {
+        icon.className = 'bi bi-sun';
+        if (label) label.textContent = 'Tema Claro';
+    } else {
+        icon.className = 'bi bi-moon-stars';
+        if (label) label.textContent = 'Tema Oscuro';
     }
+}
 
-    if(localStorage.getItem('sidebarState') === 'collapsed' && window.innerWidth > 768) {
-        sidebar.classList.add('collapsed');
-        content.classList.add('expanded');
+if (localStorage.getItem('sidebarState') === 'collapsed' && window.innerWidth > 768) {
+    sidebar.classList.add('collapsed');
+    content.classList.add('expanded');
+}
+
+toggleBtn.addEventListener('click', () => {
+    if (window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed');
+        content.classList.toggle('expanded');
+        localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+    } else {
+        sidebar.classList.remove('mobile-show');
+        overlay.classList.remove('show');
     }
+});
 
-    toggleBtn.addEventListener('click', () => {
-        if (window.innerWidth > 768) {
-            sidebar.classList.toggle('collapsed');
-            content.classList.toggle('expanded');
-            localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
-        } else {
-            sidebar.classList.remove('mobile-show');
-            overlay.classList.remove('show');
-        }
-    });
-
+if (mobileOpener) {
     mobileOpener.addEventListener('click', () => {
         sidebar.classList.add('mobile-show');
         overlay.classList.add('show');
     });
+}
 
-    overlay.addEventListener('click', () => {
-        sidebar.classList.remove('mobile-show');
-        overlay.classList.remove('show');
-    });
+overlay.addEventListener('click', () => {
+    sidebar.classList.remove('mobile-show');
+    overlay.classList.remove('show');
+});
 </script>
 </body>
 </html>

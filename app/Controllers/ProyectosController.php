@@ -15,16 +15,24 @@ class ProyectosController extends BaseController
 
     public function index()
     {
-        return view('layout/main', [
-            'content' => view('proyectos_public_view')
-        ]);
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Proyectos', 'url' => '#', 'active' => true]
+        ];
+        return view('proyectos_public_view', $data);
     }
 
     public function admin()
     {
-        return view('layout/main', [
-            'content' => view('proyectos_admin_view')
-        ]);
+        if (!session()->get('admin_logueado')) {
+            return redirect()->to(base_url('login'))->with('error', 'Debes iniciar sesión');
+        }
+        
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Mis Proyectos', 'url' => '#', 'active' => true]
+        ];
+        return view('proyectos_admin_view', $data);
     }
 
     public function listar()

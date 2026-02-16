@@ -5,15 +5,13 @@ namespace App\Controllers;
 class AuthController extends BaseController
 {
     public function login()
-    {
-        if (session()->get('admin_logueado')) {
-            return redirect()->to(base_url('admin/proyectos'));
-        }
-
-        return view('layout/main', [
-            'content' => view('login_view')
-        ]);
+{
+    if (session()->get('admin_logueado')) {
+        return redirect()->to(base_url('admin/proyectos'));
     }
+
+    return view('login_view'); 
+}
 
     public function procesarLogin()
     {

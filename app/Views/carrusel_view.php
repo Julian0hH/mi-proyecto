@@ -1,9 +1,18 @@
-<div class="container mt-5">
-    <h1 class="mb-4"><i class="bi bi-images me-2"></i>Carrusel de Imágenes</h1>
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
 
-    <div id="carouselPortfolio" class="carousel slide mb-5 shadow-lg" data-bs-ride="carousel">
+<div class="mb-4 animate-slide-in">
+    <h2 class="fw-bold">
+        <i class="bi bi-images text-primary me-2"></i>Carrusel de Imágenes
+    </h2>
+    <p class="text-muted">Gestión visual de tu portafolio</p>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div id="carouselPortfolio" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-indicators" id="carouselIndicators"></div>
-        <div class="carousel-inner rounded" id="carouselInner">
+        <div class="carousel-inner rounded" id="carouselInner" style="max-height: 500px;">
             <div class="carousel-item active">
                 <div class="d-flex align-items-center justify-content-center bg-light" style="height: 500px;">
                     <div class="text-center text-muted">
@@ -20,83 +29,97 @@
             <span class="carousel-control-next-icon"></span>
         </button>
     </div>
-
-    <?php if (session()->get('admin_logueado')): ?>
-    <div class="card mb-4 shadow">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Panel de Administración</h5>
-        </div>
-        <div class="card-body">
-            <form id="formSubirImagen" enctype="multipart/form-data">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Título</label>
-                        <input type="text" class="form-control" id="titulo" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Descripción</label>
-                        <input type="text" class="form-control" id="descripcion">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Imagen</label>
-                        <input type="file" class="form-control" id="imagen" accept="image/*" required>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-upload me-2"></i>Subir Imagen
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
     </div>
-
-    <div class="card shadow">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Gestión de Imágenes</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Vista Previa</th>
-                            <th>Título</th>
-                            <th>Descripción</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaImagenes"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 </div>
+
+<?php if (session()->get('admin_logueado')): ?>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-plus-circle-fill me-2"></i>Panel de Administración
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <form id="formSubirImagen" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">TÍTULO</label>
+                    <input type="text" class="form-control" id="titulo" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">DESCRIPCIÓN</label>
+                    <input type="text" class="form-control" id="descripcion">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">IMAGEN</label>
+                    <input type="file" class="form-control" id="imagen" accept="image/*" required>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success px-4 shadow">
+                        <i class="bi bi-upload me-2"></i>Subir Imagen
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold m-0">
+                <i class="bi bi-list-ul me-2"></i>Gestión de Imágenes
+            </h5>
+            <span class="badge bg-primary" id="totalImagenes">0</span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3">Vista Previa</th>
+                        <th class="py-3">Título</th>
+                        <th class="py-3">Descripción</th>
+                        <th class="text-end pe-4 py-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaImagenes"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="modal fade" id="modalEditar" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar Imagen</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-pencil-fill me-2"></i>Editar Imagen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formEditarImagen">
                     <input type="hidden" id="editarId">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Título</label>
+                        <label class="form-label text-muted small fw-bold">TÍTULO</label>
                         <input type="text" class="form-control" id="editarTitulo" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Descripción</label>
+                        <label class="form-label text-muted small fw-bold">DESCRIPCIÓN</label>
                         <input type="text" class="form-control" id="editarDescripcion">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicion()">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
             </div>
         </div>
     </div>
@@ -170,16 +193,19 @@ function renderizarCarrusel() {
 
 function renderizarTabla() {
     const tbody = document.getElementById('tablaImagenes');
+    const badge = document.getElementById('totalImagenes');
     if (!tbody) return;
     
     tbody.innerHTML = '';
+    if (badge) badge.textContent = imagenes.length;
     
     if (imagenes.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-muted py-4">
-                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                    No hay imágenes registradas
+                <td colspan="4" class="text-center py-5">
+                    <i class="bi bi-inbox display-4 text-muted d-block mb-3"></i>
+                    <h5 class="text-muted">No hay imágenes registradas</h5>
+                    <p class="text-muted small">Utiliza el formulario para agregar la primera imagen</p>
                 </td>
             </tr>
         `;
@@ -189,10 +215,16 @@ function renderizarTabla() {
     imagenes.forEach(img => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><img src="${img.url}" width="80" class="rounded shadow-sm"></td>
-            <td class="fw-semibold">${img.titulo}</td>
-            <td>${img.descripcion || '-'}</td>
-            <td>
+            <td class="ps-4 py-3">
+                <img src="${img.url}" width="80" height="60" class="rounded shadow-sm" style="object-fit: cover;">
+            </td>
+            <td class="py-3">
+                <span class="fw-semibold">${img.titulo}</span>
+            </td>
+            <td class="py-3">
+                <span class="text-muted">${img.descripcion || '-'}</span>
+            </td>
+            <td class="text-end pe-4 py-3">
                 <button class="btn btn-sm btn-warning me-2" onclick="abrirModalEditar(${img.id}, '${img.titulo.replace(/'/g, "\\'")}', '${(img.descripcion || '').replace(/'/g, "\\'")}')">
                     <i class="bi bi-pencil"></i>
                 </button>
@@ -285,20 +317,18 @@ async function eliminarImagen(id) {
 
 function mostrarAlerta(mensaje, tipo) {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow`;
     alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
     alertDiv.innerHTML = `
+        <i class="bi bi-${tipo === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i>
         ${mensaje}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     document.body.appendChild(alertDiv);
     
-    setTimeout(() => alertDiv.remove(), 3000);
+    setTimeout(() => alertDiv.remove(), 4000);
 }
 </script>
 
-<style>
-.carousel-item img {
-    border-radius: 8px;
-}
-</style>
+<?= $this->endSection() ?>

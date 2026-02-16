@@ -15,9 +15,11 @@ class CarruselController extends BaseController
 
     public function index()
     {
-        return view('layout/main', [
-            'content' => view('carrusel_view')
-        ]);
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Carrusel', 'url' => '#', 'active' => true]
+        ];
+        return view('carrusel_view', $data);
     }
 
     public function listar()

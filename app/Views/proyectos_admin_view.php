@@ -1,44 +1,60 @@
+<?= $this->extend('layout/main') ?> <?= $this->section('content') ?> <?= $this->endSection() ?>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-folder me-2"></i>Mis Proyectos</h1>
         <div>
-            <span class="me-3"><i class="bi bi-person-circle me-1"></i><?= esc(session()->get('admin_email')) ?></span>
+            <h1 class="fw-bold">
+                <i class="bi bi-folder-fill me-2 text-primary"></i>Panel de Proyectos
+            </h1>
+            <p class="text-muted mb-0">Gestiona tu portafolio profesional</p>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <span class="badge bg-info px-3 py-2">
+                <i class="bi bi-person-circle me-1"></i>
+                <?= esc(session()->get('admin_email')) ?>
+            </span>
             <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger">
                 <i class="bi bi-box-arrow-right me-1"></i>Cerrar Sesión
             </a>
         </div>
     </div>
 
-    <div class="card mb-4 shadow">
+    <div class="card mb-4 shadow border-0">
         <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Nuevo Proyecto</h5>
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-plus-circle-fill me-2"></i>Crear Nuevo Proyecto
+            </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <form id="formCrearProyecto" enctype="multipart/form-data">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Título del Proyecto</label>
-                        <input type="text" class="form-control" id="titulo" required>
+                        <input type="text" class="form-control" id="titulo" placeholder="Ej. Sistema de Gestión" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Link (GitHub, Demo, etc.)</label>
-                        <input type="url" class="form-control" id="link" placeholder="https://...">
+                        <input type="url" class="form-control" id="link" placeholder="https://github.com/usuario/proyecto">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Tecnologías (separadas por comas)</label>
-                        <input type="text" class="form-control" id="tecnologias" placeholder="PHP, MySQL, Bootstrap">
+                        <label class="form-label fw-semibold">Tecnologías</label>
+                        <input type="text" class="form-control" id="tecnologias" placeholder="PHP, MySQL, Bootstrap, JavaScript">
+                        <div class="form-text">Separadas por comas</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Imágenes (múltiples)</label>
+                        <label class="form-label fw-semibold">Imágenes del Proyecto</label>
                         <input type="file" class="form-control" id="imagenes" accept="image/*" multiple>
+                        <div class="form-text">Puedes seleccionar múltiples imágenes</div>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Descripción</label>
-                        <textarea class="form-control" id="descripcion" rows="3" required></textarea>
+                        <textarea class="form-control" id="descripcion" rows="4" placeholder="Describe las características principales del proyecto..." required></textarea>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success shadow">
                             <i class="bi bi-plus-circle me-2"></i>Crear Proyecto
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Limpiar
                         </button>
                     </div>
                 </div>
@@ -46,23 +62,34 @@
         </div>
     </div>
 
-    <div class="card shadow">
+    <div class="card shadow border-0">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Gestión de Proyectos</h5>
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-list-ul me-2"></i>Proyectos Registrados
+            </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
-                            <th>Imágenes</th>
-                            <th>Título</th>
+                            <th class="ps-4">Imágenes</th>
+                            <th>Información</th>
                             <th>Tecnologías</th>
-                            <th>Link</th>
-                            <th>Acciones</th>
+                            <th>Enlace</th>
+                            <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="tablaProyectos"></tbody>
+                    <tbody id="tablaProyectos">
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">Cargando proyectos...</p>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -72,9 +99,11 @@
 <div class="modal fade" id="modalEditar" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar Proyecto</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-fill me-2"></i>Editar Proyecto
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formEditarProyecto">
@@ -85,7 +114,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Descripción</label>
-                        <textarea class="form-control" id="editarDescripcion" rows="3"></textarea>
+                        <textarea class="form-control" id="editarDescripcion" rows="4"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Link</label>
@@ -98,8 +127,12 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicion()">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
             </div>
         </div>
     </div>
@@ -121,6 +154,7 @@ async function cargarProyectos() {
         }
     } catch (error) {
         console.error('Error:', error);
+        mostrarAlerta('Error al cargar proyectos', 'danger');
     }
 }
 
@@ -131,9 +165,10 @@ function renderizarTabla() {
     if (proyectos.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="text-center text-muted py-4">
-                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                    No hay proyectos registrados
+                <td colspan="5" class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
+                    <h5 class="text-muted">No hay proyectos registrados</h5>
+                    <p class="text-muted small">Utiliza el formulario superior para crear tu primer proyecto</p>
                 </td>
             </tr>
         `;
@@ -145,23 +180,44 @@ function renderizarTabla() {
         
         let imagenesHTML = '';
         if (proyecto.imagenes_urls && proyecto.imagenes_urls.length > 0) {
-            imagenesHTML = proyecto.imagenes_urls.map(url => 
-                `<img src="${url}" width="60" class="rounded shadow-sm me-1">`
+            imagenesHTML = proyecto.imagenes_urls.slice(0, 3).map(url => 
+                `<img src="${url}" width="70" class="rounded shadow-sm me-1" style="object-fit: cover; height: 50px;">`
             ).join('');
+            if (proyecto.imagenes_urls.length > 3) {
+                imagenesHTML += `<span class="badge bg-secondary">+${proyecto.imagenes_urls.length - 3}</span>`;
+            }
         } else {
-            imagenesHTML = '<span class="text-muted">Sin imágenes</span>';
+            imagenesHTML = '<span class="text-muted small">Sin imágenes</span>';
         }
         
+        const descripcionCorta = proyecto.descripcion ? 
+            (proyecto.descripcion.length > 80 ? proyecto.descripcion.substring(0, 80) + '...' : proyecto.descripcion) : 
+            'Sin descripción';
+        
         tr.innerHTML = `
-            <td>${imagenesHTML}</td>
+            <td class="ps-4">${imagenesHTML}</td>
             <td>
-                <strong>${proyecto.titulo}</strong><br>
-                <small class="text-muted">${proyecto.descripcion?.substring(0, 50)}...</small>
+                <div>
+                    <strong class="d-block">${proyecto.titulo}</strong>
+                    <small class="text-muted">${descripcionCorta}</small>
+                </div>
             </td>
-            <td><span class="badge bg-info">${proyecto.tecnologias || 'N/A'}</span></td>
-            <td>${proyecto.link ? `<a href="${proyecto.link}" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>` : '-'}</td>
             <td>
-                <button class="btn btn-sm btn-warning me-2" onclick='abrirModalEditar(${JSON.stringify(proyecto)})'>
+                ${proyecto.tecnologias ? 
+                    `<span class="badge bg-info text-dark">${proyecto.tecnologias.split(',')[0]}</span>
+                     ${proyecto.tecnologias.split(',').length > 1 ? 
+                        `<span class="badge bg-secondary">+${proyecto.tecnologias.split(',').length - 1}</span>` : ''}` 
+                    : '<span class="text-muted">-</span>'}
+            </td>
+            <td>
+                ${proyecto.link ? 
+                    `<a href="${proyecto.link}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-box-arrow-up-right"></i> Ver
+                    </a>` : 
+                    '<span class="text-muted">-</span>'}
+            </td>
+            <td class="text-end pe-4">
+                <button class="btn btn-sm btn-warning me-2" onclick='abrirModalEditar(${JSON.stringify(proyecto).replace(/'/g, "&#39;")})'>
                     <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-danger" onclick="eliminarProyecto(${proyecto.id})">
@@ -196,7 +252,7 @@ document.getElementById('formCrearProyecto').addEventListener('submit', async (e
         const data = await response.json();
         
         if (data.status === 'success') {
-            mostrarAlerta('Proyecto creado correctamente', 'success');
+            mostrarAlerta('Proyecto creado exitosamente', 'success');
             e.target.reset();
             cargarProyectos();
         } else {
@@ -243,7 +299,7 @@ async function guardarEdicion() {
 }
 
 async function eliminarProyecto(id) {
-    if (!confirm('¿Eliminar este proyecto?')) return;
+    if (!confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.')) return;
     
     try {
         const response = await fetch(`<?= base_url('proyectos/eliminar/') ?>${id}`, {
@@ -263,14 +319,15 @@ async function eliminarProyecto(id) {
 
 function mostrarAlerta(mensaje, tipo) {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow`;
     alertDiv.style.zIndex = '9999';
     alertDiv.innerHTML = `
+        <i class="bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
         ${mensaje}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     document.body.appendChild(alertDiv);
     
-    setTimeout(() => alertDiv.remove(), 3000);
+    setTimeout(() => alertDiv.remove(), 4000);
 }
 </script>
