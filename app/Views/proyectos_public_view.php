@@ -3,11 +3,11 @@
 
 <div class="text-center mb-5 animate-fade-in">
     <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 mb-3 rounded-pill">
-        <i class="bi bi-briefcase-fill me-2"></i>Portafolio
+        <i class="bi bi-briefcase-fill me-2"></i>Portafolio Profesional
     </span>
     <h2 class="fw-bold display-5 mb-3">Mis Proyectos</h2>
     <p class="text-muted lead mx-auto" style="max-width: 600px;">
-        Explora los trabajos más recientes y destacados
+        Explora los trabajos más recientes y destacados del portafolio
     </p>
 </div>
 
@@ -38,9 +38,12 @@ function renderizarProyectos(proyectos) {
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center py-5">
-                        <i class="bi bi-inbox display-1 text-muted d-block mb-3"></i>
-                        <h4 class="text-muted mb-2">No hay proyectos disponibles</h4>
-                        <p class="text-muted small">Vuelve pronto para ver nuevos trabajos</p>
+                        <div class="mb-4">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3 text-muted">Próximamente</h3>
+                        <p class="text-muted mb-0">Estamos trabajando en nuevos proyectos increíbles.</p>
+                        <p class="text-muted small">¡Vuelve pronto para verlos!</p>
                     </div>
                 </div>
             </div>
@@ -48,30 +51,81 @@ function renderizarProyectos(proyectos) {
         return;
     }
     
-    proyectos.forEach(proyecto => {
+    proyectos.forEach((proyecto, index) => {
         const col = document.createElement('div');
         col.className = 'col-md-6 col-lg-4';
         
-        const imagenesHTML = proyecto.imagenes_urls && proyecto.imagenes_urls.length > 0
-            ? `<img src="${proyecto.imagenes_urls[0]}" class="card-img-top" alt="${proyecto.titulo}" style="height: 220px; object-fit: cover;">`
-            : '<div class="bg-light d-flex align-items-center justify-content-center" style="height: 220px;"><i class="bi bi-image display-1 text-muted"></i></div>';
+        let carruselHTML = '';
+        const carouselId = `carousel${proyecto.id}`;
+        
+        if (proyecto.imagenes_urls && proyecto.imagenes_urls.length > 0) {
+            const indicators = proyecto.imagenes_urls.map((_, idx) => 
+                `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${idx}" ${idx === 0 ? 'class="active"' : ''}></button>`
+            ).join('');
+            
+            const slides = proyecto.imagenes_urls.map((url, idx) => `
+                <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                    <img src="${url}" class="d-block w-100" alt="${proyecto.titulo}" style="height: 250px; object-fit: cover;">
+                </div>
+            `).join('');
+            
+            carruselHTML = `
+                <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                    ${proyecto.imagenes_urls.length > 1 ? `<div class="carousel-indicators">${indicators}</div>` : ''}
+                    <div class="carousel-inner">
+                        ${slides}
+                    </div>
+                    ${proyecto.imagenes_urls.length > 1 ? `
+                        <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            carruselHTML = `
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                    <i class="bi bi-image display-1 text-muted"></i>
+                </div>
+            `;
+        }
         
         const tecnologiasArray = proyecto.tecnologias ? proyecto.tecnologias.split(',') : [];
-        const tecnologiasBadges = tecnologiasArray.slice(0, 3).map(tech => 
+        const tecnologiasBadges = tecnologiasArray.slice(0, 4).map(tech => 
             `<span class="badge bg-primary bg-opacity-10 text-primary me-1 mb-1">${tech.trim()}</span>`
         ).join('');
-        const mastech = tecnologiasArray.length > 3 ? `<span class="badge bg-secondary">+${tecnologiasArray.length - 3}</span>` : '';
+        const masTech = tecnologiasArray.length > 4 ? `<span class="badge bg-secondary mb-1">+${tecnologiasArray.length - 4}</span>` : '';
+        
+        const descripcionCorta = proyecto.descripcion 
+            ? (proyecto.descripcion.length > 120 ? proyecto.descripcion.substring(0, 120) + '...' : proyecto.descripcion)
+            : 'Sin descripción disponible';
         
         col.innerHTML = `
             <div class="card h-100 border-0 shadow-sm hover-card">
-                ${imagenesHTML}
-                <div class="card-body d-flex flex-column">
+                ${carruselHTML}
+                <div class="card-body d-flex flex-column p-4">
                     <h5 class="card-title fw-bold mb-2">${proyecto.titulo}</h5>
-                    <p class="card-text text-muted flex-grow-1">${proyecto.descripcion || 'Sin descripción'}</p>
-                    ${tecnologiasArray.length > 0 ? `<div class="mb-3">${tecnologiasBadges}${mastech}</div>` : ''}
+                    <p class="card-text text-muted flex-grow-1 mb-3">${descripcionCorta}</p>
+                    ${tecnologiasArray.length > 0 ? `
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-2 fw-semibold">TECNOLOGÍAS</small>
+                            ${tecnologiasBadges}${masTech}
+                        </div>
+                    ` : ''}
                 </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    ${proyecto.link ? `<a href="${proyecto.link}" target="_blank" class="btn btn-primary w-100 rounded-pill shadow-sm"><i class="bi bi-link-45deg me-1"></i>Ver Proyecto</a>` : '<button class="btn btn-outline-secondary w-100 rounded-pill" disabled>Sin enlace</button>'}
+                <div class="card-footer bg-white border-0 p-4 pt-0">
+                    ${proyecto.link ? `
+                        <a href="${proyecto.link}" target="_blank" class="btn btn-primary w-100 rounded-pill shadow-sm">
+                            <i class="bi bi-link-45deg me-1"></i>Ver Proyecto
+                        </a>
+                    ` : `
+                        <button class="btn btn-outline-secondary w-100 rounded-pill" disabled>
+                            <i class="bi bi-lock me-1"></i>Sin enlace disponible
+                        </button>
+                    `}
                 </div>
             </div>
         `;

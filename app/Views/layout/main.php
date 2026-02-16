@@ -44,6 +44,12 @@
                 </a>
             </li>
             <li>
+                <a href="<?= base_url('proyectos') ?>" class="<?= url_is('proyectos') ? 'active' : '' ?>">
+                    <i class="bi bi-briefcase"></i>
+                    <span>Portafolio</span>
+                </a>
+            </li>
+            <li>
                 <a href="<?= base_url('validacion') ?>" class="<?= url_is('validacion*') ? 'active' : '' ?>">
                     <i class="bi bi-shield-check"></i>
                     <span>Validación</span>

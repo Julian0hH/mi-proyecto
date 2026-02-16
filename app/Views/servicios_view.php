@@ -138,4 +138,20 @@
     </div>
 </div>
 
+<div class="card border-0 shadow-sm bg-light mt-4">
+    <div class="card-body p-5 text-center">
+        <div class="mb-3">
+            <i class="bi bi-briefcase-fill display-4 text-primary"></i>
+        </div>
+        <h4 class="fw-bold mb-3">Explora Nuestro Portafolio</h4>
+        <p class="text-muted mb-4">
+            Descubre proyectos reales que hemos desarrollado con estas tecnologías.<br>
+            Ve casos de uso, implementaciones y resultados comprobados.
+        </p>
+        <a href="<?= base_url('proyectos') ?>" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+            <i class="bi bi-arrow-right-circle me-2"></i>Ver Proyectos Realizados
+        </a>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
