@@ -4,10 +4,14 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libpng-dev \
     libpq-dev \
+    libcurl4-openssl-dev \
     zip \
     unzip \
+    curl \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install intl mysqli pdo pdo_mysql gd pgsql pdo_pgsql
+    && docker-php-ext-install intl mysqli pdo pdo_mysql gd pgsql pdo_pgsql curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
 

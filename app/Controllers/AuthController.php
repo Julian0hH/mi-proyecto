@@ -5,13 +5,18 @@ namespace App\Controllers;
 class AuthController extends BaseController
 {
     public function login()
-{
-    if (session()->get('admin_logueado')) {
-        return redirect()->to(base_url('admin/proyectos'));
-    }
+    {
+        if (session()->get('admin_logueado')) {
+            return redirect()->to(base_url('admin/proyectos'));
+        }
 
-    return view('login_view'); 
-}
+        $data['breadcrumbs'] = [
+            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
+            ['name' => 'Login', 'url' => '#', 'active' => true]
+        ];
+
+        return view('login_view', $data);
+    }
 
     public function procesarLogin()
     {
@@ -31,6 +36,12 @@ class AuthController extends BaseController
                     'required' => 'La contraseña es obligatoria',
                     'min_length' => 'La contraseña debe tener al menos 6 caracteres'
                 ]
+            ],
+            'g-recaptcha-response' => [
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Debes completar la verificación de seguridad'
+                ]
             ]
         ];
 
@@ -38,6 +49,13 @@ class AuthController extends BaseController
             return redirect()->back()
                            ->withInput()
                            ->with('errors', $validation->getErrors());
+        }
+
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+        if (!$this->verificarCaptcha($recaptchaResponse)) {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Verificación de seguridad fallida. Intenta nuevamente.');
         }
 
         $email = $this->request->getPost('email');
@@ -58,6 +76,39 @@ class AuthController extends BaseController
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Credenciales incorrectas');
+        }
+    }
+
+    private function verificarCaptcha($response): bool
+    {
+        $secret = getenv('RECAPTCHA_SECRETKEY');
+        if (empty($secret)) {
+            log_message('warning', 'Recaptcha secret key not configured');
+            return true;
+        }
+
+        if (empty($response)) {
+            return false;
+        }
+
+        try {
+            $client = \Config\Services::curlrequest();
+            $verify = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+                'form_params' => [
+                    'secret'   => $secret,
+                    'response' => $response,
+                    'remoteip' => $this->request->getIPAddress()
+                ],
+                'timeout' => 5,
+                'http_errors' => false
+            ]);
+
+            $body = json_decode($verify->getBody());
+            return isset($body->success) && $body->success === true;
+
+        } catch (\Throwable $e) {
+            log_message('error', 'Recaptcha verification error: ' . $e->getMessage());
+            return false;
         }
     }
 
