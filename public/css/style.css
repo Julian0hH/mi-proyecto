@@ -223,3 +223,56 @@ label { color: var(--text-heading); font-weight: 500; }
     /* En móvil, el botón toggle debe estar fuera para abrirlo */
     .mobile-toggle-btn { display: block; }
 }
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.user-info {
+    font-size: 0.85rem;
+}
+
+.user-info .text-muted {
+    font-size: 0.75rem;
+}
+
+#sidebar.collapsed .sidebar-footer span,
+#sidebar.collapsed .user-info div {
+    display: none;
+}
+
+#sidebar.collapsed .sidebar-footer .btn {
+    padding: 0.5rem;
+    font-size: 1.2rem;
+}
+
+#sidebar.collapsed .user-info {
+    text-align: center;
+}
+
+#sidebar ul {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+#sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

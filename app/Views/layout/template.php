@@ -122,7 +122,7 @@
         </div>
 
         <div class="animate-fade-in">
-            <?= $content ?? '' ?>
+            <?= $this->renderSection('content') ?>
         </div>
     </div>
 </div>
