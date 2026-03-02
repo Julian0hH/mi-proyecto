@@ -16,8 +16,8 @@ class CarruselController extends BaseController
     public function index()
     {
         $data['breadcrumbs'] = [
-            ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
-            ['name' => 'Carrusel', 'url' => '#', 'active' => true]
+            ['name' => 'Inicio',   'url' => base_url(), 'active' => false],
+            ['name' => 'Carrusel', 'url' => '#',         'active' => true]
         ];
         return view('carrusel_view', $data);
     }
@@ -27,12 +27,13 @@ class CarruselController extends BaseController
         try {
             $imagenes = $this->carruselModel->obtenerImagenes();
             return $this->response->setJSON([
-                'status' => 'success',
-                'data' => $imagenes
+                'success' => true,
+                'data'    => $imagenes
             ]);
         } catch (\Exception $e) {
+            log_message('error', 'CarruselController::listar ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
-                'status' => 'error',
+                'success' => false,
                 'message' => $e->getMessage()
             ]);
         }
@@ -41,43 +42,39 @@ class CarruselController extends BaseController
     public function subir()
     {
         try {
-            $files = $this->request->getFileMultiple('imagenes');
-            $titulo = $this->request->getPost('titulo');
+            $files       = $this->request->getFileMultiple('imagenes');
+            $titulo      = $this->request->getPost('titulo');
             $descripcion = $this->request->getPost('descripcion');
-    
+
             if (!$files || count($files) === 0) {
                 return $this->response->setStatusCode(400)->setJSON([
-                    'status' => 'error',
+                    'success' => false,
                     'message' => 'No se enviaron imágenes'
                 ]);
             }
-    
+
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            $resultados = [];
-    
+            $resultados   = [];
+
             foreach ($files as $file) {
-    
                 if (!$file->isValid() || $file->hasMoved()) {
                     continue;
                 }
-    
                 if (!in_array($file->getMimeType(), $allowedTypes)) {
                     continue;
                 }
-    
-                $resultado = $this->carruselModel->subirImagen($file, $titulo, $descripcion);
-                $resultados[] = $resultado;
+                $resultados[] = $this->carruselModel->subirImagen($file, $titulo, $descripcion);
             }
-    
+
             return $this->response->setJSON([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Imágenes subidas correctamente',
-                'data' => $resultados
+                'data'    => $resultados
             ]);
-    
         } catch (\Exception $e) {
+            log_message('error', 'CarruselController::subir ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
-                'status' => 'error',
+                'success' => false,
                 'message' => $e->getMessage()
             ]);
         }
@@ -86,18 +83,19 @@ class CarruselController extends BaseController
     public function actualizar($id)
     {
         try {
-            $titulo = $this->request->getPost('titulo');
+            $titulo      = $this->request->getPost('titulo');
             $descripcion = $this->request->getPost('descripcion');
 
             $this->carruselModel->actualizarImagen($id, $titulo, $descripcion);
 
             return $this->response->setJSON([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Imagen actualizada correctamente'
             ]);
         } catch (\Exception $e) {
+            log_message('error', 'CarruselController::actualizar ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
-                'status' => 'error',
+                'success' => false,
                 'message' => $e->getMessage()
             ]);
         }
@@ -109,12 +107,13 @@ class CarruselController extends BaseController
             $this->carruselModel->eliminarImagen($id);
 
             return $this->response->setJSON([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Imagen eliminada correctamente'
             ]);
         } catch (\Exception $e) {
+            log_message('error', 'CarruselController::eliminar ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
-                'status' => 'error',
+                'success' => false,
                 'message' => $e->getMessage()
             ]);
         }

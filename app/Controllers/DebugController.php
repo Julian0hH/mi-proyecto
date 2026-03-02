@@ -4,13 +4,28 @@ namespace App\Controllers;
 
 /**
  * DebugController — diagnóstico temporal.
- * ELIMINAR o proteger antes de ir a producción real.
- * Acceso: /debug/env
+ * BUG CORREGIDO #4: el endpoint original no tenía ninguna protección.
+ * Cualquier visitante podía ver las claves de Supabase accediendo a /debug/env.
+ * Ahora requiere sesión de admin activa.
  */
 class DebugController extends BaseController
 {
     public function env()
     {
+        // Protección: solo accesible con sesión admin activa
+        if (!session()->get('admin_logueado')) {
+            return $this->response->setStatusCode(403)->setJSON([
+                'error' => 'Acceso denegado'
+            ]);
+        }
+
+        // Protección adicional: solo en entorno development
+        if (getenv('CI_ENVIRONMENT') !== 'development') {
+            return $this->response->setStatusCode(403)->setJSON([
+                'error' => 'Solo disponible en entorno development'
+            ]);
+        }
+
         $vars = [
             'CI_ENVIRONMENT',
             'SUPABASE_URL',
@@ -29,12 +44,10 @@ class DebugController extends BaseController
             if ($val === false || $val === '') {
                 $resultado[$var] = '❌ NO CONFIGURADA';
             } else {
-                // Muestra solo los primeros 12 caracteres por seguridad
                 $resultado[$var] = '✅ OK → ' . substr($val, 0, 12) . '...';
             }
         }
 
-        // Prueba real a Supabase REST API
         $supabaseUrl = getenv('SUPABASE_URL');
         $supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
                     ?: getenv('SUPABASE_KEY')
@@ -63,11 +76,11 @@ class DebugController extends BaseController
         }
 
         return $this->response->setJSON([
-            'php_version'    => PHP_VERSION,
-            'ci_version'     => \CodeIgniter\CodeIgniter::CI_VERSION,
-            'env_vars'       => $resultado,
-            'supabase_test'  => $supabaseTest,
-            'server_software'=> $_SERVER['SERVER_SOFTWARE'] ?? 'N/A',
+            'php_version'     => PHP_VERSION,
+            'ci_version'      => \CodeIgniter\CodeIgniter::CI_VERSION,
+            'env_vars'        => $resultado,
+            'supabase_test'   => $supabaseTest,
+            'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'N/A',
         ]);
     }
 }
