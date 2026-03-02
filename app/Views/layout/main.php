@@ -453,5 +453,11 @@ function formatDate(str) {
     return new Date(str).toLocaleString('es-ES', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 </script>
+
+<script>
+document.querySelectorAll('#content .modal, #wrapper .modal').forEach(function(el) {
+    document.body.appendChild(el);
+});
+</script>
 </body>
 </html>

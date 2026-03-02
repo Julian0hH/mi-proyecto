@@ -87,6 +87,13 @@
             <span class="badge bg-primary" id="totalProyectos">0</span>
         </div>
     </div>
+    <div class="card-body border-bottom p-3">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="f-busqueda-proyectos" class="form-control" placeholder="Buscar por título, descripción o tecnología...">
+            <button class="btn btn-outline-secondary" id="btn-clear-proyectos" type="button" title="Limpiar"><i class="bi bi-x"></i></button>
+        </div>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -102,15 +109,17 @@
                 <tbody id="tablaProyectos">
                     <tr>
                         <td colspan="5" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div>
+                            <div class="spinner-border text-primary" role="status"></div>
                             <p class="text-muted mt-2 mb-0">Cargando proyectos...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="card-footer border-0 bg-transparent d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2 py-3 px-4">
+        <small class="text-muted" id="paginacion-info-proyectos">–</small>
+        <nav><ul class="pagination pagination-sm mb-0" id="paginacion-nav-proyectos"></ul></nav>
     </div>
 </div>
 
@@ -180,6 +189,9 @@
 
 <script>
 let proyectos = [];
+let currentPageP = 1;
+let debounceP    = null;
+const PER_PAGE_P = 5;
 
 document.addEventListener('DOMContentLoaded', cargarProyectos);
 
@@ -219,11 +231,11 @@ async function cargarProyectos() {
     try {
         const response = await fetch('<?= base_url('proyectos/listar') ?>');
         const data = await response.json();
-        
+
         if (data.success === true) {
             proyectos = data.data;
-            renderizarTabla();
-            
+            aplicarFiltro(1);
+
             const estadoVacio = document.getElementById('estadoVacio');
             if (proyectos.length === 0 && estadoVacio) {
                 estadoVacio.style.display = 'block';
@@ -237,26 +249,83 @@ async function cargarProyectos() {
     }
 }
 
-function renderizarTabla() {
-    const tbody = document.getElementById('tablaProyectos');
+function aplicarFiltro(page) {
+    currentPageP = page;
+    const q = (document.getElementById('f-busqueda-proyectos').value || '').toLowerCase().trim();
+
+    const filtrados = q === '' ? proyectos : proyectos.filter(p => {
+        const tecs = Array.isArray(p.tecnologias) ? p.tecnologias.join(' ') : (p.tecnologias || '');
+        return (p.titulo       || '').toLowerCase().includes(q)
+            || (p.descripcion  || '').toLowerCase().includes(q)
+            || tecs.toLowerCase().includes(q);
+    });
+
+    const totalPages = Math.max(1, Math.ceil(filtrados.length / PER_PAGE_P));
+    const safePage   = Math.min(page, totalPages);
+    const from       = filtrados.length === 0 ? 0 : (safePage - 1) * PER_PAGE_P + 1;
+    const to         = Math.min(safePage * PER_PAGE_P, filtrados.length);
+    const slice      = filtrados.slice((safePage - 1) * PER_PAGE_P, safePage * PER_PAGE_P);
+
     const badge = document.getElementById('totalProyectos');
+    if (badge) badge.textContent = filtrados.length;
+
+    const info = document.getElementById('paginacion-info-proyectos');
+    if (info) info.textContent = filtrados.length === 0 ? '' : `Mostrando ${from}–${to} de ${filtrados.length} proyectos`;
+
+    renderizarTabla(slice);
+    renderPaginacionP(totalPages, safePage);
+}
+
+function renderPaginacionP(totalPages, page) {
+    const nav = document.getElementById('paginacion-nav-proyectos');
+    if (totalPages <= 1) { nav.innerHTML = ''; return; }
+
+    const dis = (cond) => cond ? 'disabled' : '';
+
+    let html = `
+        <li class="page-item ${dis(page <= 1)}"><a class="page-link" href="#" data-page="1" title="Primera">«</a></li>
+        <li class="page-item ${dis(page <= 1)}"><a class="page-link" href="#" data-page="${page - 1}" title="Anterior">‹</a></li>`;
+
+    for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+            html += `<li class="page-item ${p === page ? 'active' : ''}"><a class="page-link" href="#" data-page="${p}">${p}</a></li>`;
+        } else if (Math.abs(p - page) === 2) {
+            html += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
+        }
+    }
+
+    html += `
+        <li class="page-item ${dis(page >= totalPages)}"><a class="page-link" href="#" data-page="${page + 1}" title="Siguiente">›</a></li>
+        <li class="page-item ${dis(page >= totalPages)}"><a class="page-link" href="#" data-page="${totalPages}" title="Última">»</a></li>`;
+
+    nav.innerHTML = html;
+    nav.querySelectorAll('[data-page]').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const p = parseInt(link.dataset.page);
+            if (p >= 1 && p <= totalPages) aplicarFiltro(p);
+        });
+    });
+}
+
+function renderizarTabla(slice) {
+    const tbody = document.getElementById('tablaProyectos');
     tbody.innerHTML = '';
-    if (badge) badge.textContent = proyectos.length;
-    
-    if (proyectos.length === 0) {
+
+    if (!slice || slice.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center py-5">
                     <i class="bi bi-inbox display-4 text-muted d-block mb-3"></i>
-                    <h5 class="text-muted mb-2">No hay proyectos registrados</h5>
-                    <p class="text-muted small">Utiliza el formulario superior para crear tu primer proyecto</p>
+                    <h5 class="text-muted mb-2">No hay proyectos</h5>
+                    <p class="text-muted small">Ajusta la búsqueda o crea un nuevo proyecto</p>
                 </td>
             </tr>
         `;
         return;
     }
-    
-    proyectos.forEach(proyecto => {
+
+    slice.forEach(proyecto => {
         const tr = document.createElement('tr');
         
         let imagenesHTML = '';
@@ -442,6 +511,16 @@ async function eliminarProyecto(id) {
         mostrarAlerta('Error al eliminar', 'danger');
     }
 }
+
+// Buscador proyectos
+document.getElementById('f-busqueda-proyectos').addEventListener('input', () => {
+    clearTimeout(debounceP);
+    debounceP = setTimeout(() => aplicarFiltro(1), 300);
+});
+document.getElementById('btn-clear-proyectos').addEventListener('click', () => {
+    document.getElementById('f-busqueda-proyectos').value = '';
+    aplicarFiltro(1);
+});
 
 function mostrarAlerta(mensaje, tipo) {
     const alertDiv = document.createElement('div');
