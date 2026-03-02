@@ -44,7 +44,9 @@ class ProyectosModel extends Model
         $proyectos = json_decode($response, true);
 
         foreach ($proyectos as &$proyecto) {
-            $imagenes = json_decode($proyecto['imagenes'], true) ?? [];
+            // PostgREST ya decodifica JSONB → llega como array; json_decode() en PHP 8 lanza TypeError con arrays
+            $raw = $proyecto['imagenes'] ?? [];
+            $imagenes = is_array($raw) ? $raw : (json_decode($raw, true) ?? []);
             $proyecto['imagenes_urls'] = array_map(
                 fn($ruta) => $this->getPublicUrl($ruta),
                 $imagenes
@@ -120,7 +122,8 @@ class ProyectosModel extends Model
         $proyecto = json_decode($response, true)[0] ?? null;
         
         if ($proyecto) {
-            $imagenes = json_decode($proyecto['imagenes'], true) ?? [];
+            $raw = $proyecto['imagenes'] ?? [];
+            $imagenes = is_array($raw) ? $raw : (json_decode($raw, true) ?? []);
             
             foreach ($imagenes as $ruta) {
                 $this->eliminarImagen($ruta);

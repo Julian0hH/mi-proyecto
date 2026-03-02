@@ -18,6 +18,11 @@ RUN a2enmod rewrite
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Habilitar .htaccess (AllowOverride) para que mod_rewrite elimine index.php de las URLs
+RUN sed -ri -e 's/AllowOverride None/AllowOverride All/g' \
+    /etc/apache2/apache2.conf \
+    /etc/apache2/conf-available/*.conf \
+    /etc/apache2/sites-available/*.conf 2>/dev/null || true
 
 COPY . /var/www/html
 
