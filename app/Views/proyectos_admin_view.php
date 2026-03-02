@@ -278,7 +278,9 @@ function renderizarTabla() {
             (proyecto.descripcion.length > 100 ? proyecto.descripcion.substring(0, 100) + '...' : proyecto.descripcion) : 
             'Sin descripción';
         
-        const tecnologiasArray = proyecto.tecnologias ? proyecto.tecnologias.split(',') : [];
+        const tecnologiasArray = proyecto.tecnologias
+            ? (Array.isArray(proyecto.tecnologias) ? proyecto.tecnologias : proyecto.tecnologias.split(','))
+            : [];
         const tecnologiasHTML = tecnologiasArray.length > 0 ?
             `<span class="badge bg-info bg-opacity-10 text-info">${tecnologiasArray[0].trim()}</span>
              ${tecnologiasArray.length > 1 ? `<span class="badge bg-secondary">+${tecnologiasArray.length - 1}</span>` : ''}` :
@@ -357,7 +359,9 @@ function abrirModalEditar(proyecto) {
     document.getElementById('editarTitulo').value = proyecto.titulo;
     document.getElementById('editarDescripcion').value = proyecto.descripcion || '';
     document.getElementById('editarLink').value = proyecto.link || '';
-    document.getElementById('editarTecnologias').value = proyecto.tecnologias || '';
+    document.getElementById('editarTecnologias').value = Array.isArray(proyecto.tecnologias)
+        ? proyecto.tecnologias.join(', ')
+        : (proyecto.tecnologias || '');
     new bootstrap.Modal(document.getElementById('modalEditar')).show();
 }
 

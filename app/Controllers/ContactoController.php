@@ -133,11 +133,12 @@ class ContactoController extends BaseController
             }
 
             return $this->response->setJSON([
-                'success' => true,
-                'data' => $result['data'],
-                'total' => $result['total'],
+                'success'     => true,
+                'data'        => $result['data'],
+                'total'       => $result['total'],
+                'per_page'    => 5,
                 'total_pages' => $result['total_pages'],
-                'page' => $result['page']
+                'page'        => $result['page']
             ]);
 
         } catch (\Throwable $e) {
@@ -164,12 +165,20 @@ class ContactoController extends BaseController
     {
         try {
             $data = [];
+
+            foreach (['nombre', 'email', 'telefono', 'asunto', 'mensaje', 'categoria'] as $field) {
+                if ($this->request->getPost($field) !== null) {
+                    $val = $this->request->getPost($field);
+                    $data[$field] = ($val !== '') ? $val : null;
+                }
+            }
             if ($this->request->getPost('estado') !== null) {
                 $data['estado'] = $this->request->getPost('estado');
             }
             if ($this->request->getPost('leido') !== null) {
                 $data['leido'] = $this->request->getPost('leido') === '1';
             }
+
             $ok = !empty($data) && $this->model->actualizar($id, $data);
             return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Actualizado' : 'Sin cambios']);
         } catch (\Throwable $e) {

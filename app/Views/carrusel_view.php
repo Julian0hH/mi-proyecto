@@ -273,7 +273,7 @@ function abrirModalEditar(id, titulo, descripcion) {
     document.getElementById('editarId').value = id;
     document.getElementById('editarTitulo').value = titulo;
     document.getElementById('editarDescripcion').value = descripcion;
-    new bootstrap.Modal(document.getElementById('modalEditar')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar')).show();
 }
 
 async function guardarEdicion() {

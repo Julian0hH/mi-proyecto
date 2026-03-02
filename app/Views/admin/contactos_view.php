@@ -95,28 +95,72 @@
     </div>
 </div>
 
-<!-- MODAL VER DETALLE -->
+<!-- MODAL EDITAR CONTACTO -->
 <div class="modal fade" id="modalContacto" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-envelope-open me-2"></i>Detalle del Mensaje</h5>
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Contacto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="modal-contacto-body">
-                <div class="text-center py-3"><div class="spinner-border text-primary"></div></div>
+            <div class="modal-body">
+                <div id="modal-contacto-loading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <form id="form-editar-contacto" style="display:none">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Nombre</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-nombre">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="edit-email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Teléfono</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-telefono" placeholder="Opcional">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Categoría</label>
+                            <select class="form-select form-select-sm" id="edit-categoria">
+                                <option value="consulta">Consulta</option>
+                                <option value="presupuesto">Presupuesto</option>
+                                <option value="soporte">Soporte</option>
+                                <option value="colaboracion">Colaboración</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Asunto</label>
+                            <input type="text" class="form-control form-control-sm" id="edit-asunto">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Mensaje</label>
+                            <textarea class="form-control form-control-sm" id="edit-mensaje" rows="4"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Estado</label>
+                            <select class="form-select form-select-sm" id="edit-estado">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="leido">Leído</option>
+                                <option value="respondido">Respondido</option>
+                                <option value="archivado">Archivado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end pb-1">
+                            <div class="text-muted small lh-lg">
+                                <div id="edit-created-at"></div>
+                                <div id="edit-ip"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <select class="form-select form-select-sm w-auto" id="select-estado-modal">
-                    <option value="pendiente">Pendiente</option>
-                    <option value="leido">Leído</option>
-                    <option value="respondido">Respondido</option>
-                    <option value="archivado">Archivado</option>
-                </select>
-                <button class="btn btn-primary btn-sm" id="btn-actualizar-estado">
-                    <i class="bi bi-check me-1"></i>Actualizar Estado
+                <button class="btn btn-primary btn-sm" id="btn-guardar-contacto">
+                    <i class="bi bi-floppy me-1"></i>Guardar cambios
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
             </div>
         </div>
     </div>
@@ -212,8 +256,11 @@ function renderPaginacion(totalPages, page) {
     const nav = document.getElementById('paginacion-nav');
     if (totalPages <= 1) { nav.innerHTML = ''; return; }
 
-    let html = `<li class="page-item ${page <= 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" data-page="${page-1}">‹</a></li>`;
+    const dis = (cond) => cond ? 'disabled' : '';
+
+    let html = `
+        <li class="page-item ${dis(page <= 1)}"><a class="page-link" href="#" data-page="1" title="Primera página">«</a></li>
+        <li class="page-item ${dis(page <= 1)}"><a class="page-link" href="#" data-page="${page - 1}" title="Anterior">‹</a></li>`;
 
     for (let p = 1; p <= totalPages; p++) {
         if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
@@ -222,50 +269,68 @@ function renderPaginacion(totalPages, page) {
             html += `<li class="page-item disabled"><span class="page-link">…</span></li>`;
         }
     }
-    html += `<li class="page-item ${page >= totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" data-page="${page+1}">›</a></li>`;
+
+    html += `
+        <li class="page-item ${dis(page >= totalPages)}"><a class="page-link" href="#" data-page="${page + 1}" title="Siguiente">›</a></li>
+        <li class="page-item ${dis(page >= totalPages)}"><a class="page-link" href="#" data-page="${totalPages}" title="Última página">»</a></li>`;
 
     nav.innerHTML = html;
     nav.querySelectorAll('[data-page]').forEach(link => {
-        link.addEventListener('click', e => { e.preventDefault(); const p = parseInt(link.dataset.page); if (p >= 1 && p <= totalPages) cargarDatos(p); });
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const p = parseInt(link.dataset.page);
+            if (p >= 1 && p <= totalPages) cargarDatos(p);
+        });
     });
 }
 
 async function verContacto(id) {
     activeContactId = id;
-    document.getElementById('modal-contacto-body').innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+    document.getElementById('modal-contacto-loading').style.display = '';
+    document.getElementById('form-editar-contacto').style.display = 'none';
     modalContacto.show();
-    const res  = await fetch(`<?= base_url('admin/contactos/ver/') ?>${id}`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
-    const data = await res.json();
-    if (!data.success) { document.getElementById('modal-contacto-body').innerHTML = '<p class="text-danger">Error al cargar</p>'; return; }
-    const c = data.data;
-    document.getElementById('select-estado-modal').value = c.estado || 'pendiente';
-    document.getElementById('modal-contacto-body').innerHTML = `
-        <div class="row g-3">
-            <div class="col-6"><strong>Nombre:</strong> ${escHtml(c.nombre)}</div>
-            <div class="col-6"><strong>Email:</strong> <a href="mailto:${escHtml(c.email)}">${escHtml(c.email)}</a></div>
-            ${c.telefono ? `<div class="col-6"><strong>Teléfono:</strong> ${escHtml(c.telefono)}</div>` : ''}
-            <div class="col-6"><strong>Categoría:</strong> ${escHtml(c.categoria || '–')}</div>
-            ${c.asunto ? `<div class="col-12"><strong>Asunto:</strong> ${escHtml(c.asunto)}</div>` : ''}
-            <div class="col-12">
-                <strong>Mensaje:</strong>
-                <div class="bg-body-secondary rounded p-3 mt-1">${escHtml(c.mensaje)}</div>
-            </div>
-            <div class="col-6 text-muted small"><i class="bi bi-clock me-1"></i>${formatDate(c.created_at)}</div>
-            <div class="col-6 text-muted small"><i class="bi bi-globe me-1"></i>${escHtml(c.ip_origen || '–')}</div>
-        </div>`;
-    cargarDatos(currentPage);
+
+    try {
+        const res  = await fetch(`<?= base_url('admin/contactos/ver/') ?>${id}`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+        const data = await res.json();
+        if (!data.success) { Toast.error('Error al cargar el contacto'); modalContacto.hide(); return; }
+        const c = data.data;
+
+        document.getElementById('edit-nombre').value    = c.nombre    || '';
+        document.getElementById('edit-email').value     = c.email     || '';
+        document.getElementById('edit-telefono').value  = c.telefono  || '';
+        document.getElementById('edit-asunto').value    = c.asunto    || '';
+        document.getElementById('edit-mensaje').value   = c.mensaje   || '';
+        document.getElementById('edit-categoria').value = c.categoria || 'consulta';
+        document.getElementById('edit-estado').value    = c.estado    || 'pendiente';
+        document.getElementById('edit-created-at').innerHTML = `<i class="bi bi-clock me-1"></i>${formatDate(c.created_at)}`;
+        document.getElementById('edit-ip').innerHTML         = `<i class="bi bi-globe me-1"></i>${escHtml(c.ip_origen || '–')}`;
+
+        document.getElementById('modal-contacto-loading').style.display = 'none';
+        document.getElementById('form-editar-contacto').style.display   = '';
+
+        cargarDatos(currentPage);
+    } catch (err) {
+        Toast.error('Error de conexión');
+        modalContacto.hide();
+    }
 }
 
-document.getElementById('btn-actualizar-estado').addEventListener('click', async () => {
+document.getElementById('btn-guardar-contacto').addEventListener('click', async () => {
     if (!activeContactId) return;
-    const estado = document.getElementById('select-estado-modal').value;
     const fd = new FormData();
-    fd.append('estado', estado);
+    fd.append('nombre',    document.getElementById('edit-nombre').value);
+    fd.append('email',     document.getElementById('edit-email').value);
+    fd.append('telefono',  document.getElementById('edit-telefono').value);
+    fd.append('asunto',    document.getElementById('edit-asunto').value);
+    fd.append('mensaje',   document.getElementById('edit-mensaje').value);
+    fd.append('categoria', document.getElementById('edit-categoria').value);
+    fd.append('estado',    document.getElementById('edit-estado').value);
+
     const res  = await fetch(`<?= base_url('admin/contactos/actualizar/') ?>${activeContactId}`, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
     const data = await res.json();
-    if (data.success) { Toast.success('Estado actualizado'); modalContacto.hide(); cargarDatos(currentPage); }
-    else Toast.error('Error al actualizar');
+    if (data.success) { Toast.success('Contacto actualizado'); modalContacto.hide(); cargarDatos(currentPage); }
+    else Toast.error('Error al guardar los cambios');
 });
 
 // Filtros con debounce
