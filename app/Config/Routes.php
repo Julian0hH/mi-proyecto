@@ -123,3 +123,4 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
 // DEBUG / DESARROLLO
 // ============================================================
 $routes->get('prueba_error', 'Home::prueba_error');
+$routes->get('debug/env',    'DebugController::env');
