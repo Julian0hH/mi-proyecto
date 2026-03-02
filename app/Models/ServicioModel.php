@@ -10,7 +10,11 @@ class ServicioModel
     public function __construct()
     {
         $this->supabaseUrl = getenv('SUPABASE_URL') ?: '';
-        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
+
+        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
+                          ?: getenv('SUPABASE_SERVICE_KEY')
+                          ?: getenv('SUPABASE_KEY')
+                          ?: '';
     }
 
     private function request(string $method, string $endpoint, array $data = [], array $extra = []): array
@@ -30,7 +34,7 @@ class ServicioModel
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
         $response = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         return ['code' => $code, 'body' => json_decode($response, true)];
     }

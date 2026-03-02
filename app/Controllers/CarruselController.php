@@ -1,121 +1,109 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
-use App\Models\CarruselModel;
+use App\Models\ServicioModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
-class CarruselController extends BaseController
+class ServiciosAdminController extends BaseController
 {
-    protected $carruselModel;
+    private ServicioModel $model;
 
     public function __construct()
     {
-        $this->carruselModel = new CarruselModel();
+        helper(['form', 'url']);
+        $this->model = new ServicioModel();
     }
 
-    public function index()
-    {
-        $data['breadcrumbs'] = [
-            ['name' => 'Inicio',   'url' => base_url(), 'active' => false],
-            ['name' => 'Carrusel', 'url' => '#',         'active' => true]
-        ];
-        return view('carrusel_view', $data);
-    }
-
-    public function listar()
+    public function index(): string
     {
         try {
-            $imagenes = $this->carruselModel->obtenerImagenes();
-            return $this->response->setJSON([
-                'success' => true,
-                'data'    => $imagenes
+            return view('admin/servicios_admin_view', [
+                'servicios'   => $this->model->obtenerTodos(),
+                'breadcrumbs' => [
+                    ['name' => 'Admin',    'url' => base_url('admin/dashboard'), 'active' => false],
+                    ['name' => 'Servicios','url' => '#',                          'active' => true],
+                ],
             ]);
-        } catch (\Exception $e) {
-            log_message('error', 'CarruselController::listar ' . $e->getMessage());
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
+        } catch (\Throwable $e) {
+            log_message('critical', 'ServiciosAdminController::index ' . $e->getMessage());
+            return view('errors/html/error_500');
         }
     }
 
-    public function subir()
+    public function listar(): ResponseInterface
+    {
+        return $this->response->setJSON(['success' => true, 'data' => $this->model->obtenerTodos()]);
+    }
+
+    public function crear(): ResponseInterface
     {
         try {
-            $files       = $this->request->getFileMultiple('imagenes');
-            $titulo      = $this->request->getPost('titulo');
-            $descripcion = $this->request->getPost('descripcion');
-
-            if (!$files || count($files) === 0) {
-                return $this->response->setStatusCode(400)->setJSON([
-                    'success' => false,
-                    'message' => 'No se enviaron imágenes'
-                ]);
+            $rules = [
+                'titulo'      => 'required|min_length[3]|max_length[200]',
+                'descripcion' => 'required|min_length[10]',
+                'icono'       => 'permit_empty|max_length[100]',
+                'color'       => 'permit_empty|in_list[primary,secondary,success,danger,warning,info,dark]',
+                'orden'       => 'permit_empty|integer',
+            ];
+            if (!$this->validate($rules)) {
+                return $this->response->setJSON(['success' => false, 'errors' => $this->validator->getErrors()]);
             }
 
-            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            $resultados   = [];
-
-            foreach ($files as $file) {
-                if (!$file->isValid() || $file->hasMoved()) {
-                    continue;
-                }
-                if (!in_array($file->getMimeType(), $allowedTypes)) {
-                    continue;
-                }
-                $resultados[] = $this->carruselModel->subirImagen($file, $titulo, $descripcion);
-            }
+            $ok = $this->model->crear([
+                'titulo'            => $this->request->getPost('titulo'),
+                'descripcion'       => $this->request->getPost('descripcion'),
+                'descripcion_larga' => $this->request->getPost('descripcion_larga') ?: null,
+                'icono'             => $this->request->getPost('icono') ?: 'bi-gear',
+                'color'             => $this->request->getPost('color') ?: 'primary',
+                'orden'             => (int)($this->request->getPost('orden') ?: 0),
+                'activo'            => true,
+            ]);
 
             return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Imágenes subidas correctamente',
-                'data'    => $resultados
+                'success' => $ok,
+                'mensaje' => $ok ? 'Servicio creado correctamente' : 'Error al crear servicio (verifica la conexión con Supabase)',
             ]);
-        } catch (\Exception $e) {
-            log_message('error', 'CarruselController::subir ' . $e->getMessage());
-            return $this->response->setStatusCode(500)->setJSON([
+        } catch (\Throwable $e) {
+            log_message('error', 'ServiciosAdmin::crear ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'errors' => ['Error interno del servidor']]);
+        }
+    }
+
+    public function actualizar(int $id): ResponseInterface
+    {
+        try {
+            $ok = $this->model->actualizar($id, [
+                'titulo'            => $this->request->getPost('titulo'),
+                'descripcion'       => $this->request->getPost('descripcion'),
+                'descripcion_larga' => $this->request->getPost('descripcion_larga') ?: null,
+                'icono'             => $this->request->getPost('icono') ?: 'bi-gear',
+                'color'             => $this->request->getPost('color') ?: 'primary',
+                'orden'             => (int)($this->request->getPost('orden') ?: 0),
+                'activo'            => (bool)$this->request->getPost('activo'),
+            ]);
+
+            return $this->response->setJSON([
+                'success' => $ok,
+                'mensaje' => $ok ? 'Servicio actualizado' : 'Error al actualizar servicio (verifica la conexión con Supabase)',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'ServiciosAdmin::actualizar ' . $e->getMessage());
+            return $this->response->setJSON([
                 'success' => false,
-                'message' => $e->getMessage()
+                'errors'  => ['Error interno del servidor']
             ]);
         }
     }
 
-    public function actualizar($id)
+    public function eliminar(int $id): ResponseInterface
     {
-        try {
-            $titulo      = $this->request->getPost('titulo');
-            $descripcion = $this->request->getPost('descripcion');
-
-            $this->carruselModel->actualizarImagen($id, $titulo, $descripcion);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Imagen actualizada correctamente'
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', 'CarruselController::actualizar ' . $e->getMessage());
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
-    public function eliminar($id)
-    {
-        try {
-            $this->carruselModel->eliminarImagen($id);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Imagen eliminada correctamente'
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', 'CarruselController::eliminar ' . $e->getMessage());
-            return $this->response->setStatusCode(500)->setJSON([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
-        }
+        $ok = $this->model->eliminar($id);
+        return $this->response->setJSON([
+            'success' => $ok,
+            'mensaje' => $ok ? 'Servicio eliminado' : 'Error al eliminar (verifica la conexión con Supabase)',
+        ]);
     }
 }

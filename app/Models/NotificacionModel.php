@@ -10,7 +10,10 @@ class NotificacionModel
     public function __construct()
     {
         $this->supabaseUrl = getenv('SUPABASE_URL') ?: '';
-        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
+        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
+                          ?: getenv('SUPABASE_SERVICE_KEY')
+                          ?: getenv('SUPABASE_KEY')
+                          ?: '';
     }
 
     private function request(string $method, string $endpoint, array $data = [], array $extra = []): array
