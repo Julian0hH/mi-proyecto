@@ -1,186 +1,154 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4 animate-slide-in">
-    <div>
-        <h2 class="fw-bold m-0">
-            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Usuarios
-        </h2>
-        <p class="text-muted small mb-0 mt-1">Registro y administración con Supabase</p>
-    </div>
-    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
-        <i class="bi bi-wifi me-1"></i>Conectado
-    </span>
-</div>
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
 
-<?php if(session()->getFlashdata('success')): ?>
-    <div class="alert alert-success d-flex align-items-center mb-4 shadow-sm border-0 animate-fade-in">
-        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-        <span><?= session()->getFlashdata('success') ?></span>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
-<?php if(session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm border-0 animate-fade-in">
-        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-        <span><?= session()->getFlashdata('error') ?></span>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
-<?php if(session()->getFlashdata('errors')): ?>
-    <div class="alert alert-warning mb-4 shadow-sm border-0 animate-fade-in">
-        <div class="d-flex align-items-start">
-            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
-            <div class="flex-grow-1">
-                <strong>Errores de validación:</strong>
-                <ul class="mb-0 mt-2 ps-3">
-                    <?php foreach(session()->getFlashdata('errors') as $e): ?>
-                        <li><?= esc($e) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+        <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success d-flex align-items-center mb-4 border-0 shadow-sm animate-fade-in">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <span><?= session()->getFlashdata('success') ?></span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+        <?php endif; ?>
 
-<div class="row g-4">
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm hover-card h-100">
-            <div class="card-header bg-primary text-white border-0">
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Usuario
-                </h5>
+        <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm animate-fade-in">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <span><?= session()->getFlashdata('error') ?></span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-warning mb-4 border-0 shadow-sm animate-fade-in">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-circle-fill me-2 mt-1 fs-5"></i>
+                <div>
+                    <strong>Errores de validación:</strong>
+                    <ul class="mb-0 mt-1 ps-3">
+                        <?php foreach ((array)session()->getFlashdata('errors') as $e): ?>
+                        <li><?= esc($e) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </div>
-            <div class="card-body p-4">
-                <form action="<?= base_url('guardar') ?>" method="POST" autocomplete="off">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width:64px;height:64px">
+                        <i class="bi bi-person-plus fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Crear Cuenta</h4>
+                    <p class="text-muted small">Regístrate para mantenerte en contacto.</p>
+                </div>
+
+                <form action="<?= base_url('guardar') ?>" method="POST" id="form-registro" autocomplete="off" novalidate>
                     <?= csrf_field() ?>
-                    
+
+                    <!-- Nombre -->
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">NOMBRE COMPLETO</label>
+                        <label class="form-label fw-semibold">Nombre completo <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-person"></i>
-                            </span>
-                            <input 
-                                type="text" 
-                                name="nombre" 
-                                class="form-control" 
-                                required 
-                                minlength="3" 
-                                maxlength="50"
-                                pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"
-                                oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"
-                                placeholder="Ej. Juan Pérez"
-                                value="<?= old('nombre') ?>"
-                            >
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" name="nombre" id="inp-reg-nombre" class="form-control"
+                                   required minlength="3" maxlength="50"
+                                   placeholder="Ej. Juan Pérez"
+                                   value="<?= old('nombre') ?>"
+                                   oninput="this.value=this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,'').slice(0,50);cntNombre.textContent=this.value.length">
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <div class="form-error small text-danger" id="err-reg-nombre"></div>
+                            <small class="text-muted ms-auto"><span id="cntNombre">0</span>/50</small>
                         </div>
                     </div>
-                    
+
+                    <!-- Email -->
                     <div class="mb-4">
-                        <label class="form-label text-muted small fw-bold">CORREO ELECTRÓNICO</label>
+                        <label class="form-label fw-semibold">Correo electrónico <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-envelope"></i>
-                            </span>
-                            <input 
-                                type="email" 
-                                name="email" 
-                                class="form-control" 
-                                required 
-                                maxlength="100"
-                                pattern="^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                                oninput="this.value = this.value.replace(/[^a-zA-Z0-9@._+-]/g, '')"
-                                placeholder="correo@ejemplo.com"
-                                value="<?= old('email') ?>"
-                            >
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="email" id="inp-reg-email" class="form-control"
+                                   required maxlength="100"
+                                   placeholder="correo@ejemplo.com"
+                                   value="<?= old('email') ?>"
+                                   oninput="this.value=this.value.replace(/[^a-zA-Z0-9@._+\-]/g,'').slice(0,100);cntEmail.textContent=this.value.length">
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <div class="form-error small text-danger" id="err-reg-email"></div>
+                            <small class="text-muted ms-auto"><span id="cntEmail">0</span>/100</small>
                         </div>
                     </div>
-                    
+
+                    <!-- reCAPTCHA -->
+                    <?php if (!empty($sitekey)): ?>
                     <div class="mb-4">
-                        <div class="g-recaptcha" data-sitekey="<?= esc($sitekey ?? '') ?>"></div>
+                        <div class="g-recaptcha" data-sitekey="<?= esc($sitekey) ?>"></div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow">
-                        <i class="bi bi-save me-2"></i>Guardar Usuario
+                    <?php else: ?>
+                    <input type="hidden" name="g-recaptcha-response" value="dev-bypass">
+                    <?php endif; ?>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btn-reg-submit">
+                        <i class="bi bi-person-plus me-2"></i>Registrarse
                     </button>
                 </form>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold m-0">
-                        <i class="bi bi-list-ul me-2"></i>Directorio de Usuarios
-                    </h5>
-                    <span class="badge bg-primary">
-                        <?= count($usuarios ?? []) ?> registros
-                    </span>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th class="ps-4 py-3">
-                                    <i class="bi bi-person me-1"></i>Usuario
-                                </th>
-                                <th class="py-3">
-                                    <i class="bi bi-envelope me-1"></i>Email
-                                </th>
-                                <th class="text-end pe-4 py-3">
-                                    <i class="bi bi-gear me-1"></i>Acciones
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if(!empty($usuarios)): ?>
-                                <?php foreach($usuarios as $u): ?>
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex justify-content-center align-items-center" style="width:40px;height:40px;">
-                                                <strong><?= strtoupper(substr($u['nombre'], 0, 1)) ?></strong>
-                                            </div>
-                                            <span class="fw-semibold"><?= esc($u['nombre']) ?></span>
-                                        </div>
-                                    </td>
-                                    <td class="py-3">
-                                        <span class="text-muted"><?= esc($u['email']) ?></span>
-                                    </td>
-                                    <td class="text-end pe-4 py-3">
-                                        <a 
-                                            href="<?= base_url('eliminar/'.$u['id']) ?>" 
-                                            class="btn btn-sm btn-outline-danger" 
-                                            onclick="return confirm('¿Confirma que desea eliminar a <?= esc($u['nombre']) ?>?');"
-                                            title="Eliminar usuario"
-                                        >
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="3" class="text-center p-5">
-                                        <i class="bi bi-inbox display-4 text-muted d-block mb-3"></i>
-                                        <p class="text-muted mb-0">No hay usuarios registrados aún</p>
-                                        <small class="text-muted">Utiliza el formulario para agregar el primero</small>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="row g-2 mt-4 text-center">
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-success bg-opacity-10">
+                            <i class="bi bi-shield-check text-success d-block mb-1"></i>
+                            <small class="text-muted" style="font-size:.7rem">Datos seguros</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-primary bg-opacity-10">
+                            <i class="bi bi-ban text-primary d-block mb-1"></i>
+                            <small class="text-muted" style="font-size:.7rem">Sin spam</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-warning bg-opacity-10">
+                            <i class="bi bi-x-circle text-warning d-block mb-1"></i>
+                            <small class="text-muted" style="font-size:.7rem">Cancela cuando quieras</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+const regNombre = document.getElementById('inp-reg-nombre');
+const regEmail  = document.getElementById('inp-reg-email');
+const cntNombre = document.getElementById('cntNombre');
+const cntEmail  = document.getElementById('cntEmail');
+
+// Inicializar contadores si hay valor previo (old input)
+if (regNombre.value) cntNombre.textContent = regNombre.value.length;
+if (regEmail.value)  cntEmail.textContent  = regEmail.value.length;
+
+regNombre.addEventListener('blur', () => {
+    const ok = regNombre.value.trim().length >= 3 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(regNombre.value.trim());
+    regNombre.classList.toggle('is-valid',   ok && regNombre.value.length > 0);
+    regNombre.classList.toggle('is-invalid', !ok && regNombre.value.length > 0);
+    document.getElementById('err-reg-nombre').textContent = (!ok && regNombre.value.length > 0)
+        ? 'Solo letras, mínimo 3 caracteres.' : '';
+});
+
+regEmail.addEventListener('blur', () => {
+    const ok = /^[a-zA-Z0-9._+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(regEmail.value.trim());
+    regEmail.classList.toggle('is-valid',   ok && regEmail.value.length > 0);
+    regEmail.classList.toggle('is-invalid', !ok && regEmail.value.length > 0);
+    document.getElementById('err-reg-email').textContent = (!ok && regEmail.value.length > 0)
+        ? 'Ingresa un email válido.' : '';
+});
+</script>
 
 <?= $this->endSection() ?>

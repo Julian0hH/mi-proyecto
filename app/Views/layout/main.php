@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Profesional - AdminPanel</title>
-    
+    <title><?= isset($pageTitle) ? esc($pageTitle) . ' | ' : '' ?>Portfolio Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,60 +12,106 @@
 </head>
 <body>
 
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999"></div>
+
+<!-- Overlay móvil -->
 <div id="sidebar-overlay"></div>
 
 <div id="wrapper">
+    <!-- ======================== SIDEBAR ======================== -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <h4 class="m-0 fw-bold">AdminPanel</h4>
-            <button id="sidebar-toggle" class="sidebar-toggle-btn">
-                <i class="bi bi-list"></i>
+            <div class="d-flex align-items-center gap-2">
+                <div class="sidebar-logo">
+                    <i class="bi bi-code-slash"></i>
+                </div>
+                <div class="sidebar-brand-text">
+                    <span class="fw-bold">Portfolio</span><span class="text-primary fw-bold">Pro</span>
+                </div>
+            </div>
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Contraer menú">
+                <i class="bi bi-layout-sidebar-reverse"></i>
             </button>
         </div>
 
-        <ul>
+        <div class="sidebar-search">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="sidebar-search-input" class="form-control" placeholder="Buscar...">
+            </div>
+        </div>
+
+        <ul class="sidebar-nav" id="sidebar-nav">
+            <!-- SECCIÓN PÚBLICA -->
+            <li class="nav-section"><span>Portafolio</span></li>
             <li>
                 <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Inicio</span>
+                    <i class="bi bi-house-door"></i><span>Inicio</span>
                 </a>
             </li>
             <li>
-                <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
-                    <i class="bi bi-people"></i>
-                    <span>Usuarios</span>
+                <a href="<?= base_url('portafolio') ?>" class="<?= url_is('portafolio*') ? 'active' : '' ?>">
+                    <i class="bi bi-briefcase"></i><span>Portafolio</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') ? 'active' : '' ?>">
-                    <i class="bi bi-grid"></i>
-                    <span>Servicios</span>
+                    <i class="bi bi-grid-3x3-gap"></i><span>Servicios</span>
                 </a>
             </li>
             <li>
-                <a href="<?= base_url('proyectos') ?>" class="<?= url_is('proyectos') ? 'active' : '' ?>">
-                    <i class="bi bi-briefcase"></i>
-                    <span>Portafolio</span>
+                <a href="<?= base_url('contacto') ?>" class="<?= url_is('contacto*') ? 'active' : '' ?>">
+                    <i class="bi bi-envelope"></i><span>Contacto</span>
                 </a>
             </li>
+
+            <!-- SECCIÓN SISTEMA -->
+            <li class="nav-section"><span>Sistema</span></li>
             <li>
-                <a href="<?= base_url('validacion') ?>" class="<?= url_is('validacion*') ? 'active' : '' ?>">
-                    <i class="bi bi-shield-check"></i>
-                    <span>Validación</span>
+                <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
+                    <i class="bi bi-people"></i><span>Usuarios</span>
                 </a>
             </li>
-            
+
             <?php if (session()->get('admin_logueado')): ?>
+            <!-- SECCIÓN ADMIN -->
+            <li class="nav-section"><span>Administración</span></li>
+            <li>
+                <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') || url_is('admin') ? 'active' : '' ?>">
+                    <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
+                    <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
+                </a>
+            </li>
             <li>
                 <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
-                    <i class="bi bi-images"></i>
-                    <span>Carrusel</span>
+                    <i class="bi bi-images"></i><span>Carrusel</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
-                    <i class="bi bi-folder"></i>
-                    <span>Mis Proyectos</span>
+                    <i class="bi bi-folder-symlink"></i><span>Proyectos</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= base_url('admin/servicios') ?>" class="<?= url_is('admin/servicios*') ? 'active' : '' ?>">
+                    <i class="bi bi-gear-wide-connected"></i><span>Servicios</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= base_url('admin/contactos') ?>" class="<?= url_is('admin/contactos*') ? 'active' : '' ?>">
+                    <i class="bi bi-chat-left-dots"></i>
+                    <span>Contactos</span>
+                    <span class="badge-count" id="badge-contactos" style="display:none"></span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
+                    <i class="bi bi-shield-lock"></i><span>Roles</span>
                 </a>
             </li>
             <?php endif; ?>
@@ -75,47 +120,55 @@
         <div class="sidebar-footer">
             <?php if (session()->get('admin_logueado')): ?>
                 <div class="user-info">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-person-circle fs-4 me-2"></i>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="user-avatar">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
                         <div class="flex-grow-1 text-truncate">
-                            <small class="d-block text-muted">Admin</small>
-                            <span class="fw-semibold small"><?= esc(session()->get('admin_email')) ?></span>
+                            <small class="d-block fw-semibold user-name"><?= esc(session()->get('admin_nombre') ?? 'Admin') ?></small>
+                            <small class="text-muted user-email"><?= esc(session()->get('admin_email') ?? '') ?></small>
                         </div>
                     </div>
-                    <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm w-100">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Cerrar Sesión</span>
-                    </a>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary flex-grow-1" id="btn-simulate-error" title="Simular error">
+                            <i class="bi bi-bug"></i> <span>Error</span>
+                        </button>
+                        <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-danger flex-grow-1">
+                            <i class="bi bi-box-arrow-right"></i> <span>Salir</span>
+                        </a>
+                    </div>
                 </div>
             <?php else: ?>
                 <a href="<?= base_url('login') ?>" class="btn btn-primary w-100">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Iniciar Sesión</span>
+                    <i class="bi bi-box-arrow-in-right"></i><span class="ms-2">Iniciar Sesión</span>
                 </a>
             <?php endif; ?>
         </div>
 
-        <div class="theme-toggle" id="theme-switch">
+        <div class="theme-toggle" id="theme-switch" title="Cambiar tema">
             <i class="bi bi-moon-stars" id="theme-icon"></i>
             <span class="ms-2 theme-label">Tema Oscuro</span>
         </div>
     </nav>
 
+    <!-- ======================== CONTENT ======================== -->
     <div id="content">
-        <div class="d-flex align-items-center mb-4">
-            <button class="btn btn-outline-secondary d-md-none me-3" id="mobile-opener">
-                <i class="bi bi-list"></i>
+        <!-- Topbar -->
+        <div class="topbar d-flex align-items-center mb-4 gap-3">
+            <button class="btn btn-outline-secondary d-md-none" id="mobile-opener">
+                <i class="bi bi-list fs-5"></i>
             </button>
-            
+
+            <!-- Breadcrumbs -->
             <nav aria-label="breadcrumb" class="flex-grow-1">
                 <ol class="breadcrumb mb-0">
-                    <?php if (isset($breadcrumbs)): ?>
+                    <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
                         <?php foreach ($breadcrumbs as $crumb): ?>
-                            <li class="breadcrumb-item <?= $crumb['active'] ? 'active' : '' ?>">
-                                <?php if (!$crumb['active']): ?>
-                                    <a href="<?= $crumb['url'] ?>"><?= $crumb['name'] ?></a>
+                            <li class="breadcrumb-item <?= ($crumb['active'] ?? false) ? 'active' : '' ?>">
+                                <?php if (!($crumb['active'] ?? false)): ?>
+                                    <a href="<?= $crumb['url'] ?>"><?= esc($crumb['name']) ?></a>
                                 <?php else: ?>
-                                    <?= $crumb['name'] ?>
+                                    <?= esc($crumb['name']) ?>
                                 <?php endif; ?>
                             </li>
                         <?php endforeach; ?>
@@ -123,7 +176,25 @@
                 </ol>
             </nav>
 
-            <div class="ms-auto d-md-none">
+            <!-- Notificaciones (solo admin) -->
+            <?php if (session()->get('admin_logueado')): ?>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary position-relative" id="btn-notificaciones" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-bell fs-5"></i>
+                    <span class="badge-notif" id="badge-noti" style="display:none">0</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg noti-dropdown" style="width:340px;max-height:420px;overflow-y:auto">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                        <strong class="small">Notificaciones</strong>
+                        <button class="btn btn-link btn-sm p-0 text-muted" id="btn-mark-all-read">Marcar todas leídas</button>
+                    </div>
+                    <div id="noti-list"><p class="text-center text-muted small py-3">Cargando...</p></div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Acceso rápido móvil -->
+            <div class="d-md-none">
                 <?php if (session()->get('admin_logueado')): ?>
                     <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-box-arrow-right"></i>
@@ -136,27 +207,47 @@
             </div>
         </div>
 
+        <!-- Contenido principal -->
         <div class="animate-fade-in">
             <?= $this->renderSection('content') ?>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const html = document.documentElement;
-const sidebar = document.getElementById('sidebar');
-const content = document.getElementById('content');
-const overlay = document.getElementById('sidebar-overlay');
-const toggleBtn = document.getElementById('sidebar-toggle');
-const mobileOpener = document.getElementById('mobile-opener');
+<!-- Modal simulador de errores -->
+<?php if (session()->get('admin_logueado')): ?>
+<div class="modal fade" id="modalSimularError" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning bg-opacity-10">
+                <h5 class="modal-title"><i class="bi bi-bug me-2"></i>Simulador de Errores</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Simula errores controlados para visualizar el comportamiento en desarrollo vs producción. <strong>No afecta la aplicación.</strong></p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger" onclick="simularError('generico')"><i class="bi bi-exclamation-triangle me-2"></i>Error 500 - Genérico</button>
+                    <button class="btn btn-outline-warning" onclick="simularError('db')"><i class="bi bi-database-x me-2"></i>Error 503 - Base de Datos</button>
+                    <button class="btn btn-outline-info" onclick="simularError('auth')"><i class="bi bi-shield-x me-2"></i>Error 401 - Autenticación</button>
+                    <button class="btn btn-outline-secondary" onclick="simularError('notfound')"><i class="bi bi-search me-2"></i>Error 404 - No Encontrado</button>
+                </div>
+                <div id="error-result" class="mt-3" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('js/toast.js') ?>"></script>
+<script>
+// ===== TEMA =====
+const html = document.documentElement;
 const savedTheme = localStorage.getItem('theme') || 'light';
 setTheme(savedTheme);
 
 document.getElementById('theme-switch').addEventListener('click', () => {
-    const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
+    setTheme(html.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
 });
 
 function setTheme(theme) {
@@ -164,21 +255,21 @@ function setTheme(theme) {
     localStorage.setItem('theme', theme);
     const icon = document.getElementById('theme-icon');
     const label = document.querySelector('.theme-label');
-    if (theme === 'dark') {
-        icon.className = 'bi bi-sun';
-        if (label) label.textContent = 'Tema Claro';
-    } else {
-        icon.className = 'bi bi-moon-stars';
-        if (label) label.textContent = 'Tema Oscuro';
-    }
+    icon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    if (label) label.textContent = theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro';
 }
+
+// ===== SIDEBAR =====
+const sidebar = document.getElementById('sidebar');
+const content = document.getElementById('content');
+const overlay = document.getElementById('sidebar-overlay');
 
 if (localStorage.getItem('sidebarState') === 'collapsed' && window.innerWidth > 768) {
     sidebar.classList.add('collapsed');
     content.classList.add('expanded');
 }
 
-toggleBtn.addEventListener('click', () => {
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
     if (window.innerWidth > 768) {
         sidebar.classList.toggle('collapsed');
         content.classList.toggle('expanded');
@@ -189,6 +280,7 @@ toggleBtn.addEventListener('click', () => {
     }
 });
 
+const mobileOpener = document.getElementById('mobile-opener');
 if (mobileOpener) {
     mobileOpener.addEventListener('click', () => {
         sidebar.classList.add('mobile-show');
@@ -200,6 +292,102 @@ overlay.addEventListener('click', () => {
     sidebar.classList.remove('mobile-show');
     overlay.classList.remove('show');
 });
+
+// ===== BÚSQUEDA SIDEBAR =====
+const searchInput = document.getElementById('sidebar-search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase();
+        document.querySelectorAll('#sidebar-nav li:not(.nav-section)').forEach(li => {
+            const text = li.textContent.toLowerCase();
+            li.style.display = q === '' || text.includes(q) ? '' : 'none';
+        });
+    });
+}
+
+<?php if (session()->get('admin_logueado')): ?>
+// ===== NOTIFICACIONES =====
+function cargarNotificaciones() {
+    fetch('<?= base_url('admin/notificaciones') ?>')
+        .then(r => r.json())
+        .then(data => {
+            const badge = document.getElementById('badge-noti');
+            const list  = document.getElementById('noti-list');
+            if (data.no_leidas > 0) {
+                badge.style.display = 'inline-flex';
+                badge.textContent   = data.no_leidas > 9 ? '9+' : data.no_leidas;
+            } else {
+                badge.style.display = 'none';
+            }
+            if (!data.data || data.data.length === 0) {
+                list.innerHTML = '<p class="text-center text-muted small py-3">Sin notificaciones</p>';
+                return;
+            }
+            list.innerHTML = data.data.map(n => `
+                <div class="noti-item px-3 py-2 border-bottom ${n.leido ? '' : 'noti-unread'}" data-id="${n.id}">
+                    <div class="d-flex align-items-start gap-2">
+                        <span class="noti-dot noti-${n.tipo}"></span>
+                        <div class="flex-grow-1">
+                            <div class="small fw-semibold">${escapeHtml(n.titulo)}</div>
+                            <div class="small text-muted">${escapeHtml(n.mensaje || '')}</div>
+                            <div class="tiny text-muted">${formatDate(n.created_at)}</div>
+                        </div>
+                        ${!n.leido ? `<button class="btn btn-link btn-sm p-0 text-muted btn-mark-read" data-id="${n.id}" title="Marcar leída"><i class="bi bi-check2"></i></button>` : ''}
+                    </div>
+                </div>`).join('');
+
+            list.querySelectorAll('.btn-mark-read').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    fetch(`<?= base_url('admin/notificaciones/leida/') ?>${btn.dataset.id}`, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+                        .then(() => cargarNotificaciones());
+                });
+            });
+        }).catch(() => {});
+}
+
+document.getElementById('btn-mark-all-read')?.addEventListener('click', () => {
+    fetch('<?= base_url('admin/notificaciones/todas-leidas') ?>', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(() => cargarNotificaciones());
+});
+
+document.getElementById('btn-notificaciones')?.addEventListener('click', cargarNotificaciones);
+cargarNotificaciones();
+setInterval(cargarNotificaciones, 30000);
+
+// ===== SIMULADOR DE ERRORES =====
+document.getElementById('btn-simulate-error')?.addEventListener('click', () => {
+    new bootstrap.Modal(document.getElementById('modalSimularError')).show();
+});
+
+function simularError(tipo) {
+    const result = document.getElementById('error-result');
+    result.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm text-warning"></div> Simulando...</div>';
+    result.style.display = 'block';
+    fetch(`<?= base_url('admin/simular-error') ?>?tipo=${tipo}`)
+        .then(r => r.json())
+        .then(data => {
+            result.innerHTML = `
+                <div class="alert alert-warning mb-0">
+                    <strong>${escapeHtml(data.tipo)}</strong> (HTTP ${data.codigo_http})<br>
+                    <small>${escapeHtml(data.mensaje)}</small><br>
+                    <small class="text-muted">Entorno: <code>${data.entorno}</code> | Stack visible: ${data.detalles_visibles ? 'Sí' : 'No (producción)'}</small>
+                </div>`;
+            Toast.warning(`Error simulado: ${data.tipo}`);
+        })
+        .catch(() => { result.innerHTML = '<div class="alert alert-danger">Error de red</div>'; });
+}
+<?php endif; ?>
+
+// ===== HELPERS =====
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatDate(str) {
+    if (!str) return '';
+    return new Date(str).toLocaleString('es-ES', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
 </script>
 </body>
 </html>

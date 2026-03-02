@@ -92,9 +92,12 @@
                         <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
                     </button>
 
-                    <div class="text-center">
+                    <div class="d-flex justify-content-between align-items-center">
                         <a href="<?= base_url('/') ?>" class="text-decoration-none text-muted small">
                             <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+                        </a>
+                        <a href="<?= base_url('recuperar-password') ?>" class="text-decoration-none text-primary small">
+                            <i class="bi bi-key me-1"></i>¿Olvidaste tu contraseña?
                         </a>
                     </div>
                 </form>

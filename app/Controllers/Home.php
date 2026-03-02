@@ -28,12 +28,58 @@ class Home extends BaseController
     public function index(): string
     {
         try {
-            $data['breadcrumbs'] = [
-                ['name' => 'Inicio', 'url' => base_url(), 'active' => true]
+            $data = [
+                'breadcrumbs' => [['name' => 'Inicio', 'url' => base_url(), 'active' => true]],
+                'carrusel'    => [],
+                'servicios'   => [],
+                'sobre_mi'    => [],
             ];
+
+            if (!$this->configError) {
+                try {
+                    $data['carrusel'] = (new \App\Models\CarruselModel())->obtenerImagenes();
+                } catch (\Throwable $e) { log_message('warning', 'Carrusel: ' . $e->getMessage()); }
+                try {
+                    $data['servicios'] = (new \App\Models\ServicioModel())->obtenerActivos();
+                } catch (\Throwable $e) { log_message('warning', 'Servicios: ' . $e->getMessage()); }
+                try {
+                    $data['sobre_mi'] = (new \App\Models\SobreMiModel())->obtener();
+                } catch (\Throwable $e) { log_message('warning', 'SobreMi: ' . $e->getMessage()); }
+            }
+
             return view('home_view', $data);
         } catch (\Throwable $e) {
             log_message('critical', 'Error in index: ' . $e->getMessage());
+            return view('errors/html/error_500');
+        }
+    }
+
+    public function portafolio(): string
+    {
+        try {
+            $data['breadcrumbs'] = [
+                ['name' => 'Inicio',    'url' => base_url(), 'active' => false],
+                ['name' => 'Portafolio','url' => '#',        'active' => true],
+            ];
+            return view('proyectos_public_view', $data);
+        } catch (\Throwable $e) {
+            log_message('critical', 'portafolio: ' . $e->getMessage());
+            return view('errors/html/error_500');
+        }
+    }
+
+    public function sobreMi(): string
+    {
+        try {
+            $data = ['sobre_mi' => [], 'breadcrumbs' => [
+                ['name' => 'Inicio',   'url' => base_url(), 'active' => false],
+                ['name' => 'Sobre Mí', 'url' => '#',        'active' => true],
+            ]];
+            if (!$this->configError) {
+                try { $data['sobre_mi'] = (new \App\Models\SobreMiModel())->obtener(); } catch (\Throwable $e) {}
+            }
+            return view('home_view', $data);
+        } catch (\Throwable $e) {
             return view('errors/html/error_500');
         }
     }
@@ -239,11 +285,16 @@ class Home extends BaseController
     public function servicios(): string
     {
         try {
+            $data = ['servicios' => []];
             $data['breadcrumbs'] = [
-                ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
-                ['name' => 'Catálogo', 'url' => '#', 'active' => false],
-                ['name' => 'Servicios', 'url' => '#', 'active' => true]
+                ['name' => 'Inicio',    'url' => base_url(), 'active' => false],
+                ['name' => 'Servicios', 'url' => '#',        'active' => true],
             ];
+            if (!$this->configError) {
+                try {
+                    $data['servicios'] = (new \App\Models\ServicioModel())->obtenerActivos();
+                } catch (\Throwable $e) { log_message('warning', 'Servicios public: ' . $e->getMessage()); }
+            }
             return view('servicios_view', $data);
         } catch (\Throwable $e) {
             log_message('critical', 'Error in servicios: ' . $e->getMessage());
@@ -251,15 +302,24 @@ class Home extends BaseController
         }
     }
 
-    public function detalles(): string
+    public function detalles(int $id = 0): string
     {
         try {
+            $data = ['servicio' => null, 'otros_servicios' => []];
             $data['breadcrumbs'] = [
-                ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
-                ['name' => 'Catálogo', 'url' => '#', 'active' => false],
+                ['name' => 'Inicio',    'url' => base_url(),            'active' => false],
                 ['name' => 'Servicios', 'url' => base_url('servicios'), 'active' => false],
-                ['name' => 'Detalles', 'url' => '#', 'active' => true]
+                ['name' => 'Detalles',  'url' => '#',                   'active' => true],
             ];
+            if ($id > 0 && !$this->configError) {
+                try {
+                    $model = new \App\Models\ServicioModel();
+                    $data['servicio'] = $model->obtenerPorId($id);
+                    $todos = $model->obtenerActivos();
+                    $otros = array_values(array_filter($todos, fn($s) => (int)$s['id'] !== $id));
+                    $data['otros_servicios'] = array_slice($otros, 0, 4);
+                } catch (\Throwable $e) { log_message('warning', 'Detalles: ' . $e->getMessage()); }
+            }
             return view('detalles_view', $data);
         } catch (\Throwable $e) {
             log_message('critical', 'Error in detalles: ' . $e->getMessage());
@@ -267,21 +327,39 @@ class Home extends BaseController
         }
     }
 
-    public function contratar(): string
+    public function contratar(int $id = 0): string
     {
         try {
-            $data['breadcrumbs'] = [
-                ['name' => 'Inicio', 'url' => base_url(), 'active' => false],
-                ['name' => 'Catálogo', 'url' => '#', 'active' => false],
-                ['name' => 'Servicios', 'url' => base_url('servicios'), 'active' => false],
-                ['name' => 'Detalles', 'url' => base_url('detalles'), 'active' => false],
-                ['name' => 'Contratación', 'url' => '#', 'active' => true]
+            $data = [
+                'servicio'         => null,
+                'paypal_link'      => getenv('PAYPAL_LINK') ?: '',
+                'mercadopago_link' => getenv('MERCADOPAGO_LINK') ?: '',
             ];
+            $data['breadcrumbs'] = [
+                ['name' => 'Inicio',    'url' => base_url(),            'active' => false],
+                ['name' => 'Servicios', 'url' => base_url('servicios'), 'active' => false],
+                ['name' => 'Contratar', 'url' => '#',                   'active' => true],
+            ];
+            if ($id > 0 && !$this->configError) {
+                try {
+                    $data['servicio'] = (new \App\Models\ServicioModel())->obtenerPorId($id);
+                } catch (\Throwable $e) { log_message('warning', 'Contratar: ' . $e->getMessage()); }
+            }
             return view('contratar_view', $data);
         } catch (\Throwable $e) {
             log_message('critical', 'Error in contratar: ' . $e->getMessage());
             return view('errors/html/error_500');
         }
+    }
+
+    public function prueba_error(): string
+    {
+        // Este método está disponible en desarrollo para ver el comportamiento de errores
+        $env = getenv('CI_ENVIRONMENT') ?: 'production';
+        if ($env !== 'development') {
+            return redirect()->to('/')->getBody() ?? '';
+        }
+        throw new \RuntimeException('Error de prueba generado manualmente desde Home::prueba_error');
     }
 
     private function verificarCaptcha($response): bool
