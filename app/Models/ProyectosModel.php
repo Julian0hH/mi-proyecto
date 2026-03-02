@@ -16,8 +16,8 @@ class ProyectosModel extends Model
         parent::__construct();
         $this->supabaseUrl = getenv('SUPABASE_URL');
         $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
-                          ?: getenv('SUPABASE_KEY')
                           ?: getenv('SUPABASE_SERVICE_KEY')
+                          ?: getenv('SUPABASE_KEY')
                           ?: '';
     }
 
@@ -41,7 +41,12 @@ class ProyectosModel extends Model
             throw new \Exception("Error al obtener proyectos: HTTP {$httpCode}");
         }
 
+        // BUG CORREGIDO: si curl falla o Supabase devuelve body vacío,
+        // json_decode() retorna null y el foreach lanza Fatal Error en PHP 8.
         $proyectos = json_decode($response, true);
+        if (!is_array($proyectos)) {
+            throw new \Exception("Respuesta inválida de Supabase al obtener proyectos");
+        }
 
         foreach ($proyectos as &$proyecto) {
             // PostgREST ya decodifica JSONB → llega como array; json_decode() en PHP 8 lanza TypeError con arrays
@@ -79,7 +84,12 @@ class ProyectosModel extends Model
             throw new \Exception("Error al crear proyecto: HTTP {$httpCode}");
         }
 
-        return json_decode($response, true)[0];
+        // BUG CORREGIDO: json_decode()[0] lanza TypeError en PHP 8 si el body no es un array.
+        $result = json_decode($response, true);
+        if (!is_array($result) || empty($result[0])) {
+            throw new \Exception("Respuesta inválida de Supabase al crear proyecto");
+        }
+        return $result[0];
     }
 
     public function actualizarProyecto($id, $data)

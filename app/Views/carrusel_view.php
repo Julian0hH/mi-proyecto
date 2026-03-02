@@ -137,7 +137,7 @@ async function cargarImagenes() {
         const response = await fetch('<?= base_url('carrusel/listar') ?>');
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             imagenes = data.data;
             renderizarCarrusel();
             renderizarTabla();
@@ -253,7 +253,7 @@ document.getElementById('formSubirImagen')?.addEventListener('submit', async (e)
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Imagen subida correctamente', 'success');
             e.target.reset();
             cargarImagenes();
@@ -286,7 +286,7 @@ async function guardarEdicion() {
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Imagen actualizada', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
             cargarImagenes();
@@ -306,7 +306,7 @@ async function eliminarImagen(id) {
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Imagen eliminada', 'success');
             cargarImagenes();
         }

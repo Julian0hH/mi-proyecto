@@ -257,6 +257,17 @@
 
         <!-- Contenido principal -->
         <div class="animate-fade-in">
+            <?php
+            /*
+             * BUG CORREGIDO: Bootstrap JS se cargaba DESPUÉS de renderSection('content').
+             * Todas las vistas tienen inline <script> con `new bootstrap.Modal(...)` que
+             * se ejecutan en el momento que el HTML se parsea — antes de que el bundle
+             * de Bootstrap estuviera disponible → "bootstrap is not defined".
+             * Solución: cargar Bootstrap bundle ANTES de renderizar el contenido.
+             */
+            ?>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="<?= base_url('js/toast.js') ?>"></script>
             <?= $this->renderSection('content') ?>
         </div>
     </div>
@@ -286,8 +297,6 @@
 </div>
 <?php endif; ?>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= base_url('js/toast.js') ?>"></script>
 <script>
 // ===== TEMA =====
 const html = document.documentElement;

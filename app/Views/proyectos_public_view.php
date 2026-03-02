@@ -21,7 +21,7 @@ async function cargarProyectos() {
         const response = await fetch('<?= base_url('proyectos/listar') ?>');
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             renderizarProyectos(data.data);
         }
     } catch (error) {
