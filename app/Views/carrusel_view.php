@@ -243,10 +243,14 @@ document.getElementById('formSubirImagen')?.addEventListener('submit', async (e)
     const formData = new FormData();
     formData.append('titulo', document.getElementById('titulo').value);
     formData.append('descripcion', document.getElementById('descripcion').value);
-    formData.append('imagen', document.getElementById('imagen').files[0]);
+    // BUG CORREGIDO: el campo se llamaba 'imagen' (singular) pero el controller
+    // usa getFileMultiple('imagenes') → nunca recibía el archivo.
+    formData.append('imagenes[]', document.getElementById('imagen').files[0]);
     
     try {
-        const response = await fetch('<?= base_url('carrusel/subir') ?>', {
+        // BUG CORREGIDO: la URL apuntaba a 'carrusel/subir' que no existe.
+        // La ruta real está definida en el grupo admin: 'admin/carrusel/subir'
+        const response = await fetch('<?= base_url('admin/carrusel/subir') ?>', {
             method: 'POST',
             body: formData
         });
@@ -279,7 +283,8 @@ async function guardarEdicion() {
     formData.append('descripcion', document.getElementById('editarDescripcion').value);
     
     try {
-        const response = await fetch(`<?= base_url('carrusel/actualizar/') ?>${id}`, {
+        // BUG CORREGIDO: URL corregida a admin/carrusel/actualizar/
+        const response = await fetch(`<?= base_url('admin/carrusel/actualizar/') ?>${id}`, {
             method: 'POST',
             body: formData
         });
@@ -300,7 +305,8 @@ async function eliminarImagen(id) {
     if (!confirm('¿Eliminar esta imagen?')) return;
     
     try {
-        const response = await fetch(`<?= base_url('carrusel/eliminar/') ?>${id}`, {
+        // BUG CORREGIDO: URL corregida a admin/carrusel/eliminar/
+        const response = await fetch(`<?= base_url('admin/carrusel/eliminar/') ?>${id}`, {
             method: 'DELETE'
         });
         

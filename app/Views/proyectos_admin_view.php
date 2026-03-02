@@ -220,7 +220,7 @@ async function cargarProyectos() {
         const response = await fetch('<?= base_url('proyectos/listar') ?>');
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             proyectos = data.data;
             renderizarTabla();
             
@@ -333,14 +333,14 @@ document.getElementById('formCrearProyecto').addEventListener('submit', async (e
     }
     
     try {
-        const response = await fetch('<?= base_url('proyectos/crear') ?>', {
+        const response = await fetch('<?= base_url('admin/proyectos/crear') ?>', {
             method: 'POST',
             body: formData
         });
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Proyecto creado exitosamente', 'success');
             e.target.reset();
             cargarProyectos();
@@ -370,14 +370,14 @@ async function guardarEdicion() {
     formData.append('tecnologias', document.getElementById('editarTecnologias').value);
     
     try {
-        const response = await fetch(`<?= base_url('proyectos/actualizar/') ?>${id}`, {
+        const response = await fetch(`<?= base_url('admin/proyectos/actualizar/') ?>${id}`, {
             method: 'POST',
             body: formData
         });
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Proyecto actualizado', 'success');
             bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
             cargarProyectos();
@@ -424,13 +424,13 @@ async function eliminarProyecto(id) {
     if (!confirm('¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer y eliminará todas sus imágenes.')) return;
     
     try {
-        const response = await fetch(`<?= base_url('proyectos/eliminar/') ?>${id}`, {
+        const response = await fetch(`<?= base_url('admin/proyectos/eliminar/') ?>${id}`, {
             method: 'DELETE'
         });
         
         const data = await response.json();
         
-        if (data.status === 'success') {
+        if (data.success === true) {
             mostrarAlerta('Proyecto eliminado correctamente', 'success');
             cargarProyectos();
         }
