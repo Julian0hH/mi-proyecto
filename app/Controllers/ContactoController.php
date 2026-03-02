@@ -118,12 +118,36 @@ class ContactoController extends BaseController
                 'fecha_desde'  => $this->request->getGet('fecha_desde') ?: '',
                 'fecha_hasta'  => $this->request->getGet('fecha_hasta') ?: '',
             ];
-            $page    = max(1, (int)($this->request->getGet('page') ?: 1));
-            $result  = $this->model->obtenerFiltrado($filters, $page, 5);
-            return $this->response->setJSON(['success' => true, ...$result]);
+
+            $page = max(1, (int)($this->request->getGet('page') ?: 1));
+
+            $result = $this->model->obtenerFiltrado($filters, $page, 5);
+
+            if (!is_array($result)) {
+                $result = [
+                    'data' => [],
+                    'total' => 0,
+                    'total_pages' => 1,
+                    'page' => 1
+                ];
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => $result['data'],
+                'total' => $result['total'],
+                'total_pages' => $result['total_pages'],
+                'page' => $result['page']
+            ]);
+
         } catch (\Throwable $e) {
-            log_message('error', 'ContactoController::listar ' . $e->getMessage());
-            return $this->response->setJSON(['success' => false, 'data' => [], 'total' => 0, 'total_pages' => 1, 'page' => 1]);
+            return $this->response->setJSON([
+                'success' => false,
+                'data' => [],
+                'total' => 0,
+                'total_pages' => 1,
+                'page' => 1
+            ]);
         }
     }
 

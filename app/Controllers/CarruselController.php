@@ -41,32 +41,40 @@ class CarruselController extends BaseController
     public function subir()
     {
         try {
-            $file = $this->request->getFile('imagen');
+            $files = $this->request->getFileMultiple('imagenes');
             $titulo = $this->request->getPost('titulo');
             $descripcion = $this->request->getPost('descripcion');
-
-            if (!$file->isValid()) {
+    
+            if (!$files || count($files) === 0) {
                 return $this->response->setStatusCode(400)->setJSON([
                     'status' => 'error',
-                    'message' => 'Archivo no válido'
+                    'message' => 'No se enviaron imágenes'
                 ]);
             }
-
+    
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            if (!in_array($file->getMimeType(), $allowedTypes)) {
-                return $this->response->setStatusCode(400)->setJSON([
-                    'status' => 'error',
-                    'message' => 'Solo se permiten imágenes JPG, PNG o WEBP'
-                ]);
+            $resultados = [];
+    
+            foreach ($files as $file) {
+    
+                if (!$file->isValid() || $file->hasMoved()) {
+                    continue;
+                }
+    
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    continue;
+                }
+    
+                $resultado = $this->carruselModel->subirImagen($file, $titulo, $descripcion);
+                $resultados[] = $resultado;
             }
-
-            $resultado = $this->carruselModel->subirImagen($file, $titulo, $descripcion);
-
+    
             return $this->response->setJSON([
                 'status' => 'success',
-                'message' => 'Imagen subida correctamente',
-                'data' => $resultado
+                'message' => 'Imágenes subidas correctamente',
+                'data' => $resultados
             ]);
+    
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setJSON([
                 'status' => 'error',

@@ -99,6 +99,21 @@ class ProyectosController extends BaseController
                 'link' => $this->request->getPost('link'),
                 'tecnologias' => $this->request->getPost('tecnologias')
             ];
+            $imagenes = [];
+            $files = $this->request->getFileMultiple('imagenes');
+
+            if ($files) {
+                foreach ($files as $file) {
+                    if ($file->isValid() && !$file->hasMoved()) {
+                        $rutaStorage = $this->proyectosModel->subirImagen($file);
+                        $imagenes[] = $rutaStorage;
+                    }
+                }
+            }
+
+            if (!empty($imagenes)) {
+                $data['imagenes'] = json_encode($imagenes);
+            }
 
             $this->proyectosModel->actualizarProyecto($id, $data);
 
@@ -106,11 +121,11 @@ class ProyectosController extends BaseController
                 'status' => 'success',
                 'message' => 'Proyecto actualizado correctamente'
             ]);
+
         } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ]);
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON(['error' => $e->getMessage()]);
         }
     }
 

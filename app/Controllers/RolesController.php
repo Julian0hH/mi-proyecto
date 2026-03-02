@@ -42,19 +42,30 @@ class RolesController extends BaseController
     public function actualizarRol(int $id): ResponseInterface
     {
         try {
-            $permisosPost = $this->request->getPost('permisos') ?: [];
-            $permisos = [];
+            $permisosPost = $this->request->getPost('permisos') ?? [];
+    
             $modulos = ['proyectos','carrusel','usuarios','roles','servicios','sobre_mi','contactos','notificaciones'];
+            $permisos = [];
+    
             foreach ($modulos as $m) {
-                $permisos[$m] = isset($permisosPost[$m]) && $permisosPost[$m] === '1';
+                $permisos[$m] = isset($permisosPost[$m]);
             }
-            $ok = $this->model->actualizar($id, [
+    
+            $this->model->actualizar($id, [
                 'descripcion' => $this->request->getPost('descripcion'),
                 'permisos'    => json_encode($permisos),
             ]);
-            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Rol actualizado' : 'Error al actualizar']);
+    
+            return $this->response->setJSON([
+                'success' => true,
+                'mensaje' => 'Rol actualizado'
+            ]);
+    
         } catch (\Throwable $e) {
-            return $this->response->setJSON(['success' => false, 'errors' => [$e->getMessage()]]);
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => [$e->getMessage()]
+            ]);
         }
     }
 

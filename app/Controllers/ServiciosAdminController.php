@@ -70,18 +70,26 @@ class ServiciosAdminController extends BaseController
     public function actualizar(int $id): ResponseInterface
     {
         try {
-            $ok = $this->model->actualizar($id, [
+            $this->model->actualizar($id, [
                 'titulo'            => $this->request->getPost('titulo'),
                 'descripcion'       => $this->request->getPost('descripcion'),
                 'descripcion_larga' => $this->request->getPost('descripcion_larga') ?: null,
                 'icono'             => $this->request->getPost('icono') ?: 'bi-gear',
                 'color'             => $this->request->getPost('color') ?: 'primary',
                 'orden'             => (int)($this->request->getPost('orden') ?: 0),
-                'activo'            => $this->request->getPost('activo') === '1',
+                'activo'            => (bool)$this->request->getPost('activo'),
             ]);
-            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Servicio actualizado' : 'Error al actualizar']);
+    
+            return $this->response->setJSON([
+                'success' => true,
+                'mensaje' => 'Servicio actualizado'
+            ]);
+    
         } catch (\Throwable $e) {
-            return $this->response->setJSON(['success' => false, 'errors' => ['Error interno del servidor']]);
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => ['Error interno del servidor']
+            ]);
         }
     }
 
