@@ -58,25 +58,38 @@ class AuthController extends BaseController
                            ->with('error', 'Verificación de seguridad fallida. Intenta nuevamente.');
         }
 
-        $email = $this->request->getPost('email');
+        $email    = $this->request->getPost('email');
         $password = $this->request->getPost('password');
 
-        $adminEmail = getenv('ADMIN_EMAIL');
-        $adminPassword = getenv('ADMIN_PASSWORD');
+        $model   = new \App\Models\UsuarioModel();
+        $usuario = $model->buscarPorEmail($email);
 
-        if ($email === $adminEmail && $password === $adminPassword) {
-            session()->set([
-                'admin_logueado' => true,
-                'admin_email' => $email
-            ]);
-
-            return redirect()->to(base_url('admin/proyectos'))
-                           ->with('success', '¡Bienvenido, Admin!');
-        } else {
+        if (empty($usuario) || !password_verify($password, $usuario['password_hash'] ?? '')) {
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Credenciales incorrectas');
         }
+
+        $rolNombre = $usuario['roles']['nombre'] ?? 'usuario';
+
+        if ($rolNombre !== 'admin') {
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'No tienes permisos para acceder al panel de administración');
+        }
+
+        $model->actualizarUltimoLogin($usuario['id']);
+
+        session()->set([
+            'admin_logueado' => true,
+            'admin_id'       => $usuario['id'],
+            'admin_email'    => $usuario['email'],
+            'admin_nombre'   => $usuario['nombre'],
+            'admin_rol'      => $rolNombre,
+        ]);
+
+        return redirect()->to(base_url('admin/proyectos'))
+                       ->with('success', '¡Bienvenido, ' . $usuario['nombre'] . '!');
     }
 
     private function verificarCaptcha($response): bool
