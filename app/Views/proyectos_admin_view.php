@@ -152,6 +152,11 @@
                         <input type="text" class="form-control" id="editarTecnologias">
                         <div class="form-text">Separadas por comas</div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">AGREGAR IMÁGENES</label>
+                        <input type="file" class="form-control" id="editarImagenes" accept="image/*" multiple>
+                        <div class="form-text">Opcional — se agregarán a las existentes</div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer border-0">
@@ -431,29 +436,37 @@ function abrirModalEditar(proyecto) {
     document.getElementById('editarTecnologias').value = Array.isArray(proyecto.tecnologias)
         ? proyecto.tecnologias.join(', ')
         : (proyecto.tecnologias || '');
-    new bootstrap.Modal(document.getElementById('modalEditar')).show();
+    document.getElementById('editarImagenes').value = '';
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar')).show();
 }
 
 async function guardarEdicion() {
     const id = document.getElementById('editarId').value;
     const formData = new FormData();
-    formData.append('titulo', document.getElementById('editarTitulo').value);
-    formData.append('descripcion', document.getElementById('editarDescripcion').value);
-    formData.append('link', document.getElementById('editarLink').value);
-    formData.append('tecnologias', document.getElementById('editarTecnologias').value);
-    
+    formData.append('titulo',       document.getElementById('editarTitulo').value);
+    formData.append('descripcion',  document.getElementById('editarDescripcion').value);
+    formData.append('link',         document.getElementById('editarLink').value);
+    formData.append('tecnologias',  document.getElementById('editarTecnologias').value);
+
+    const files = document.getElementById('editarImagenes').files;
+    for (let i = 0; i < files.length; i++) {
+        formData.append('imagenes[]', files[i]);
+    }
+
     try {
         const response = await fetch(`<?= base_url('admin/proyectos/actualizar/') ?>${id}`, {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success === true) {
             mostrarAlerta('Proyecto actualizado', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar')).hide();
             cargarProyectos();
+        } else {
+            mostrarAlerta('Error: ' + data.message, 'danger');
         }
     } catch (error) {
         mostrarAlerta('Error al actualizar', 'danger');
@@ -461,7 +474,7 @@ async function guardarEdicion() {
 }
 
 function verImagenes(proyecto) {
-    const modal = new bootstrap.Modal(document.getElementById('modalImagenes'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalImagenes'));
     document.getElementById('tituloProyectoImagenes').textContent = proyecto.titulo;
     
     const galeria = document.getElementById('galeriaImagenes');

@@ -145,11 +145,13 @@ class Home extends BaseController
             }
 
             $rules = [
-                'nombre' => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
-                'email'  => [
+                'nombre'    => 'required|min_length[3]|max_length[50]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/]',
+                'email'     => [
                     'rules'  => 'required|max_length[100]|regex_match[/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/]',
                     'errors' => ['regex_match' => 'Formato de email inválido.']
                 ],
+                'password'  => 'required|min_length[8]|max_length[100]',
+                'pass_conf' => 'required|matches[password]',
                 'g-recaptcha-response' => 'required'
             ];
 
@@ -171,8 +173,9 @@ class Home extends BaseController
                     'Prefer'        => 'return=minimal',
                 ],
                 'json' => [
-                    'nombre' => $this->request->getPost('nombre'),
-                    'email'  => $this->request->getPost('email'),
+                    'nombre'   => $this->request->getPost('nombre'),
+                    'email'    => $this->request->getPost('email'),
+                    'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
                 ],
                 'timeout' => 10,
                 'http_errors' => false

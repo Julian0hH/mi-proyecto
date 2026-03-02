@@ -56,11 +56,12 @@ class ProyectosController extends BaseController
     public function crear()
     {
         try {
+            $tecStr = $this->request->getPost('tecnologias') ?: '';
             $data = [
                 'titulo'      => $this->request->getPost('titulo'),
                 'descripcion' => $this->request->getPost('descripcion'),
-                'link'        => $this->request->getPost('link'),
-                'tecnologias' => $this->request->getPost('tecnologias'),
+                'link'        => $this->request->getPost('link') ?: null,
+                'tecnologias' => array_values(array_filter(array_map('trim', explode(',', $tecStr)))),
             ];
 
             // BUG CORREGIDO #2: NO hacer json_encode aquí.
@@ -99,11 +100,12 @@ class ProyectosController extends BaseController
     public function actualizar($id)
     {
         try {
+            $tecStr = $this->request->getPost('tecnologias') ?: '';
             $data = [
                 'titulo'      => $this->request->getPost('titulo'),
                 'descripcion' => $this->request->getPost('descripcion'),
-                'link'        => $this->request->getPost('link'),
-                'tecnologias' => $this->request->getPost('tecnologias'),
+                'link'        => $this->request->getPost('link') ?: null,
+                'tecnologias' => array_values(array_filter(array_map('trim', explode(',', $tecStr)))),
             ];
 
             $imagenes = [];

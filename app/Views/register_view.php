@@ -85,6 +85,38 @@
                         </div>
                     </div>
 
+                    <!-- Contraseña -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" id="inp-reg-password" class="form-control"
+                                   required minlength="8" maxlength="100"
+                                   placeholder="Mínimo 8 caracteres"
+                                   oninput="validarPassword()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePass('inp-reg-password','ico-pass1')">
+                                <i class="bi bi-eye" id="ico-pass1"></i>
+                            </button>
+                        </div>
+                        <div class="form-error small text-danger mt-1" id="err-reg-password"></div>
+                    </div>
+
+                    <!-- Confirmar contraseña -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Confirmar contraseña <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" name="pass_conf" id="inp-reg-passconf" class="form-control"
+                                   required minlength="8" maxlength="100"
+                                   placeholder="Repite la contraseña"
+                                   oninput="validarPassword()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePass('inp-reg-passconf','ico-pass2')">
+                                <i class="bi bi-eye" id="ico-pass2"></i>
+                            </button>
+                        </div>
+                        <div class="form-error small text-danger mt-1" id="err-reg-passconf"></div>
+                    </div>
+
                     <!-- reCAPTCHA -->
                     <?php if (!empty($sitekey)): ?>
                     <div class="mb-4">
@@ -149,6 +181,33 @@ regEmail.addEventListener('blur', () => {
     document.getElementById('err-reg-email').textContent = (!ok && regEmail.value.length > 0)
         ? 'Ingresa un email válido.' : '';
 });
+
+function togglePass(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const ico = document.getElementById(iconId);
+    const isPass = inp.type === 'password';
+    inp.type = isPass ? 'text' : 'password';
+    ico.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+
+function validarPassword() {
+    const pass = document.getElementById('inp-reg-password');
+    const conf = document.getElementById('inp-reg-passconf');
+    const errP = document.getElementById('err-reg-password');
+    const errC = document.getElementById('err-reg-passconf');
+
+    const ok = pass.value.length >= 8;
+    pass.classList.toggle('is-valid',   ok && pass.value.length > 0);
+    pass.classList.toggle('is-invalid', !ok && pass.value.length > 0);
+    errP.textContent = (!ok && pass.value.length > 0) ? 'Mínimo 8 caracteres.' : '';
+
+    if (conf.value.length > 0) {
+        const match = pass.value === conf.value;
+        conf.classList.toggle('is-valid',   match);
+        conf.classList.toggle('is-invalid', !match);
+        errC.textContent = !match ? 'Las contraseñas no coinciden.' : '';
+    }
+}
 </script>
 
 <?= $this->endSection() ?>
