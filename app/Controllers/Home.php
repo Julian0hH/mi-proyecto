@@ -16,8 +16,11 @@ class Home extends BaseController
     {
         helper(['form', 'url', 'date', 'text']);
         
-        $this->supabaseUrl = getenv('SUPABASE_URL') ?: null; 
-        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY') ?: null;
+        $this->supabaseUrl = getenv('SUPABASE_URL') ?: null;
+        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
+                          ?: getenv('SUPABASE_KEY')
+                          ?: getenv('SUPABASE_SERVICE_KEY')
+                          ?: null;
 
         if (empty($this->supabaseUrl) || empty($this->supabaseKey)) {
             $this->configError = true;

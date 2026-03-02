@@ -47,72 +47,97 @@
             <li class="nav-section"><span>Portafolio</span></li>
             <li>
                 <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
-                    <i class="bi bi-house-door"></i><span>Inicio</span>
+                    <i class="bi bi-house-door nav-icon-blue"></i><span>Inicio</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('portafolio') ?>" class="<?= url_is('portafolio*') ? 'active' : '' ?>">
-                    <i class="bi bi-briefcase"></i><span>Portafolio</span>
+                    <i class="bi bi-briefcase nav-icon-purple"></i><span>Portafolio</span>
                 </a>
             </li>
             <li>
-                <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') ? 'active' : '' ?>">
-                    <i class="bi bi-grid-3x3-gap"></i><span>Servicios</span>
+                <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') || url_is('detalles*') || url_is('contratar*') ? 'active' : '' ?>">
+                    <i class="bi bi-grid-3x3-gap nav-icon-cyan"></i><span>Servicios</span>
+                    <?php if (url_is('detalles*') || url_is('contratar*')): ?>
+                    <i class="bi bi-chevron-right ms-auto small text-muted"></i>
+                    <?php endif; ?>
+                </a>
+                <?php if (url_is('detalles*') || url_is('contratar*')): ?>
+                <ul class="nav-submenu">
+                    <li><a href="<?= base_url('servicios') ?>"><i class="bi bi-arrow-left-short"></i>Ver todos</a></li>
+                </ul>
+                <?php endif; ?>
+            </li>
+            <li>
+                <a href="<?= base_url('sobre-mi') ?>" class="<?= url_is('sobre-mi*') ? 'active' : '' ?>">
+                    <i class="bi bi-person-circle nav-icon-green"></i><span>Sobre Mí</span>
                 </a>
             </li>
             <li>
                 <a href="<?= base_url('contacto') ?>" class="<?= url_is('contacto*') ? 'active' : '' ?>">
-                    <i class="bi bi-envelope"></i><span>Contacto</span>
-                </a>
-            </li>
-
-            <!-- SECCIÓN SISTEMA -->
-            <li class="nav-section"><span>Sistema</span></li>
-            <li>
-                <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
-                    <i class="bi bi-people"></i><span>Usuarios</span>
+                    <i class="bi bi-envelope nav-icon-orange"></i><span>Contacto</span>
                 </a>
             </li>
 
             <?php if (session()->get('admin_logueado')): ?>
-            <!-- SECCIÓN ADMIN -->
-            <li class="nav-section"><span>Administración</span></li>
-            <li>
-                <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') || url_is('admin') ? 'active' : '' ?>">
-                    <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-                </a>
+            <?php
+            $isAdminSection = url_is('admin*') || url_is('carrusel*') || url_is('registro*');
+            ?>
+            <!-- SECCIÓN ADMIN ACORDEÓN -->
+            <li class="nav-section">
+                <span>Administración</span>
+                <span class="nav-section-badge">Admin</span>
             </li>
-            <li>
-                <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
-                    <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
+            <li class="nav-accordion <?= $isAdminSection ? 'open' : '' ?>">
+                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
+                    <i class="bi bi-speedometer2 nav-icon-indigo"></i>
+                    <span>Panel Admin</span>
+                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
-            </li>
-            <li>
-                <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
-                    <i class="bi bi-images"></i><span>Carrusel</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
-                    <i class="bi bi-folder-symlink"></i><span>Proyectos</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('admin/servicios') ?>" class="<?= url_is('admin/servicios*') ? 'active' : '' ?>">
-                    <i class="bi bi-gear-wide-connected"></i><span>Servicios</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('admin/contactos') ?>" class="<?= url_is('admin/contactos*') ? 'active' : '' ?>">
-                    <i class="bi bi-chat-left-dots"></i>
-                    <span>Contactos</span>
-                    <span class="badge-count" id="badge-contactos" style="display:none"></span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
-                    <i class="bi bi-shield-lock"></i><span>Roles</span>
-                </a>
+                <ul class="nav-accordion-body">
+                    <li>
+                        <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
+                            <i class="bi bi-bar-chart-line"></i><span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
+                            <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
+                            <i class="bi bi-images"></i><span>Carrusel</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
+                            <i class="bi bi-folder-symlink"></i><span>Proyectos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('admin/servicios') ?>" class="<?= url_is('admin/servicios*') ? 'active' : '' ?>">
+                            <i class="bi bi-gear-wide-connected"></i><span>Servicios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('admin/contactos') ?>" class="<?= url_is('admin/contactos*') ? 'active' : '' ?>">
+                            <i class="bi bi-chat-left-dots"></i>
+                            <span>Contactos</span>
+                            <span class="badge-count" id="badge-contactos" style="display:none"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
+                            <i class="bi bi-shield-lock"></i><span>Roles</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
+                            <i class="bi bi-people"></i><span>Usuarios</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <?php endif; ?>
         </ul>
@@ -161,14 +186,37 @@
 
             <!-- Breadcrumbs -->
             <nav aria-label="breadcrumb" class="flex-grow-1">
-                <ol class="breadcrumb mb-0">
+                <ol class="breadcrumb mb-0 align-items-center">
                     <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
-                        <?php foreach ($breadcrumbs as $crumb): ?>
-                            <li class="breadcrumb-item <?= ($crumb['active'] ?? false) ? 'active' : '' ?>">
+                        <?php
+                        $icons = [
+                            'Inicio'         => 'bi-house-door',
+                            'Portafolio'     => 'bi-briefcase',
+                            'Servicios'      => 'bi-grid-3x3-gap',
+                            'Detalles'       => 'bi-info-circle',
+                            'Contratar'      => 'bi-credit-card',
+                            'Contacto'       => 'bi-envelope',
+                            'Sobre Mí'       => 'bi-person-circle',
+                            'Login'          => 'bi-box-arrow-in-right',
+                            'Registro'       => 'bi-person-plus',
+                            'Dashboard'      => 'bi-speedometer2',
+                            'Proyectos'      => 'bi-folder-symlink',
+                            'Administración' => 'bi-shield-lock',
+                        ];
+                        ?>
+                        <?php foreach ($breadcrumbs as $i => $crumb): ?>
+                            <li class="breadcrumb-item <?= ($crumb['active'] ?? false) ? 'active fw-semibold' : '' ?>">
+                                <?php $icon = $icons[$crumb['name']] ?? null; ?>
                                 <?php if (!($crumb['active'] ?? false)): ?>
-                                    <a href="<?= $crumb['url'] ?>"><?= esc($crumb['name']) ?></a>
+                                    <a href="<?= $crumb['url'] ?>" class="text-decoration-none d-inline-flex align-items-center gap-1">
+                                        <?php if ($icon && $i === 0): ?><i class="bi <?= $icon ?> small"></i><?php endif; ?>
+                                        <?= esc($crumb['name']) ?>
+                                    </a>
                                 <?php else: ?>
-                                    <?= esc($crumb['name']) ?>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <?php if ($icon): ?><i class="bi <?= $icon ?> small text-primary"></i><?php endif; ?>
+                                        <?= esc($crumb['name']) ?>
+                                    </span>
                                 <?php endif; ?>
                             </li>
                         <?php endforeach; ?>
@@ -378,6 +426,13 @@ function simularError(tipo) {
         .catch(() => { result.innerHTML = '<div class="alert alert-danger">Error de red</div>'; });
 }
 <?php endif; ?>
+
+// ===== ACORDEÓN SIDEBAR =====
+function toggleAccordion(el) {
+    const li = el.closest('.nav-accordion');
+    li.classList.toggle('open');
+}
+document.querySelectorAll('.nav-accordion.open').forEach(li => li.classList.add('open'));
 
 // ===== HELPERS =====
 function escapeHtml(str) {

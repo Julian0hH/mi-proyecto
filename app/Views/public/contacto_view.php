@@ -31,6 +31,8 @@
                             <label class="form-label fw-semibold">Teléfono</label>
                             <input type="tel" name="telefono" id="inp-telefono" class="form-control"
                                    pattern="[0-9+\-\s]{7,20}" maxlength="20"
+                                   inputmode="tel"
+                                   oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')"
                                    placeholder="+34 600 000 000">
                             <div class="invalid-feedback" id="err-telefono"></div>
                         </div>

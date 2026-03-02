@@ -15,7 +15,10 @@ class ProyectosModel extends Model
     {
         parent::__construct();
         $this->supabaseUrl = getenv('SUPABASE_URL');
-        $this->supabaseKey = getenv('SUPABASE_SERVICE_KEY');
+        $this->supabaseKey = getenv('SUPABASE_SERVICE_ROLE_KEY')
+                          ?: getenv('SUPABASE_KEY')
+                          ?: getenv('SUPABASE_SERVICE_KEY')
+                          ?: '';
     }
 
     public function obtenerProyectos()

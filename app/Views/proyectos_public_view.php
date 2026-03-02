@@ -93,7 +93,9 @@ function renderizarProyectos(proyectos) {
             `;
         }
         
-        const tecnologiasArray = proyecto.tecnologias ? proyecto.tecnologias.split(',') : [];
+        const tecnologiasArray = Array.isArray(proyecto.tecnologias)
+            ? proyecto.tecnologias
+            : (proyecto.tecnologias ? String(proyecto.tecnologias).split(',') : []);
         const tecnologiasBadges = tecnologiasArray.slice(0, 4).map(tech => 
             `<span class="badge bg-primary bg-opacity-10 text-primary me-1 mb-1">${tech.trim()}</span>`
         ).join('');
