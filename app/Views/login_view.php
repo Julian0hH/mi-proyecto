@@ -47,19 +47,20 @@
                     <?= csrf_field() ?>
                     
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">CORREO ELECTRÓNICO</label>
+                        <label class="form-label text-muted small fw-bold">USUARIO O CORREO</label>
                         <div class="input-group">
                             <span class="input-group-text">
-                                <i class="bi bi-envelope"></i>
+                                <i class="bi bi-person"></i>
                             </span>
-                            <input 
-                                type="email" 
-                                name="email" 
-                                class="form-control" 
-                                placeholder="admin@ejemplo.com" 
-                                required 
-                                value="<?= old('email') ?>"
+                            <input
+                                type="text"
+                                name="usuario"
+                                class="form-control"
+                                placeholder="usuario o correo@ejemplo.com"
+                                required
+                                value="<?= old('usuario') ?>"
                                 autofocus
+                                maxlength="150"
                             >
                         </div>
                     </div>

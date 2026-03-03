@@ -888,3 +888,198 @@ label {
 /* Dark mode adjustments */
 [data-theme="dark"] .stat-chip { background: var(--bg-card); border-color: var(--border-color); }
 [data-theme="dark"] .hero-blob { opacity: .06; }
+
+/* ═══════════════════════════════════════════════════════════
+   DEVSOFT SOLUTIONS — HOME PAGE COMPONENTS
+═══════════════════════════════════════════════════════════ */
+
+/* Utility extras */
+.fw-black   { font-weight: 900 !important; }
+.shadow-2xl { box-shadow: 0 25px 60px rgba(0,0,0,.18) !important; }
+.hero-blob-3 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #f59e0b, #ef4444);
+    top: 40%; left: -60px;
+}
+
+/* ── Scroll Reveal ────────────────────────────────────────── */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1);
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Available Badge ──────────────────────────────────────── */
+.ds-badge-available {
+    background: rgba(16,185,129,.1);
+    border: 1px solid rgba(16,185,129,.25);
+    color: #059669;
+}
+[data-theme="dark"] .ds-badge-available {
+    background: rgba(16,185,129,.15);
+    border-color: rgba(16,185,129,.3);
+}
+
+/* ── Glow Buttons ─────────────────────────────────────────── */
+.btn-glow {
+    box-shadow: 0 0 0 0 rgba(79,70,229,.5);
+    animation: glow-pulse 2.4s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(79,70,229,.45); }
+    50%       { box-shadow: 0 0 0 10px rgba(79,70,229,0); }
+}
+
+/* ── Trust Badges ─────────────────────────────────────────── */
+.ds-trust-badge {
+    display: inline-flex; align-items: center;
+    font-size: .78rem; font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px; padding: .28rem .75rem;
+}
+
+/* ── Hero Visual (code window placeholder) ────────────────── */
+.ds-hero-visual {
+    background: linear-gradient(135deg, rgba(79,70,229,.07) 0%, rgba(6,182,212,.07) 100%);
+    border: 1px solid var(--border-color);
+}
+
+/* Code Window */
+.ds-code-window {
+    width: 100%; max-width: 380px;
+    background: #1e1e2e;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: .82rem;
+}
+.ds-code-bar {
+    display: flex; align-items: center; gap: 6px;
+    background: #2a2a3d; padding: .6rem 1rem;
+}
+.ds-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.ds-code-body { padding: 1.25rem 1rem; line-height: 2; }
+.ds-code-line { white-space: nowrap; }
+.ds-kw      { color: #c792ea; }
+.ds-cls     { color: #82aaff; }
+.ds-fn      { color: #82aaff; }
+.ds-str     { color: #c3e88d; }
+.ds-comment { color: #546e7a; font-style: italic; font-size: .77rem; }
+.ds-cursor  {
+    color: #82aaff;
+    animation: blink-cursor .8s step-end infinite;
+    font-size: 1rem; line-height: 1;
+}
+@keyframes blink-cursor { 50% { opacity: 0; } }
+
+/* ── Floating Card ────────────────────────────────────────── */
+.ds-float-card {
+    position: absolute; bottom: 24px; left: -20px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px; padding: .7rem 1rem;
+    box-shadow: 0 8px 28px rgba(0,0,0,.12);
+    font-size: .82rem;
+    z-index: 2;
+}
+.animate-float { animation: float-updown 3.6s ease-in-out infinite; }
+@keyframes float-updown {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+}
+
+/* ── Tech Stack Ticker ────────────────────────────────────── */
+.ds-tech-track {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+.ds-tech-list {
+    display: flex; gap: 1rem;
+    width: max-content;
+    animation: tech-scroll 28s linear infinite;
+}
+.ds-tech-list:hover { animation-play-state: paused; }
+@keyframes tech-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+.ds-tech-pill {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px; padding: .45rem 1rem;
+    font-size: .82rem; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+    transition: box-shadow .2s;
+}
+.ds-tech-pill:hover { box-shadow: 0 4px 16px rgba(79,70,229,.15); }
+.ds-tech-pill i { font-size: 1rem; }
+
+/* ── Testimonial Cards ────────────────────────────────────── */
+.ds-testimonial-card {
+    display: flex; flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    transition: transform .25s, box-shadow .25s;
+}
+.ds-testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.1);
+}
+.ds-quote-icon {
+    font-size: 2rem; line-height: 1;
+    color: var(--primary-color); opacity: .3;
+    margin-bottom: .5rem;
+}
+.ds-testimonial-text {
+    font-size: .88rem; line-height: 1.7;
+    color: var(--text-color);
+    flex-grow: 1; margin-bottom: 1rem;
+    font-style: italic;
+}
+.ds-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; flex-shrink: 0;
+}
+
+/* ── Stats Bar ────────────────────────────────────────────── */
+.ds-stats-bar {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #06b6d4 100%);
+    box-shadow: 0 8px 32px rgba(79,70,229,.35);
+}
+
+/* ── CTA Pulse Button ─────────────────────────────────────── */
+.btn-cta-pulse {
+    animation: cta-pulse-anim 2.8s ease-in-out infinite;
+}
+@keyframes cta-pulse-anim {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.35); }
+    50%       { box-shadow: 0 0 0 14px rgba(255,255,255,0); }
+}
+
+/* ── Project Cards ────────────────────────────────────────── */
+.ds-project-card { overflow: hidden; }
+.ds-project-header {
+    height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .3s;
+}
+.ds-project-card:hover .ds-project-header { transform: scale(1.04); }
+
+/* Dark mode extras */
+[data-theme="dark"] .ds-trust-badge    { background: var(--bg-card); }
+[data-theme="dark"] .ds-tech-pill      { background: var(--bg-card); }
+[data-theme="dark"] .ds-float-card     { background: var(--bg-card); }
+[data-theme="dark"] .ds-testimonial-card { background: var(--bg-card); }

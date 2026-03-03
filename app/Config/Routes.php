@@ -117,6 +117,39 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('carrusel/subir', 'CarruselController::subir');
     $routes->post('carrusel/actualizar/(:num)', 'CarruselController::actualizar/$1');
     $routes->delete('carrusel/eliminar/(:num)', 'CarruselController::eliminar/$1');
+
+    // ── SEGURIDAD ──────────────────────────────────────────────
+    // Perfil
+    $routes->get('seguridad/perfiles',                  'PerfilController::index');
+    $routes->get('seguridad/perfiles/listar',           'PerfilController::listar');
+    $routes->post('seguridad/perfiles/crear',           'PerfilController::crear');
+    $routes->post('seguridad/perfiles/actualizar/(:num)', 'PerfilController::actualizar/$1');
+    $routes->delete('seguridad/perfiles/eliminar/(:num)', 'PerfilController::eliminar/$1');
+
+    // Módulo
+    $routes->get('seguridad/modulos',                   'ModuloController::index');
+    $routes->get('seguridad/modulos/listar',            'ModuloController::listar');
+    $routes->post('seguridad/modulos/crear',            'ModuloController::crear');
+    $routes->post('seguridad/modulos/actualizar/(:num)', 'ModuloController::actualizar/$1');
+    $routes->delete('seguridad/modulos/eliminar/(:num)', 'ModuloController::eliminar/$1');
+
+    // Permisos-Perfil
+    $routes->get('seguridad/permisos',                  'PermisosPerfilController::index');
+    $routes->get('seguridad/permisos/cargar/(:num)',    'PermisosPerfilController::cargarPorPerfil/$1');
+    $routes->post('seguridad/permisos/guardar',         'PermisosPerfilController::guardar');
+
+    // Usuarios App
+    $routes->get('seguridad/usuarios',                  'UsuarioAppController::index');
+    $routes->get('seguridad/usuarios/listar',           'UsuarioAppController::listar');
+    $routes->post('seguridad/usuarios/crear',           'UsuarioAppController::crear');
+    $routes->post('seguridad/usuarios/actualizar/(:num)', 'UsuarioAppController::actualizar/$1');
+    $routes->delete('seguridad/usuarios/eliminar/(:num)', 'UsuarioAppController::eliminar/$1');
+
+    // ── PRINCIPAL 1 y 2 (pantallas estáticas) ─────────────────
+    $routes->get('principal1/modulo1', 'PrincipalController::p1_1');
+    $routes->get('principal1/modulo2', 'PrincipalController::p1_2');
+    $routes->get('principal2/modulo1', 'PrincipalController::p2_1');
+    $routes->get('principal2/modulo2', 'PrincipalController::p2_2');
 });
 
 // ============================================================

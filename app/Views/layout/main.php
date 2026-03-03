@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($pageTitle) ? esc($pageTitle) . ' | ' : '' ?>Portfolio Pro</title>
+    <title><?= isset($pageTitle) ? esc($pageTitle) . ' | ' : '' ?>DevSoft Solutions</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,10 +24,10 @@
         <div class="sidebar-header">
             <div class="d-flex align-items-center gap-2">
                 <div class="sidebar-logo">
-                    <i class="bi bi-code-slash"></i>
+                    <i class="bi bi-braces"></i>
                 </div>
                 <div class="sidebar-brand-text">
-                    <span class="fw-bold">Portfolio</span><span class="text-primary fw-bold">Pro</span>
+                    <span class="fw-bold">Dev</span><span style="color:#818cf8;font-weight:700">Soft</span><span class="fw-light opacity-75" style="font-size:.75em;display:block;margin-top:-2px;letter-spacing:.06em">SOLUTIONS</span>
                 </div>
             </div>
             <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Contraer menú">
@@ -42,8 +42,33 @@
             </div>
         </div>
 
+        <?php
+        // ── Helpers de permisos ────────────────────────────────
+        $sessionPermisos = session()->get('user_permisos') ?? [];
+        $userType        = session()->get('user_type') ?? 'admin';
+        $isAdminUser     = ($userType === 'admin');
+        $isLogued        = (bool) session()->get('admin_logueado');
+
+        function navPuede(array $perms, int $modId, bool $isAdmin): bool {
+            if ($isAdmin) return true;
+            return !empty($perms[$modId]['bitConsulta']);
+        }
+
+        // Secciones de menú
+        $verSeg   = $isAdminUser || navPuede($sessionPermisos,1,$isAdminUser) || navPuede($sessionPermisos,2,$isAdminUser) || navPuede($sessionPermisos,3,$isAdminUser) || navPuede($sessionPermisos,4,$isAdminUser);
+        $verPri1  = $isAdminUser || navPuede($sessionPermisos,5,$isAdminUser) || navPuede($sessionPermisos,6,$isAdminUser);
+        $verPri2  = $isAdminUser || navPuede($sessionPermisos,7,$isAdminUser) || navPuede($sessionPermisos,8,$isAdminUser);
+
+        $isSegSection  = url_is('admin/seguridad*');
+        $isPri1Section = url_is('admin/principal1*');
+        $isPri2Section = url_is('admin/principal2*');
+        $isOldAdmin    = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section;
+        ?>
+
         <ul class="sidebar-nav" id="sidebar-nav">
-            <!-- SECCIÓN PÚBLICA -->
+
+            <?php if ($isAdminUser): ?>
+            <!-- ── PORTAFOLIO (solo admin legacy) ── -->
             <li class="nav-section"><span>Portafolio</span></li>
             <li>
                 <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
@@ -58,15 +83,7 @@
             <li>
                 <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') || url_is('detalles*') || url_is('contratar*') ? 'active' : '' ?>">
                     <i class="bi bi-grid-3x3-gap nav-icon-cyan"></i><span>Servicios</span>
-                    <?php if (url_is('detalles*') || url_is('contratar*')): ?>
-                    <i class="bi bi-chevron-right ms-auto small text-muted"></i>
-                    <?php endif; ?>
                 </a>
-                <?php if (url_is('detalles*') || url_is('contratar*')): ?>
-                <ul class="nav-submenu">
-                    <li><a href="<?= base_url('servicios') ?>"><i class="bi bi-arrow-left-short"></i>Ver todos</a></li>
-                </ul>
-                <?php endif; ?>
             </li>
             <li>
                 <a href="<?= base_url('sobre-mi') ?>" class="<?= url_is('sobre-mi*') ? 'active' : '' ?>">
@@ -78,17 +95,17 @@
                     <i class="bi bi-envelope nav-icon-orange"></i><span>Contacto</span>
                 </a>
             </li>
+            <?php endif; ?>
 
-            <?php if (session()->get('admin_logueado')): ?>
-            <?php
-            $isAdminSection = url_is('admin*') || url_is('carrusel*') || url_is('registro*');
-            ?>
-            <!-- SECCIÓN ADMIN ACORDEÓN -->
+            <?php if ($isLogued): ?>
+
+            <?php if ($isAdminUser): ?>
+            <!-- ── ADMINISTRACIÓN PORTAFOLIO (solo admin legacy) ── -->
             <li class="nav-section">
                 <span>Administración</span>
                 <span class="nav-section-badge">Admin</span>
             </li>
-            <li class="nav-accordion <?= $isAdminSection ? 'open' : '' ?>">
+            <li class="nav-accordion <?= $isOldAdmin ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
                     <i class="bi bi-speedometer2 nav-icon-indigo"></i>
                     <span>Panel Admin</span>
@@ -134,12 +151,123 @@
                     </li>
                     <li>
                         <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Usuarios</span>
+                            <i class="bi bi-people"></i><span>Usuarios Legacy</span>
                         </a>
                     </li>
                 </ul>
             </li>
+            <?php else: ?>
+            <!-- Dashboard para usuarios app -->
+            <li class="nav-section"><span>General</span></li>
+            <li>
+                <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
+                    <i class="bi bi-speedometer2 nav-icon-indigo"></i><span>Dashboard</span>
+                </a>
+            </li>
             <?php endif; ?>
+
+            <!-- ── SEGURIDAD ── -->
+            <?php if ($verSeg): ?>
+            <li class="nav-section">
+                <span>Seguridad</span>
+                <span class="nav-section-badge">Seg</span>
+            </li>
+            <li class="nav-accordion <?= $isSegSection ? 'open' : '' ?>">
+                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
+                    <i class="bi bi-shield-lock-fill nav-icon-orange"></i>
+                    <span>Seguridad</span>
+                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
+                </a>
+                <ul class="nav-accordion-body">
+                    <?php if (navPuede($sessionPermisos,1,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/seguridad/perfiles') ?>" class="<?= url_is('admin/seguridad/perfiles*') ? 'active' : '' ?>">
+                            <i class="bi bi-person-badge"></i><span>Perfil</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (navPuede($sessionPermisos,2,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/seguridad/modulos') ?>" class="<?= url_is('admin/seguridad/modulos*') ? 'active' : '' ?>">
+                            <i class="bi bi-grid-3x3-gap"></i><span>Módulo</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (navPuede($sessionPermisos,3,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/seguridad/permisos') ?>" class="<?= url_is('admin/seguridad/permisos*') ? 'active' : '' ?>">
+                            <i class="bi bi-shield-check"></i><span>Permisos-Perfil</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (navPuede($sessionPermisos,4,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/seguridad/usuarios') ?>" class="<?= url_is('admin/seguridad/usuarios*') ? 'active' : '' ?>">
+                            <i class="bi bi-people"></i><span>Usuario</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </li>
+            <?php endif; ?>
+
+            <!-- ── VENTAS (Principal 1) ── -->
+            <?php if ($verPri1): ?>
+            <li class="nav-section"><span>Ventas</span></li>
+            <li class="nav-accordion <?= $isPri1Section ? 'open' : '' ?>">
+                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
+                    <i class="bi bi-graph-up-arrow nav-icon-cyan"></i>
+                    <span>Ventas</span>
+                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
+                </a>
+                <ul class="nav-accordion-body">
+                    <?php if (navPuede($sessionPermisos,5,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/principal1/modulo1') ?>" class="<?= url_is('admin/principal1/modulo1*') ? 'active' : '' ?>">
+                            <i class="bi bi-funnel"></i><span>Pipeline de Ventas</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (navPuede($sessionPermisos,6,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/principal1/modulo2') ?>" class="<?= url_is('admin/principal1/modulo2*') ? 'active' : '' ?>">
+                            <i class="bi bi-people"></i><span>Clientes y Leads</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </li>
+            <?php endif; ?>
+
+            <!-- ── OPERACIONES (Principal 2) ── -->
+            <?php if ($verPri2): ?>
+            <li class="nav-section"><span>Operaciones</span></li>
+            <li class="nav-accordion <?= $isPri2Section ? 'open' : '' ?>">
+                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
+                    <i class="bi bi-kanban nav-icon-purple"></i>
+                    <span>Operaciones</span>
+                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
+                </a>
+                <ul class="nav-accordion-body">
+                    <?php if (navPuede($sessionPermisos,7,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/principal2/modulo1') ?>" class="<?= url_is('admin/principal2/modulo1*') ? 'active' : '' ?>">
+                            <i class="bi bi-kanban"></i><span>Gestión de Proyectos</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (navPuede($sessionPermisos,8,$isAdminUser)): ?>
+                    <li>
+                        <a href="<?= base_url('admin/principal2/modulo2') ?>" class="<?= url_is('admin/principal2/modulo2*') ? 'active' : '' ?>">
+                            <i class="bi bi-bar-chart-line"></i><span>Reportes y Analítica</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </li>
+            <?php endif; ?>
+
+            <?php endif; // isLogued ?>
         </ul>
 
         <div class="sidebar-footer">
@@ -190,18 +318,30 @@
                     <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
                         <?php
                         $icons = [
-                            'Inicio'         => 'bi-house-door',
-                            'Portafolio'     => 'bi-briefcase',
-                            'Servicios'      => 'bi-grid-3x3-gap',
-                            'Detalles'       => 'bi-info-circle',
-                            'Contratar'      => 'bi-credit-card',
-                            'Contacto'       => 'bi-envelope',
-                            'Sobre Mí'       => 'bi-person-circle',
-                            'Login'          => 'bi-box-arrow-in-right',
-                            'Registro'       => 'bi-person-plus',
-                            'Dashboard'      => 'bi-speedometer2',
-                            'Proyectos'      => 'bi-folder-symlink',
-                            'Administración' => 'bi-shield-lock',
+                            'Inicio'           => 'bi-house-door',
+                            'Portafolio'       => 'bi-briefcase',
+                            'Servicios'        => 'bi-grid-3x3-gap',
+                            'Detalles'         => 'bi-info-circle',
+                            'Contratar'        => 'bi-credit-card',
+                            'Contacto'         => 'bi-envelope',
+                            'Sobre Mí'         => 'bi-person-circle',
+                            'Login'            => 'bi-box-arrow-in-right',
+                            'Registro'         => 'bi-person-plus',
+                            'Dashboard'        => 'bi-speedometer2',
+                            'Proyectos'        => 'bi-folder-symlink',
+                            'Administración'   => 'bi-shield-lock',
+                            'Admin'            => 'bi-speedometer2',
+                            'Seguridad'        => 'bi-shield-lock-fill',
+                            'Perfiles'         => 'bi-person-badge',
+                            'Módulos'          => 'bi-grid-3x3-gap',
+                            'Permisos-Perfil'  => 'bi-shield-check',
+                            'Usuarios'         => 'bi-people',
+                            'Principal 1'      => 'bi-layout-text-window',
+                            'Principal 2'      => 'bi-layout-text-window-reverse',
+                            'Módulo 1.1'       => 'bi-file-earmark',
+                            'Módulo 1.2'       => 'bi-file-earmark-text',
+                            'Módulo 2.1'       => 'bi-file-earmark',
+                            'Módulo 2.2'       => 'bi-file-earmark-text',
                         ];
                         ?>
                         <?php foreach ($breadcrumbs as $i => $crumb): ?>
