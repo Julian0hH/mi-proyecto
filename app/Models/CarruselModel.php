@@ -61,29 +61,37 @@ class CarruselModel extends Model
         $rutaStorage = "{$this->folderName}/{$nombreArchivo}";
 
         $contenido = file_get_contents($file->getTempName());
+        $tamano    = strlen($contenido);
 
         $url = "{$this->supabaseUrl}/storage/v1/object/{$this->bucketName}/{$rutaStorage}";
 
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, $contenido);
+        rewind($stream);
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $contenido);
+        curl_setopt($ch, CURLOPT_PUT, true);
+        curl_setopt($ch, CURLOPT_INFILE, $stream);
+        curl_setopt($ch, CURLOPT_INFILESIZE, $tamano);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'apikey: ' . $this->supabaseKey,
             'Authorization: Bearer ' . $this->supabaseKey,
             'Content-Type: ' . $file->getMimeType(),
-            'Content-Length: ' . strlen($contenido),
+            'x-upsert: true',
         ]);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
         curl_close($ch);
+        fclose($stream);
 
         if (!in_array($httpCode, [200, 201])) {
-            throw new \Exception("Error al subir imagen: HTTP {$httpCode}");
+            throw new \Exception("Error al subir imagen: HTTP {$httpCode}" . ($curlErr ? " - {$curlErr}" : ""));
         }
 
         $urlTabla = "{$this->supabaseUrl}/rest/v1/carrusel";

@@ -30,9 +30,6 @@
                     <span class="fw-bold">Dev</span><span style="color:#818cf8;font-weight:700">Soft</span><span class="fw-light opacity-75" style="font-size:.75em;display:block;margin-top:-2px;letter-spacing:.06em">SOLUTIONS</span>
                 </div>
             </div>
-            <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Contraer menú">
-                <i class="bi bi-layout-sidebar-reverse"></i>
-            </button>
         </div>
 
         <div class="sidebar-search">
@@ -293,6 +290,11 @@
                 </a>
             <?php endif; ?>
         </div>
+
+        <button id="sidebar-toggle" class="sidebar-toggle-btn" title="Contraer menú">
+            <i class="bi bi-layout-sidebar-reverse"></i>
+            <span class="ms-2 theme-label">Contraer menú</span>
+        </button>
 
         <div class="theme-toggle" id="theme-switch" title="Cambiar tema">
             <i class="bi bi-moon-stars" id="theme-icon"></i>
