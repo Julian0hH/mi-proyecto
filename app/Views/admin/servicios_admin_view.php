@@ -53,18 +53,34 @@
     </div>
 </div>
 
-<!-- GRID DE SERVICIOS (JS-driven) -->
-<div class="row g-3 mb-3" id="servicios-grid">
-    <div class="col-12 text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2 text-muted">Cargando servicios...</p>
+<!-- TABLA DE SERVICIOS (JS-driven) -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3" style="width:56px">Icono</th>
+                        <th class="py-3">Título</th>
+                        <th class="py-3">Descripción</th>
+                        <th class="py-3" style="width:80px">Orden</th>
+                        <th class="py-3" style="width:90px">Estado</th>
+                        <th class="text-end pe-4 py-3" style="width:90px">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="servicios-grid">
+                    <tr><td colspan="6" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted mb-0">Cargando servicios...</p>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-<!-- PAGINACIÓN -->
-<div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2 mb-4">
-    <small class="text-muted" id="pag-info"></small>
-    <nav><ul class="pagination pagination-sm mb-0" id="paginacion"></ul></nav>
+    <div class="card-footer border-0 bg-transparent d-flex align-items-center justify-content-between py-2 px-4">
+        <small class="text-muted" id="pag-info"></small>
+        <nav><ul class="pagination pagination-sm mb-0" id="paginacion"></ul></nav>
+    </div>
 </div>
 
 <!-- MODAL CREAR/EDITAR -->
@@ -211,15 +227,15 @@ function aplicarFiltro(page = 1) {
     renderPaginacion(total, page, filtrados.length);
 }
 
-// ── Render grid de tarjetas ───────────────────────────────────
+// ── Render tabla de servicios ─────────────────────────────────
 function renderGrid(data, totalFiltrado, page) {
-    const grid = document.getElementById('servicios-grid');
+    const tbody = document.getElementById('servicios-grid');
 
     if (!data.length) {
-        grid.innerHTML = `<div class="col-12 text-center text-muted py-5">
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">
             <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-            <p>No hay servicios con estos filtros.</p>
-        </div>`;
+            <p class="mb-0">No hay servicios con estos filtros.</p>
+        </td></tr>`;
         document.getElementById('pag-info').textContent = '';
         return;
     }
@@ -228,47 +244,51 @@ function renderGrid(data, totalFiltrado, page) {
     const to   = Math.min(page*PER_PAGE, totalFiltrado);
     document.getElementById('pag-info').textContent = `Mostrando ${from}–${to} de ${totalFiltrado} servicios`;
 
-    grid.innerHTML = data.map(srv => `
-        <div class="col-md-6 col-xl-4">
-            <div class="card border-0 shadow-sm h-100 position-relative">
-                ${!srv.activo ? `
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 rounded" style="z-index:1"></div>
-                <span class="badge bg-secondary position-absolute top-0 end-0 m-2" style="z-index:2">Inactivo</span>` : ''}
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-start gap-3 mb-3">
-                        <div class="service-icon-preview bg-${escHtml(srv.color||'primary')} bg-opacity-10 text-${escHtml(srv.color||'primary')} rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;min-width:48px">
-                            <i class="bi ${escHtml(srv.icono||'bi-gear')} fs-5"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-1">${escHtml(srv.titulo)}</h6>
-                            <small class="text-muted">Orden: ${parseInt(srv.orden)||0}</small>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-3">${escHtml((srv.descripcion||'').substring(0,100))}${(srv.descripcion||'').length > 100 ? '…' : ''}</p>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-primary flex-grow-1 btn-editar"
-                            data-id="${srv.id}"
-                            data-titulo="${escHtml(srv.titulo)}"
-                            data-descripcion="${escHtml(srv.descripcion||'')}"
-                            data-descripcion-larga="${escHtml(srv.descripcion_larga||'')}"
-                            data-icono="${escHtml(srv.icono||'bi-gear')}"
-                            data-color="${escHtml(srv.color||'primary')}"
-                            data-orden="${parseInt(srv.orden)||0}"
-                            data-activo="${srv.activo ? '1' : '0'}">
-                            <i class="bi bi-pencil me-1"></i>Editar
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="${srv.id}" data-nombre="${escHtml(srv.titulo)}">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
+    tbody.innerHTML = data.map(srv => {
+        const cl  = escHtml(srv.color||'primary');
+        const ic  = escHtml(srv.icono||'bi-gear');
+        const tit = escHtml(srv.titulo||'');
+        const titMostrar = tit.length > 40 ? tit.substring(0,40)+'…' : tit;
+        const desc = escHtml(srv.descripcion||'');
+        const descMostrar = desc.length > 70 ? desc.substring(0,70)+'…' : desc;
+        return `<tr>
+            <td class="ps-4 py-2">
+                <div class="bg-${cl} bg-opacity-10 text-${cl} rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px">
+                    <i class="bi ${ic}"></i>
                 </div>
-            </div>
-        </div>`).join('');
+            </td>
+            <td class="py-2">
+                <span class="fw-semibold small" title="${tit}">${titMostrar}</span>
+            </td>
+            <td class="py-2">
+                <span class="text-muted small" title="${desc}">${descMostrar||'—'}</span>
+            </td>
+            <td class="py-2 text-center"><span class="badge bg-light text-dark border">${parseInt(srv.orden)||0}</span></td>
+            <td class="py-2">
+                <span class="badge bg-${srv.activo ? 'success' : 'secondary'}">${srv.activo ? 'Activo' : 'Inactivo'}</span>
+            </td>
+            <td class="text-end pe-4 py-2">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary btn-editar"
+                        data-id="${srv.id}"
+                        data-titulo="${escHtml(srv.titulo)}"
+                        data-descripcion="${escHtml(srv.descripcion||'')}"
+                        data-descripcion-larga="${escHtml(srv.descripcion_larga||'')}"
+                        data-icono="${ic}"
+                        data-color="${cl}"
+                        data-orden="${parseInt(srv.orden)||0}"
+                        data-activo="${srv.activo ? '1' : '0'}"
+                        title="Editar"><i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-eliminar" data-id="${srv.id}" data-nombre="${tit}" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
 
-    // Eventos
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', () => abrirEditar(btn));
-    });
+    document.querySelectorAll('.btn-editar').forEach(btn => btn.addEventListener('click', () => abrirEditar(btn)));
     document.querySelectorAll('.btn-eliminar').forEach(btn => {
         btn.addEventListener('click', () => {
             ConfirmDialog.show(`¿Eliminar el servicio "<strong>${escHtml(btn.dataset.nombre)}</strong>"?`, async () => {
@@ -276,7 +296,7 @@ function renderGrid(data, totalFiltrado, page) {
                 const data = await res.json();
                 if (data.success) { Toast.success('Servicio eliminado'); cargar(); }
                 else Toast.error(data.mensaje || 'Error al eliminar');
-            });
+            }, {confirmLabel:'Eliminar', confirmClass:'btn-danger'});
         });
     });
 }
