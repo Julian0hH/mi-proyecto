@@ -57,8 +57,9 @@ class CarruselModel extends Model
 
     public function subirImagen($file, $titulo, $descripcion)
     {
-        $nombreArchivo = uniqid() . '_' . $file->getName();
-        $rutaStorage = "{$this->folderName}/{$nombreArchivo}";
+        $ext           = strtolower(pathinfo($file->getName(), PATHINFO_EXTENSION) ?: 'jpg');
+        $nombreArchivo = uniqid() . '.' . $ext;
+        $rutaStorage   = "{$this->folderName}/{$nombreArchivo}";
 
         $contenido = file_get_contents($file->getTempName());
         $tamano    = strlen($contenido);
