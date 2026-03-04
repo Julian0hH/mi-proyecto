@@ -186,6 +186,59 @@ class ContactoController extends BaseController
         }
     }
 
+    public function crear(): ResponseInterface
+    {
+        try {
+            $rules = [
+                'nombre'    => 'required|min_length[2]|max_length[100]|regex_match[/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']+$/]',
+                'email'     => 'required|valid_email|max_length[150]',
+                'telefono'  => 'permit_empty|regex_match[/^[0-9+\-\s]{7,20}$/]',
+                'asunto'    => 'permit_empty|max_length[200]',
+                'mensaje'   => 'required|min_length[10]|max_length[2000]',
+                'categoria' => 'permit_empty|in_list[consulta,presupuesto,soporte,colaboracion]',
+            ];
+
+            if (!$this->validate($rules)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'errors'  => $this->validator->getErrors(),
+                ]);
+            }
+
+            $data = [
+                'nombre'    => $this->request->getPost('nombre'),
+                'email'     => $this->request->getPost('email'),
+                'telefono'  => $this->request->getPost('telefono') ?: null,
+                'asunto'    => $this->request->getPost('asunto') ?: 'Sin asunto',
+                'mensaje'   => $this->request->getPost('mensaje'),
+                'categoria' => $this->request->getPost('categoria') ?: 'consulta',
+                'estado'    => 'pendiente',
+                'leido'     => false,
+                'ip_origen' => $this->request->getIPAddress(),
+            ];
+
+            $ok = $this->model->crear($data);
+
+            if ($ok) {
+                $this->notiModel->crear([
+                    'tipo'       => 'info',
+                    'titulo'     => 'Contacto creado manualmente',
+                    'mensaje'    => "Admin agregó: {$data['nombre']} ({$data['email']})",
+                    'url_accion' => base_url('admin/contactos'),
+                    'leido'      => false,
+                ]);
+            }
+
+            return $this->response->setJSON([
+                'success' => $ok,
+                'mensaje' => $ok ? 'Contacto creado correctamente' : 'Error al crear el contacto',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'ContactoController::crear ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor.']);
+        }
+    }
+
     public function eliminar(int $id): ResponseInterface
     {
         $ok = $this->model->eliminar($id);

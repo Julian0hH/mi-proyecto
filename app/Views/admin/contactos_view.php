@@ -6,7 +6,12 @@
         <h2 class="fw-bold mb-1">Mensajes de Contacto</h2>
         <p class="text-muted small mb-0">Tabla avanzada con filtros en tiempo real</p>
     </div>
-    <span class="badge bg-primary fs-6" id="total-badge">–</span>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-primary btn-sm" id="btn-nuevo-contacto">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo Contacto
+        </button>
+        <span class="badge bg-primary fs-6" id="total-badge">–</span>
+    </div>
 </div>
 
 <!-- FILTROS COMBINABLES -->
@@ -100,7 +105,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Contacto</h5>
+                <h5 class="modal-title" id="modal-contacto-titulo"><i class="bi bi-pencil-square me-2"></i>Editar Contacto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -111,7 +116,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Nombre</label>
-                            <input type="text" class="form-control form-control-sm" id="edit-nombre">
+                            <input type="text" class="form-control form-control-sm" id="edit-nombre" maxlength="100" data-vt="name">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Email</label>
@@ -119,7 +124,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Teléfono</label>
-                            <input type="text" class="form-control form-control-sm" id="edit-telefono" placeholder="Opcional">
+                            <input type="text" class="form-control form-control-sm" id="edit-telefono" placeholder="Opcional" maxlength="20" data-vt="phone">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Categoría</label>
@@ -138,7 +143,7 @@
                             <label class="form-label small fw-semibold">Mensaje</label>
                             <textarea class="form-control form-control-sm" id="edit-mensaje" rows="4"></textarea>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="wrap-estado">
                             <label class="form-label small fw-semibold">Estado</label>
                             <select class="form-select form-select-sm" id="edit-estado">
                                 <option value="pendiente">Pendiente</option>
@@ -147,7 +152,7 @@
                                 <option value="archivado">Archivado</option>
                             </select>
                         </div>
-                        <div class="col-md-6 d-flex align-items-end pb-1">
+                        <div class="col-md-6 d-flex align-items-end pb-1" id="wrap-meta">
                             <div class="text-muted small lh-lg">
                                 <div id="edit-created-at"></div>
                                 <div id="edit-ip"></div>
@@ -170,6 +175,7 @@
 let currentPage = 1;
 let debounceTimer = null;
 let activeContactId = null;
+let modalMode = 'editar'; // 'editar' | 'crear'
 const modalContacto = new bootstrap.Modal(document.getElementById('modalContacto'));
 
 function getFilters() {
@@ -223,7 +229,8 @@ async function cargarDatos(page = 1) {
                 <td class="text-muted small">${formatDate(c.created_at)}</td>
                 <td class="text-center pe-4">
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary btn-ver" data-id="${c.id}" title="Ver detalle"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-outline-secondary btn-ver" data-id="${c.id}" title="Ver detalle"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-outline-primary btn-edit" data-id="${c.id}" title="Editar"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-outline-danger btn-del" data-id="${c.id}" data-nombre="${escHtml(c.nombre)}" title="Eliminar"><i class="bi bi-trash"></i></button>
                     </div>
                 </td>
@@ -234,6 +241,9 @@ async function cargarDatos(page = 1) {
         // Eventos botones tabla
         tbody.querySelectorAll('.btn-ver').forEach(btn => {
             btn.addEventListener('click', () => verContacto(parseInt(btn.dataset.id)));
+        });
+        tbody.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', () => abrirEditar(parseInt(btn.dataset.id)));
         });
         tbody.querySelectorAll('.btn-del').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -284,6 +294,75 @@ function renderPaginacion(totalPages, page) {
     });
 }
 
+// ── Validación de campos del modal ──────────────────────────
+function validarCampos() {
+    limpiarValidacion();
+    let ok = true;
+    const setErr = (id, msg) => {
+        const el = document.getElementById(id);
+        el.classList.add('is-invalid');
+        let fb = el.parentNode.querySelector('.invalid-feedback');
+        if (!fb) { fb = document.createElement('div'); fb.className = 'invalid-feedback'; el.after(fb); }
+        fb.textContent = msg;
+        ok = false;
+    };
+    const nombre   = document.getElementById('edit-nombre').value.trim();
+    const email    = document.getElementById('edit-email').value.trim();
+    const telefono = document.getElementById('edit-telefono').value.trim();
+    const asunto   = document.getElementById('edit-asunto').value.trim();
+    const mensaje  = document.getElementById('edit-mensaje').value.trim();
+
+    if (!nombre)                                              setErr('edit-nombre', 'El nombre es requerido');
+    else if (nombre.length < 2)                              setErr('edit-nombre', 'Mínimo 2 caracteres');
+    else if (nombre.length > 100)                            setErr('edit-nombre', 'Máximo 100 caracteres');
+    else if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']+$/.test(nombre)) setErr('edit-nombre', 'Solo letras, espacios y guiones');
+
+    if (!email)                                              setErr('edit-email', 'El email es requerido');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))  setErr('edit-email', 'Formato de email inválido');
+    else if (email.length > 150)                             setErr('edit-email', 'Máximo 150 caracteres');
+
+    if (telefono && !/^[0-9+\-\s]{7,20}$/.test(telefono))   setErr('edit-telefono', 'Solo dígitos, +, - (7–20 caracteres)');
+    if (asunto.length > 200)                                 setErr('edit-asunto', 'Máximo 200 caracteres');
+    if (/<[^>]+>/.test(asunto))                              setErr('edit-asunto', 'No se permiten etiquetas HTML');
+
+    if (!mensaje)                                            setErr('edit-mensaje', 'El mensaje es requerido');
+    else if (mensaje.length < 10)                            setErr('edit-mensaje', 'Mínimo 10 caracteres');
+    else if (mensaje.length > 2000)                          setErr('edit-mensaje', 'Máximo 2000 caracteres');
+
+    return ok;
+}
+function limpiarValidacion() {
+    ['edit-nombre','edit-email','edit-telefono','edit-asunto','edit-mensaje'].forEach(id => {
+        document.getElementById(id).classList.remove('is-invalid','is-valid');
+    });
+}
+
+// ── Abrir modal en modo Crear ────────────────────────────────
+function abrirCrear() {
+    modalMode = 'crear';
+    activeContactId = null;
+    document.getElementById('modal-contacto-titulo').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Nuevo Contacto';
+    document.getElementById('modal-contacto-loading').style.display = 'none';
+    document.getElementById('form-editar-contacto').style.display   = '';
+    document.getElementById('wrap-estado').style.display = 'none';
+    document.getElementById('wrap-meta').style.display   = 'none';
+    ['edit-nombre','edit-email','edit-telefono','edit-asunto','edit-mensaje'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('edit-categoria').value = 'consulta';
+    limpiarValidacion();
+    modalContacto.show();
+}
+
+// ── Abrir modal en modo Editar ───────────────────────────────
+function abrirEditar(id) {
+    modalMode = 'editar';
+    document.getElementById('modal-contacto-titulo').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Contacto';
+    document.getElementById('wrap-estado').style.display = '';
+    document.getElementById('wrap-meta').style.display   = '';
+    limpiarValidacion();
+    verContacto(id);
+}
+
+// ── Abrir modal en modo Ver (solo lectura + marcar leído) ────
 async function verContacto(id) {
     activeContactId = id;
     document.getElementById('modal-contacto-loading').style.display = '';
@@ -316,22 +395,53 @@ async function verContacto(id) {
     }
 }
 
+// ── Guardar (crear o editar) ─────────────────────────────────
 document.getElementById('btn-guardar-contacto').addEventListener('click', async () => {
-    if (!activeContactId) return;
-    const fd = new FormData();
-    fd.append('nombre',    document.getElementById('edit-nombre').value);
-    fd.append('email',     document.getElementById('edit-email').value);
-    fd.append('telefono',  document.getElementById('edit-telefono').value);
-    fd.append('asunto',    document.getElementById('edit-asunto').value);
-    fd.append('mensaje',   document.getElementById('edit-mensaje').value);
-    fd.append('categoria', document.getElementById('edit-categoria').value);
-    fd.append('estado',    document.getElementById('edit-estado').value);
+    if (!validarCampos()) return;
 
-    const res  = await fetch(`<?= base_url('admin/contactos/actualizar/') ?>${activeContactId}`, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
-    const data = await res.json();
-    if (data.success) { Toast.success('Contacto actualizado'); modalContacto.hide(); cargarDatos(currentPage); }
-    else Toast.error('Error al guardar los cambios');
+    const fd = new FormData();
+    fd.append('nombre',    document.getElementById('edit-nombre').value.trim());
+    fd.append('email',     document.getElementById('edit-email').value.trim());
+    fd.append('telefono',  document.getElementById('edit-telefono').value.trim());
+    fd.append('asunto',    document.getElementById('edit-asunto').value.trim());
+    fd.append('mensaje',   document.getElementById('edit-mensaje').value.trim());
+    fd.append('categoria', document.getElementById('edit-categoria').value);
+    if (modalMode === 'editar') fd.append('estado', document.getElementById('edit-estado').value);
+
+    const url = modalMode === 'crear'
+        ? `<?= base_url('admin/contactos/crear') ?>`
+        : `<?= base_url('admin/contactos/actualizar/') ?>${activeContactId}`;
+
+    try {
+        const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
+        const data = await res.json();
+
+        if (data.success) {
+            Toast.success(modalMode === 'crear' ? 'Contacto creado correctamente' : 'Contacto actualizado');
+            modalContacto.hide();
+            cargarDatos(currentPage);
+        } else {
+            if (data.errors) {
+                Object.entries(data.errors).forEach(([field, msg]) => {
+                    const map = {nombre:'edit-nombre', email:'edit-email', telefono:'edit-telefono', asunto:'edit-asunto', mensaje:'edit-mensaje'};
+                    if (map[field]) {
+                        const el = document.getElementById(map[field]);
+                        el.classList.add('is-invalid');
+                        let fb = el.parentNode.querySelector('.invalid-feedback');
+                        if (!fb) { fb = document.createElement('div'); fb.className = 'invalid-feedback'; el.after(fb); }
+                        fb.textContent = msg;
+                    }
+                });
+            } else {
+                Toast.error(data.mensaje || 'Error al guardar los cambios');
+            }
+        }
+    } catch (err) {
+        Toast.error('Error de conexión');
+    }
 });
+
+document.getElementById('btn-nuevo-contacto').addEventListener('click', abrirCrear);
 
 // Filtros con debounce
 function triggerFilter() { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => cargarDatos(1), 350); }

@@ -744,6 +744,8 @@ label {
 #sidebar.collapsed .user-name,
 #sidebar.collapsed .user-email { display: none !important; }
 #sidebar.collapsed .sidebar-logo { margin: auto; }
+#sidebar.collapsed .nav-accordion-body { max-height: 0 !important; overflow: hidden !important; }
+#sidebar.collapsed .nav-accordion-toggle .accordion-arrow { display: none !important; }
 
 /* --- bg-card CSS variable compatible --- */
 .bg-card { background: var(--bg-card) !important; }

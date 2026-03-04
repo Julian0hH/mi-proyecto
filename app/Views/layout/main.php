@@ -54,10 +54,11 @@
             return !empty($perms[$modId]['bitConsulta']);
         }
 
-        // Secciones de menú
-        $verSeg   = $isAdminUser || navPuede($sessionPermisos,1,$isAdminUser) || navPuede($sessionPermisos,2,$isAdminUser) || navPuede($sessionPermisos,3,$isAdminUser) || navPuede($sessionPermisos,4,$isAdminUser);
-        $verPri1  = $isAdminUser || navPuede($sessionPermisos,5,$isAdminUser) || navPuede($sessionPermisos,6,$isAdminUser);
-        $verPri2  = $isAdminUser || navPuede($sessionPermisos,7,$isAdminUser) || navPuede($sessionPermisos,8,$isAdminUser);
+        // Secciones de menú (poner en true para mostrar módulos académicos Seguridad/Ventas/Operaciones)
+        $mostrarModulosExtra = false;
+        $verSeg   = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,1,$isAdminUser) || navPuede($sessionPermisos,2,$isAdminUser) || navPuede($sessionPermisos,3,$isAdminUser) || navPuede($sessionPermisos,4,$isAdminUser));
+        $verPri1  = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,5,$isAdminUser) || navPuede($sessionPermisos,6,$isAdminUser));
+        $verPri2  = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,7,$isAdminUser) || navPuede($sessionPermisos,8,$isAdminUser));
 
         $isSegSection  = url_is('admin/seguridad*');
         $isPri1Section = url_is('admin/principal1*');
@@ -471,6 +472,10 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         content.classList.toggle('expanded');
         localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+        // Cerrar todos los acordeones al colapsar el sidebar
+        if (sidebar.classList.contains('collapsed')) {
+            document.querySelectorAll('.nav-accordion.open').forEach(el => el.classList.remove('open'));
+        }
     } else {
         sidebar.classList.remove('mobile-show');
         overlay.classList.remove('show');
@@ -582,6 +587,52 @@ function toggleAccordion(el) {
     li.classList.toggle('open');
 }
 document.querySelectorAll('.nav-accordion.open').forEach(li => li.classList.add('open'));
+
+// ===== VALIDACIÓN GLOBAL DE INPUTS (data-vt) =====
+// Bloquea caracteres no permitidos mientras se escribe
+(function() {
+    const VT_PATTERNS = {
+        'name':    /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']/g,   // Solo letras, acentos, espacio, guion, apóstrofe
+        'alpha':   /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']/g,
+        'num':     /[^0-9]/g,                             // Solo dígitos, sin negativos
+        'decimal': /[^0-9.]/g,                            // Dígitos + punto
+        'phone':   /[^0-9+\-\s]/g,                       // Dígitos, +, -, espacio
+        'user':    /[^a-zA-Z0-9_\-]/g,                   // Alfanumérico + _ y -
+        'icon':    /[^a-zA-Z0-9\-]/g,                    // Alfanumérico + guion
+        'nohtml':  /[<>]/g,                               // Sin < >
+        'alnum':   /[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g,    // Alfanumérico + acentos + espacio
+        'alnumsym':/[<>'"`;]/g,                          // Permite casi todo pero sin HTML/JS peligroso
+    };
+
+    // Bloquear escritura de caracteres inválidos en inputs con data-vt
+    document.addEventListener('input', function(e) {
+        const el = e.target;
+        const vt = el.dataset.vt;
+        if (!vt || !VT_PATTERNS[vt]) return;
+        const pattern = VT_PATTERNS[vt];
+        const pos = el.selectionStart;
+        const prev = el.value;
+        const cleaned = prev.replace(pattern, '');
+        if (cleaned !== prev) {
+            el.value = cleaned;
+            // Restaurar posición del cursor (ajustando por caracteres eliminados)
+            const diff = prev.length - cleaned.length;
+            el.setSelectionRange(Math.max(0, pos - diff), Math.max(0, pos - diff));
+        }
+    }, true);
+
+    // Bloquear teclas negativas y exponente en inputs type=number
+    document.addEventListener('keydown', function(e) {
+        if (e.target.type === 'number' && (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+')) {
+            e.preventDefault();
+        }
+    }, true);
+
+    // Asegurar min=0 en todos los inputs number sin min definido
+    document.querySelectorAll('input[type="number"]').forEach(function(inp) {
+        if (inp.getAttribute('min') === null) inp.setAttribute('min', '0');
+    });
+})();
 
 // ===== HELPERS =====
 function escapeHtml(str) {

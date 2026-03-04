@@ -103,6 +103,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     // Contactos Admin (tabla avanzada)
     $routes->get('contactos', 'ContactoController::admin');
     $routes->get('contactos/listar', 'ContactoController::listar');
+    $routes->post('contactos/crear', 'ContactoController::crear');
     $routes->get('contactos/ver/(:num)', 'ContactoController::ver/$1');
     $routes->post('contactos/actualizar/(:num)', 'ContactoController::actualizar/$1');
     $routes->delete('contactos/eliminar/(:num)', 'ContactoController::eliminar/$1');
