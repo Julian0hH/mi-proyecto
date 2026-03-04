@@ -176,11 +176,11 @@ class RolesController extends BaseController
             }
 
             $ok = $this->usuarioModel->crear([
-                'nombre'   => strip_tags($nombre),
-                'email'    => strtolower($email),
-                'password' => password_hash($password, PASSWORD_DEFAULT),
-                'rol_id'   => $rolId,
-                'activo'   => $activo,
+                'nombre'        => strip_tags($nombre),
+                'email'         => strtolower($email),
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'rol_id'        => $rolId,
+                'activo'        => $activo,
             ]);
 
             return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Usuario creado correctamente' : 'Error al crear el usuario']);
@@ -222,7 +222,7 @@ class RolesController extends BaseController
                 'activo' => $activo,
             ];
             if (!empty($password)) {
-                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+                $data['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
             }
 
             $ok = $this->usuarioModel->actualizar($id, $data);

@@ -166,17 +166,21 @@ class ProyectosModel extends Model
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $contenido);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'apikey: ' . $this->supabaseKey,
             'Authorization: Bearer ' . $this->supabaseKey,
-            'Content-Type: ' . $file->getMimeType()
+            'Content-Type: ' . $file->getMimeType(),
+            'Content-Length: ' . strlen($contenido),
         ]);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($httpCode !== 200) {
+        if (!in_array($httpCode, [200, 201])) {
             throw new \Exception("Error al subir imagen: HTTP {$httpCode}");
         }
 

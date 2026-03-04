@@ -147,12 +147,7 @@
                     </li>
                     <li>
                         <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
-                            <i class="bi bi-shield-lock"></i><span>Roles</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?= base_url('registro') ?>" class="<?= url_is('registro*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Usuarios Legacy</span>
+                            <i class="bi bi-shield-lock"></i><span>Roles y Usuarios</span>
                         </a>
                     </li>
                 </ul>
