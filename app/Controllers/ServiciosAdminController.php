@@ -21,7 +21,6 @@ class ServiciosAdminController extends BaseController
     {
         try {
             return view('admin/servicios_admin_view', [
-                'servicios'   => $this->model->obtenerTodos(),
                 'breadcrumbs' => [
                     ['name' => 'Admin',    'url' => base_url('admin/dashboard'), 'active' => false],
                     ['name' => 'Servicios','url' => '#',                          'active' => true],

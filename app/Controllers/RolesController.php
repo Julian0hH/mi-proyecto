@@ -39,6 +39,52 @@ class RolesController extends BaseController
         return $this->response->setJSON(['success' => true, 'data' => $this->model->obtenerTodos()]);
     }
 
+    public function crearRol(): ResponseInterface
+    {
+        try {
+            $nombre = trim($this->request->getPost('nombre') ?? '');
+            $desc   = trim($this->request->getPost('descripcion') ?? '');
+
+            if (empty($nombre) || strlen($nombre) < 2 || strlen($nombre) > 50) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'El nombre es requerido (2–50 caracteres)']);
+            }
+            if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $nombre)) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Solo letras, números, guiones y guiones bajos']);
+            }
+            if (strlen($desc) > 200) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'La descripción excede 200 caracteres']);
+            }
+
+            $modulos  = ['proyectos','carrusel','usuarios','roles','servicios','sobre_mi','contactos','notificaciones'];
+            $permisos = array_fill_keys($modulos, false);
+            $permPost = $this->request->getPost('permisos') ?? [];
+            foreach ($modulos as $m) {
+                $permisos[$m] = isset($permPost[$m]);
+            }
+
+            $ok = $this->model->crear([
+                'nombre'      => strtolower($nombre),
+                'descripcion' => strip_tags($desc),
+                'permisos'    => json_encode($permisos),
+            ]);
+
+            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Rol creado correctamente' : 'Error al crear el rol']);
+        } catch (\Throwable $e) {
+            log_message('error', 'RolesController::crearRol ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor']);
+        }
+    }
+
+    public function eliminarRol(int $id): ResponseInterface
+    {
+        try {
+            $ok = $this->model->eliminar($id);
+            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Rol eliminado' : 'Error al eliminar']);
+        } catch (\Throwable $e) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor']);
+        }
+    }
+
     public function actualizarRol(int $id): ResponseInterface
     {
         try {

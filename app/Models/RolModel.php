@@ -50,9 +50,21 @@ class RolModel
         return ($res['code'] === 200 && !empty($res['body'])) ? $res['body'][0] : [];
     }
 
+    public function crear(array $data): bool
+    {
+        $res = $this->request('POST', 'roles', $data, ['Prefer: return=representation']);
+        return in_array($res['code'], [200, 201]);
+    }
+
     public function actualizar(int $id, array $data): bool
     {
         $res = $this->request('PATCH', "roles?id=eq.$id", $data);
+        return in_array($res['code'], [200, 204]);
+    }
+
+    public function eliminar(int $id): bool
+    {
+        $res = $this->request('DELETE', "roles?id=eq.$id");
         return in_array($res['code'], [200, 204]);
     }
 

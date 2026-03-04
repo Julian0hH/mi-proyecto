@@ -95,7 +95,9 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     // Roles y Permisos
     $routes->get('roles', 'RolesController::index');
     $routes->get('roles/listar', 'RolesController::listarRoles');
+    $routes->post('roles/crear', 'RolesController::crearRol');
     $routes->post('roles/actualizar/(:num)', 'RolesController::actualizarRol/$1');
+    $routes->delete('roles/eliminar/(:num)', 'RolesController::eliminarRol/$1');
     $routes->post('roles/asignar-usuario', 'RolesController::asignarRolUsuario');
     $routes->post('roles/toggle-usuario', 'RolesController::toggleUsuario');
     $routes->get('roles/usuarios', 'RolesController::listarUsuarios');

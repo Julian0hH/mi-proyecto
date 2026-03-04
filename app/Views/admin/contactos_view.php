@@ -120,7 +120,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Email</label>
-                            <input type="email" class="form-control form-control-sm" id="edit-email">
+                            <input type="email" class="form-control form-control-sm" id="edit-email" maxlength="150" data-vt="nohtml">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Teléfono</label>
