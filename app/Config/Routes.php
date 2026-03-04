@@ -101,6 +101,9 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('roles/asignar-usuario', 'RolesController::asignarRolUsuario');
     $routes->post('roles/toggle-usuario', 'RolesController::toggleUsuario');
     $routes->get('roles/usuarios', 'RolesController::listarUsuarios');
+    $routes->post('roles/usuarios/crear', 'RolesController::crearUsuario');
+    $routes->post('roles/usuarios/actualizar/(:any)', 'RolesController::actualizarUsuario/$1');
+    $routes->delete('roles/usuarios/eliminar/(:any)', 'RolesController::eliminarUsuario/$1');
 
     // Contactos Admin (tabla avanzada)
     $routes->get('contactos', 'ContactoController::admin');

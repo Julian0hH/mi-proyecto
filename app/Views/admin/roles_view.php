@@ -65,11 +65,16 @@
     <!-- USUARIOS -->
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0 pt-3 px-4 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-transparent border-0 pt-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h6 class="fw-bold mb-0"><i class="bi bi-people me-2 text-success"></i>Usuarios Registrados</h6>
-                <div class="input-group input-group-sm" style="max-width:220px">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" id="f-busqueda-usr" class="form-control" placeholder="Buscar usuario...">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group input-group-sm" style="max-width:180px">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="f-busqueda-usr" class="form-control" placeholder="Buscar...">
+                    </div>
+                    <button class="btn btn-success btn-sm" id="btn-nuevo-usuario">
+                        <i class="bi bi-person-plus me-1"></i>Nuevo
+                    </button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -115,9 +120,26 @@
                                     </div>
                                 </td>
                                 <td class="pe-4">
-                                    <button class="btn btn-sm btn-primary btn-guardar-rol" data-id="<?= esc($u['id']) ?>">
-                                        <i class="bi bi-check me-1"></i>Guardar
-                                    </button>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-primary btn-guardar-rol" data-id="<?= esc($u['id']) ?>" title="Guardar rol/estado">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-editar-usuario"
+                                            data-id="<?= esc($u['id']) ?>"
+                                            data-nombre="<?= esc($u['nombre']) ?>"
+                                            data-email="<?= esc($u['email']) ?>"
+                                            data-rolid="<?= esc($u['rol_id'] ?? '') ?>"
+                                            data-activo="<?= ($u['activo'] ?? true) ? '1' : '0' ?>"
+                                            title="Editar usuario">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-eliminar-usuario"
+                                            data-id="<?= esc($u['id']) ?>"
+                                            data-nombre="<?= esc($u['nombre']) ?>"
+                                            title="Eliminar usuario">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -131,6 +153,71 @@
                     <nav><ul class="pagination pagination-sm mb-0" id="usr-paginacion"></ul></nav>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR USUARIO -->
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usr-modal-titulo"><i class="bi bi-person-plus me-2"></i>Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-usuario" novalidate>
+                <input type="hidden" id="usr-edit-id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="usr-nombre" name="nombre"
+                               maxlength="100" placeholder="Nombre completo" data-vt="name">
+                        <div class="form-error text-danger small usr-form-error" id="err-usr-nombre"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Correo <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="usr-email" name="email"
+                               maxlength="150" placeholder="correo@ejemplo.com" data-vt="nohtml">
+                        <div class="form-error text-danger small usr-form-error" id="err-usr-email"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Contraseña
+                            <span class="text-danger" id="lbl-usr-pwd-req">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="usr-password" name="password"
+                                   maxlength="128" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    onclick="const i=document.getElementById('usr-password');i.type=i.type==='password'?'text':'password'">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text" id="hint-usr-pwd" style="display:none">Deja en blanco para no cambiar la contraseña.</div>
+                        <div class="form-error text-danger small usr-form-error" id="err-usr-pwd"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
+                        <select class="form-select" id="usr-rol-id" name="rol_id">
+                            <option value="">-- Selecciona un rol --</option>
+                            <?php foreach ($roles as $r): ?>
+                            <option value="<?= $r['id'] ?>"><?= esc($r['nombre']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-error text-danger small usr-form-error" id="err-usr-rol"></div>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="usr-activo" name="activo" checked>
+                        <label class="form-check-label" for="usr-activo">Usuario activo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check2 me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -188,8 +275,9 @@
 </div>
 
 <script>
-const modalRol  = new bootstrap.Modal(document.getElementById('modalRol'));
-const rolesData = <?= json_encode($roles) ?>;
+const modalRol     = new bootstrap.Modal(document.getElementById('modalRol'));
+const modalUsuario = new bootstrap.Modal(document.getElementById('modalUsuario'));
+const rolesData    = <?= json_encode($roles) ?>;
 let rolModalMode = 'crear'; // 'crear' | 'editar'
 
 const PER_PAGE_USR = 5;
@@ -347,6 +435,117 @@ document.querySelectorAll('.btn-guardar-rol').forEach(btn => {
         if (d1.success && d2.success) Toast.success('Usuario actualizado correctamente');
         else Toast.error('Error al actualizar usuario');
     });
+});
+
+// ── Abrir modal Nuevo Usuario ──────────────────────────────────
+document.getElementById('btn-nuevo-usuario').addEventListener('click', () => {
+    document.getElementById('usr-modal-titulo').innerHTML = '<i class="bi bi-person-plus me-2"></i>Nuevo Usuario';
+    document.getElementById('form-usuario').reset();
+    document.getElementById('usr-edit-id').value = '';
+    document.getElementById('usr-rol-id').value  = '';
+    document.getElementById('hint-usr-pwd').style.display = 'none';
+    document.getElementById('lbl-usr-pwd-req').style.display = '';
+    document.getElementById('usr-activo').checked = true;
+    document.querySelectorAll('.usr-form-error').forEach(e => e.textContent = '');
+    modalUsuario.show();
+});
+
+// ── Editar usuario ─────────────────────────────────────────────
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-editar-usuario');
+    if (!btn) return;
+    document.getElementById('usr-modal-titulo').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Usuario';
+    document.getElementById('usr-edit-id').value = btn.dataset.id;
+    document.getElementById('usr-nombre').value  = btn.dataset.nombre;
+    document.getElementById('usr-email').value   = btn.dataset.email;
+    document.getElementById('usr-password').value = '';
+    document.getElementById('usr-rol-id').value  = btn.dataset.rolid;
+    document.getElementById('usr-activo').checked = btn.dataset.activo === '1';
+    document.getElementById('hint-usr-pwd').style.display = '';
+    document.getElementById('lbl-usr-pwd-req').style.display = 'none';
+    document.querySelectorAll('.usr-form-error').forEach(e => e.textContent = '');
+    modalUsuario.show();
+});
+
+// ── Eliminar usuario ────────────────────────────────────────────
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-eliminar-usuario');
+    if (!btn) return;
+    ConfirmDialog.show(
+        `¿Eliminar al usuario <strong>${escHtml(btn.dataset.nombre)}</strong>?`,
+        async () => {
+            const res  = await fetch(`<?= base_url('admin/roles/usuarios/eliminar/') ?>${btn.dataset.id}`, {
+                method: 'DELETE', headers: {'X-Requested-With':'XMLHttpRequest'}
+            });
+            const data = await res.json();
+            if (data.success) { Toast.success(data.mensaje); setTimeout(() => location.reload(), 700); }
+            else Toast.error(data.mensaje || 'Error al eliminar');
+        },
+        {confirmLabel: 'Eliminar', confirmClass: 'btn-danger'}
+    );
+});
+
+// ── Submit usuario (crear o editar) ───────────────────────────
+document.getElementById('form-usuario').addEventListener('submit', async e => {
+    e.preventDefault();
+    document.querySelectorAll('.usr-form-error').forEach(el => el.textContent = '');
+
+    const id       = document.getElementById('usr-edit-id').value;
+    const nombre   = document.getElementById('usr-nombre').value.trim();
+    const email    = document.getElementById('usr-email').value.trim();
+    const password = document.getElementById('usr-password').value;
+    const rolId    = document.getElementById('usr-rol-id').value;
+    const activo   = document.getElementById('usr-activo').checked;
+
+    // Validaciones JS
+    let valid = true;
+    if (!nombre || nombre.length < 2 || nombre.length > 100) {
+        document.getElementById('err-usr-nombre').textContent = 'Nombre requerido (2–100 caracteres)';
+        valid = false;
+    } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-]+$/.test(nombre)) {
+        document.getElementById('err-usr-nombre').textContent = 'Solo letras, espacios y guiones';
+        valid = false;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 150) {
+        document.getElementById('err-usr-email').textContent = 'Email inválido o demasiado largo';
+        valid = false;
+    }
+    if (!id && (!password || password.length < 6)) {
+        document.getElementById('err-usr-pwd').textContent = 'La contraseña debe tener al menos 6 caracteres';
+        valid = false;
+    }
+    if (id && password && password.length < 6) {
+        document.getElementById('err-usr-pwd').textContent = 'Si cambias la contraseña, mínimo 6 caracteres';
+        valid = false;
+    }
+    if (!rolId) {
+        document.getElementById('err-usr-rol').textContent = 'Selecciona un rol';
+        valid = false;
+    }
+    if (!valid) return;
+
+    const fd = new FormData();
+    fd.append('nombre',   nombre);
+    fd.append('email',    email);
+    fd.append('password', password);
+    fd.append('rol_id',   rolId);
+    if (activo) fd.append('activo', '1');
+
+    const url = id
+        ? `<?= base_url('admin/roles/usuarios/actualizar/') ?>${id}`
+        : '<?= base_url('admin/roles/usuarios/crear') ?>';
+
+    try {
+        const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
+        const data = await res.json();
+        if (data.success) {
+            Toast.success(data.mensaje);
+            modalUsuario.hide();
+            setTimeout(() => location.reload(), 700);
+        } else {
+            Toast.error(data.mensaje || 'Error al guardar');
+        }
+    } catch { Toast.error('Error de red'); }
 });
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

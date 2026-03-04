@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\RolModel;
+use App\Models\UsuarioModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class RolesController extends BaseController
 {
     private RolModel $model;
+    private UsuarioModel $usuarioModel;
 
     public function __construct()
     {
         helper(['form', 'url']);
-        $this->model = new RolModel();
+        $this->model        = new RolModel();
+        $this->usuarioModel = new UsuarioModel();
     }
 
     public function index(): string
@@ -145,5 +148,98 @@ class RolesController extends BaseController
     public function listarUsuarios(): ResponseInterface
     {
         return $this->response->setJSON(['success' => true, 'data' => $this->model->obtenerUsuariosTodos()]);
+    }
+
+    public function crearUsuario(): ResponseInterface
+    {
+        try {
+            $nombre   = trim($this->request->getPost('nombre') ?? '');
+            $email    = trim($this->request->getPost('email') ?? '');
+            $password = $this->request->getPost('password') ?? '';
+            $rolId    = (int)($this->request->getPost('rol_id') ?? 0);
+            $activo   = $this->request->getPost('activo') === '1';
+
+            if (empty($nombre) || strlen($nombre) < 2 || strlen($nombre) > 100) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Nombre requerido (2–100 caracteres)']);
+            }
+            if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-]+$/', $nombre)) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Nombre: solo letras, espacios y guiones']);
+            }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 150) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Email inválido o demasiado largo']);
+            }
+            if (empty($password) || strlen($password) < 6) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'La contraseña debe tener al menos 6 caracteres']);
+            }
+            if ($rolId < 1) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Selecciona un rol válido']);
+            }
+
+            $ok = $this->usuarioModel->crear([
+                'nombre'   => strip_tags($nombre),
+                'email'    => strtolower($email),
+                'password' => password_hash($password, PASSWORD_DEFAULT),
+                'rol_id'   => $rolId,
+                'activo'   => $activo,
+            ]);
+
+            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Usuario creado correctamente' : 'Error al crear el usuario']);
+        } catch (\Throwable $e) {
+            log_message('error', 'RolesController::crearUsuario ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor']);
+        }
+    }
+
+    public function actualizarUsuario(string $id): ResponseInterface
+    {
+        try {
+            $nombre   = trim($this->request->getPost('nombre') ?? '');
+            $email    = trim($this->request->getPost('email') ?? '');
+            $password = $this->request->getPost('password') ?? '';
+            $rolId    = (int)($this->request->getPost('rol_id') ?? 0);
+            $activo   = $this->request->getPost('activo') === '1';
+
+            if (empty($nombre) || strlen($nombre) < 2 || strlen($nombre) > 100) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Nombre requerido (2–100 caracteres)']);
+            }
+            if (!preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-]+$/', $nombre)) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Nombre: solo letras, espacios y guiones']);
+            }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 150) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Email inválido']);
+            }
+            if (!empty($password) && strlen($password) < 6) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'La contraseña debe tener al menos 6 caracteres']);
+            }
+            if ($rolId < 1) {
+                return $this->response->setJSON(['success' => false, 'mensaje' => 'Selecciona un rol válido']);
+            }
+
+            $data = [
+                'nombre' => strip_tags($nombre),
+                'email'  => strtolower($email),
+                'rol_id' => $rolId,
+                'activo' => $activo,
+            ];
+            if (!empty($password)) {
+                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+
+            $ok = $this->usuarioModel->actualizar($id, $data);
+            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Usuario actualizado' : 'Error al actualizar']);
+        } catch (\Throwable $e) {
+            log_message('error', 'RolesController::actualizarUsuario ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor']);
+        }
+    }
+
+    public function eliminarUsuario(string $id): ResponseInterface
+    {
+        try {
+            $ok = $this->usuarioModel->eliminar($id);
+            return $this->response->setJSON(['success' => $ok, 'mensaje' => $ok ? 'Usuario eliminado' : 'Error al eliminar']);
+        } catch (\Throwable $e) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error interno del servidor']);
+        }
     }
 }

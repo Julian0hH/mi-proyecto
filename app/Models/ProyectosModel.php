@@ -110,7 +110,7 @@ class ProyectosModel extends Model
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($httpCode !== 204) {
+        if (!in_array($httpCode, [200, 204])) {
             throw new \Exception("Error al actualizar proyecto: HTTP {$httpCode}");
         }
     }
