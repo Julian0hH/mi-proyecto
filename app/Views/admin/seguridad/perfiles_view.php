@@ -74,7 +74,7 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nombre del Perfil <span class="text-danger">*</span></label>
                         <input type="text" id="strNombrePerfil" class="form-control" maxlength="100"
-                               placeholder="Ej. Vendedor, Supervisor..." required>
+                               placeholder="Ej. Vendedor, Supervisor..." required data-vt="alnum">
                         <div class="form-text text-end"><span id="cnt-nombre">0</span>/100</div>
                         <div class="form-error text-danger small" id="err-strNombrePerfil"></div>
                     </div>

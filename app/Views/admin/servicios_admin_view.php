@@ -73,23 +73,23 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label fw-semibold">Título <span class="text-danger">*</span></label>
-                            <input type="text" name="titulo" id="srv-titulo" class="form-control" required maxlength="200" placeholder="Ej: Gestión de Bases de Datos">
+                            <input type="text" name="titulo" id="srv-titulo" class="form-control" required maxlength="200" placeholder="Ej: Gestión de Bases de Datos" data-vt="nohtml">
                             <div class="form-error" id="err-srv-titulo"></div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Descripción corta <span class="text-danger">*</span></label>
-                            <textarea name="descripcion" id="srv-descripcion" class="form-control" rows="2" required placeholder="Descripción breve para la tarjeta"></textarea>
+                            <textarea name="descripcion" id="srv-descripcion" class="form-control" rows="2" required placeholder="Descripción breve para la tarjeta" maxlength="500" data-vt="nohtml"></textarea>
                             <div class="form-error" id="err-srv-descripcion"></div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">Descripción larga</label>
-                            <textarea name="descripcion_larga" id="srv-descripcion-larga" class="form-control" rows="4" placeholder="Descripción detallada del servicio"></textarea>
+                            <textarea name="descripcion_larga" id="srv-descripcion-larga" class="form-control" rows="4" placeholder="Descripción detallada del servicio" maxlength="3000" data-vt="nohtml"></textarea>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Icono Bootstrap</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i id="icon-preview" class="bi bi-gear"></i></span>
-                                <input type="text" name="icono" id="srv-icono" class="form-control" value="bi-gear" placeholder="bi-gear">
+                                <input type="text" name="icono" id="srv-icono" class="form-control" value="bi-gear" placeholder="bi-gear" maxlength="50" data-vt="icon">
                             </div>
                             <div class="form-text">Ver <a href="https://icons.getbootstrap.com" target="_blank">Bootstrap Icons</a></div>
                         </div>

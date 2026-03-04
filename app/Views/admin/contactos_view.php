@@ -137,11 +137,11 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-semibold">Asunto</label>
-                            <input type="text" class="form-control form-control-sm" id="edit-asunto">
+                            <input type="text" class="form-control form-control-sm" id="edit-asunto" maxlength="200" data-vt="nohtml">
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-semibold">Mensaje</label>
-                            <textarea class="form-control form-control-sm" id="edit-mensaje" rows="4"></textarea>
+                            <textarea class="form-control form-control-sm" id="edit-mensaje" rows="4" maxlength="2000" data-vt="nohtml"></textarea>
                         </div>
                         <div class="col-md-6" id="wrap-estado">
                             <label class="form-label small fw-semibold">Estado</label>

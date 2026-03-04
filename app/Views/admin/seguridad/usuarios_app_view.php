@@ -74,7 +74,7 @@ $puedeDetalle    = $isAdmin || !empty($permisosSession[4]['bitDetalle']);
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Usuario <span class="text-danger">*</span></label>
-                            <input type="text" id="strNombreUsuario" class="form-control" maxlength="100" placeholder="nombre_usuario" required>
+                            <input type="text" id="strNombreUsuario" class="form-control" maxlength="100" placeholder="nombre_usuario" required data-vt="user">
                             <div class="form-error text-danger small" id="err-strNombreUsuario"></div>
                         </div>
                         <div class="col-md-6">
@@ -97,7 +97,7 @@ $puedeDetalle    = $isAdmin || !empty($permisosSession[4]['bitDetalle']);
                             <label class="form-label fw-semibold">Celular</label>
                             <input type="text" id="strNumeroCelular" class="form-control" maxlength="20"
                                    placeholder="+502 1234-5678"
-                                   oninput="this.value=this.value.replace(/[^0-9+\-\s]/g,'')">
+                                   data-vt="phone">
                             <div class="form-error text-danger small" id="err-strNumeroCelular"></div>
                         </div>
                         <div class="col-md-6">
