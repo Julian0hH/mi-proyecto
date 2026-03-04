@@ -131,7 +131,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Descripción</label>
-                        <input type="text" class="form-control" id="rol-descripcion" name="descripcion">
+                        <input type="text" class="form-control" id="rol-descripcion" name="descripcion" maxlength="200" data-vt="nohtml">
                     </div>
                     <label class="form-label fw-semibold">Permisos</label>
                     <div class="row g-2" id="permisos-checks">

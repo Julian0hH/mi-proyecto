@@ -26,19 +26,19 @@
                         <label class="form-label fw-semibold">Título Profesional <span class="text-danger">*</span></label>
                         <input type="text" name="titulo" class="form-control" required maxlength="200"
                                value="<?= esc($sm['titulo'] ?? 'Desarrollador Backend & Cloud') ?>"
-                               placeholder="Ej: Desarrollador Backend Senior">
+                               placeholder="Ej: Desarrollador Backend Senior" data-vt="nohtml">
                         <div class="form-error" id="err-titulo"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Subtítulo</label>
                         <input type="text" name="subtitulo" class="form-control" maxlength="300"
                                value="<?= esc($sm['subtitulo'] ?? '') ?>"
-                               placeholder="Ej: Especialista en cloud y bases de datos">
+                               placeholder="Ej: Especialista en cloud y bases de datos" data-vt="nohtml">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Descripción <span class="text-danger">*</span></label>
-                        <textarea name="descripcion" class="form-control" rows="6" required minlength="20"
-                                  placeholder="Cuéntanos sobre ti, tu experiencia y lo que te apasiona..."><?= esc($sm['descripcion'] ?? '') ?></textarea>
+                        <textarea name="descripcion" class="form-control" rows="6" required minlength="20" maxlength="2000"
+                                  placeholder="Cuéntanos sobre ti, tu experiencia y lo que te apasiona..." data-vt="nohtml"><?= esc($sm['descripcion'] ?? '') ?></textarea>
                         <div class="form-text"><span id="desc-count">0</span>/2000 caracteres</div>
                         <div class="form-error" id="err-descripcion"></div>
                     </div>
@@ -69,7 +69,7 @@
                         <div class="skill-row row g-2 align-items-center mb-2">
                             <div class="col-5">
                                 <input type="text" name="habilidad_nombre[]" class="form-control form-control-sm"
-                                       value="<?= esc($h['nombre'] ?? '') ?>" placeholder="Nombre de habilidad">
+                                       value="<?= esc($h['nombre'] ?? '') ?>" placeholder="Nombre de habilidad" maxlength="60" data-vt="nohtml">
                             </div>
                             <div class="col-5">
                                 <div class="d-flex align-items-center gap-2">
@@ -167,7 +167,7 @@ document.getElementById('btn-add-skill').addEventListener('click', () => {
     const div = document.createElement('div');
     div.className = 'skill-row row g-2 align-items-center mb-2';
     div.innerHTML = `
-        <div class="col-5"><input type="text" name="habilidad_nombre[]" class="form-control form-control-sm" placeholder="Nombre de habilidad"></div>
+        <div class="col-5"><input type="text" name="habilidad_nombre[]" class="form-control form-control-sm" placeholder="Nombre de habilidad" maxlength="60" data-vt="nohtml"></div>
         <div class="col-5"><div class="d-flex align-items-center gap-2">
             <input type="range" name="habilidad_nivel[]" class="form-range skill-range" min="0" max="100" value="75">
             <span class="skill-val small fw-semibold" style="min-width:32px">75%</span>

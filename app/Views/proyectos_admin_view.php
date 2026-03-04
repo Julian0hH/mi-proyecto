@@ -40,7 +40,7 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">TÍTULO DEL PROYECTO</label>
-                    <input type="text" class="form-control" id="titulo" placeholder="Ej. Sistema de Gestión Empresarial" required>
+                    <input type="text" class="form-control" id="titulo" placeholder="Ej. Sistema de Gestión Empresarial" required maxlength="200" data-vt="nohtml">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">ENLACE</label>
@@ -49,7 +49,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">TECNOLOGÍAS</label>
-                    <input type="text" class="form-control" id="tecnologias" placeholder="PHP, MySQL, Bootstrap, JavaScript">
+                    <input type="text" class="form-control" id="tecnologias" placeholder="PHP, MySQL, Bootstrap, JavaScript" maxlength="300" data-vt="nohtml">
                     <div class="form-text">Separadas por comas</div>
                 </div>
                 <div class="col-md-6">
@@ -59,7 +59,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label text-muted small fw-bold">DESCRIPCIÓN</label>
-                    <textarea class="form-control" id="descripcion" rows="4" placeholder="Describe las características principales, objetivos y resultados del proyecto..." required></textarea>
+                    <textarea class="form-control" id="descripcion" rows="4" placeholder="Describe las características principales, objetivos y resultados del proyecto..." required maxlength="3000" data-vt="nohtml"></textarea>
                 </div>
                 <div class="col-12" id="imagePreviewContainer" style="display: none;">
                     <label class="form-label text-muted small fw-bold">VISTA PREVIA DE IMÁGENES</label>
@@ -137,11 +137,11 @@
                     <input type="hidden" id="editarId">
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">TÍTULO</label>
-                        <input type="text" class="form-control" id="editarTitulo" required>
+                        <input type="text" class="form-control" id="editarTitulo" required maxlength="200" data-vt="nohtml">
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">DESCRIPCIÓN</label>
-                        <textarea class="form-control" id="editarDescripcion" rows="4"></textarea>
+                        <textarea class="form-control" id="editarDescripcion" rows="4" maxlength="3000" data-vt="nohtml"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">ENLACE</label>
@@ -149,7 +149,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">TECNOLOGÍAS</label>
-                        <input type="text" class="form-control" id="editarTecnologias">
+                        <input type="text" class="form-control" id="editarTecnologias" maxlength="300" data-vt="nohtml">
                         <div class="form-text">Separadas por comas</div>
                     </div>
                     <div class="mb-3">
