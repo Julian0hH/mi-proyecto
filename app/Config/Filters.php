@@ -27,7 +27,11 @@ class Filters extends BaseConfig
         ],
     ];
 
-    public array $methods = [];
+    public array $filters = [
+        'auth' => [
+            'before' => ['admin/*'],
+        ],
+    ];
 
-    public array $filters = [];
+    public array $methods = [];
 }
