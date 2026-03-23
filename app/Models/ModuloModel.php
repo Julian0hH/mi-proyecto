@@ -67,6 +67,12 @@ class ModuloModel
         return $res['code'] === 201;
     }
 
+    public function crearYObtener(array $data): array
+    {
+        $res = $this->request('POST', 'modulos', $data, ['Prefer: return=representation']);
+        return ($res['code'] === 201 && !empty($res['body'])) ? $res['body'][0] : [];
+    }
+
     public function actualizar(int $id, array $data): bool
     {
         $res = $this->request('PATCH', 'modulos?id=eq.' . $id, $data);

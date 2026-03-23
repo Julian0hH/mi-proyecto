@@ -217,6 +217,13 @@ function renderPaginacion(total, actual, totalReg) {
     nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => aplicarFiltro(+b.dataset.page)));
 }
 
+document.getElementById('ruta').addEventListener('blur', function() {
+    let v = this.value.trim();
+    if (v && !v.startsWith('admin/')) {
+        this.value = 'admin/' + v;
+    }
+});
+
 // Preview ícono en tiempo real
 document.getElementById('icono').addEventListener('input', function() {
     const el = document.querySelector('#icono-preview i');
@@ -309,8 +316,10 @@ document.getElementById('btn-guardar').addEventListener('click', async function(
     if (!valid) return;
 
     const fd = new FormData();
+    let rutaVal = document.getElementById('ruta').value.trim();
+    if (rutaVal && !rutaVal.startsWith('admin/')) rutaVal = 'admin/' + rutaVal;
     fd.append('nombre', document.getElementById('nombre').value.trim());
-    fd.append('ruta',   document.getElementById('ruta').value.trim());
+    fd.append('ruta',   rutaVal);
     fd.append('icono',  document.getElementById('icono').value.trim());
     fd.append('grupo',  document.getElementById('grupo').value.trim());
     fd.append('orden',  document.getElementById('orden').value);
