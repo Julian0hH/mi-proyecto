@@ -1,14 +1,25 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php $_p = session('permisos')['admin/proyectos'] ?? []; ?>
+<script>
+const PERMS = {
+    agregar:  <?= !empty($_p['agregar'])  ? 'true' : 'false' ?>,
+    editar:   <?= !empty($_p['editar'])   ? 'true' : 'false' ?>,
+    eliminar: <?= !empty($_p['eliminar']) ? 'true' : 'false' ?>
+};
+</script>
+
 <div class="d-flex justify-content-between align-items-center mb-4 animate-slide-in">
     <div>
         <h2 class="fw-bold m-0"><i class="bi bi-folder-fill text-primary me-2"></i>Panel de Proyectos</h2>
         <p class="text-muted small mb-0 mt-1">Gestiona tu portafolio profesional</p>
     </div>
+    <?php if (!empty($_p['agregar'])): ?>
     <button class="btn btn-primary" id="btn-nuevo-proy">
         <i class="bi bi-plus-circle me-1"></i>Nuevo Proyecto
     </button>
+    <?php endif; ?>
 </div>
 
 <div class="card border-0 shadow-sm">
@@ -299,8 +310,8 @@ function renderizarTabla(slice) {
             <td class="text-end pe-4 py-2">
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-info" onclick='verImagenes(${JSON.stringify(proyecto).replace(/'/g,"&#39;")})' title="Ver imágenes"><i class="bi bi-images"></i></button>
-                    <button class="btn btn-warning" onclick='abrirModalEditar(${JSON.stringify(proyecto).replace(/'/g,"&#39;")})' title="Editar"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-danger" onclick="eliminarProyecto(${proyecto.id})" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    ${PERMS.editar ? `<button class="btn btn-warning" onclick='abrirModalEditar(${JSON.stringify(proyecto).replace(/'/g,"&#39;")})' title="Editar"><i class="bi bi-pencil"></i></button>` : ''}
+                    ${PERMS.eliminar ? `<button class="btn btn-danger" onclick="eliminarProyecto(${proyecto.id})" title="Eliminar"><i class="bi bi-trash"></i></button>` : ''}
                 </div>
             </td>`;
         tbody.appendChild(tr);

@@ -8,10 +8,14 @@ use CodeIgniter\HTTP\ResponseInterface;
 class AuthFilter implements FilterInterface
 {
     private const ACCIONES = [
-        'crear'    => 'agregar',
-        'editar'   => 'editar',
-        'eliminar' => 'eliminar',
-        'detalle'  => 'detalle',
+        'crear'      => 'agregar',
+        'subir'      => 'agregar',
+        'editar'     => 'editar',
+        'actualizar' => 'editar',
+        'guardar'    => 'editar',
+        'eliminar'   => 'eliminar',
+        'detalle'    => 'detalle',
+        'ver'        => 'detalle',
     ];
 
     public function before(RequestInterface $request, $arguments = null)
@@ -43,11 +47,15 @@ class AuthFilter implements FilterInterface
             return redirect()->to(base_url('admin/dashboard'));
         }
 
-        $lastSegment = basename($uri);
+        $segments     = explode('/', $uri);
+        $lastSegment  = end($segments);
         $bitRequerido = self::ACCIONES[$lastSegment] ?? null;
 
-        if ($bitRequerido === null && ctype_digit($lastSegment)) {
-            $bitRequerido = 'detalle';
+        // Si el último segmento es un número, revisar el penúltimo para el verbo
+        // Ej: admin/servicios/eliminar/123 → penúltimo = 'eliminar'
+        if (ctype_digit($lastSegment)) {
+            $penultimo    = $segments[count($segments) - 2] ?? '';
+            $bitRequerido = self::ACCIONES[$penultimo] ?? 'detalle';
         }
 
         if ($bitRequerido !== null && !($acceso[$bitRequerido] ?? false)) {

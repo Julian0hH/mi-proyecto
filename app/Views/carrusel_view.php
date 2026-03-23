@@ -1,6 +1,15 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php $_p = session('permisos')['admin/carrusel'] ?? []; ?>
+<script>
+const PERMS = {
+    agregar:  <?= !empty($_p['agregar'])  ? 'true' : 'false' ?>,
+    editar:   <?= !empty($_p['editar'])   ? 'true' : 'false' ?>,
+    eliminar: <?= !empty($_p['eliminar']) ? 'true' : 'false' ?>
+};
+</script>
+
 <div class="mb-4 animate-slide-in">
     <h2 class="fw-bold">
         <i class="bi bi-images text-primary me-2"></i>Carrusel de Imágenes
@@ -40,9 +49,11 @@
                 <i class="bi bi-list-ul me-2"></i>Gestión de Imágenes
                 <span class="badge bg-primary ms-2" id="totalImagenes">0</span>
             </h5>
+            <?php if (!empty($_p['agregar'])): ?>
             <button class="btn btn-primary btn-sm" id="btn-nueva-imagen">
                 <i class="bi bi-plus-lg me-1"></i>Nueva Imagen
             </button>
+            <?php endif; ?>
         </div>
     </div>
     <div class="card-body p-0">
@@ -258,12 +269,8 @@ function renderizarTabla() {
             <td class="py-3"><span class="text-muted small" title="${img.descripcion || ''}">${descMostrar}</span></td>
             <td class="text-end pe-4 py-3">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-warning" title="Editar" onclick="abrirModalEditar(${img.id}, '${tit}', '${desc}')">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-outline-danger" title="Eliminar" onclick="eliminarImagen(${img.id})">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    ${PERMS.editar ? `<button class="btn btn-outline-warning" title="Editar" onclick="abrirModalEditar(${img.id}, '${tit}', '${desc}')"><i class="bi bi-pencil"></i></button>` : ''}
+                    ${PERMS.eliminar ? `<button class="btn btn-outline-danger" title="Eliminar" onclick="eliminarImagen(${img.id})"><i class="bi bi-trash"></i></button>` : ''}
                 </div>
             </td>
         </tr>`;

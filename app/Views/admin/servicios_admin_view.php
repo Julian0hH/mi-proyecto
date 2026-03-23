@@ -1,6 +1,15 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php $_p = session('permisos')['admin/servicios'] ?? []; ?>
+<script>
+const PERMS = {
+    agregar:  <?= !empty($_p['agregar'])  ? 'true' : 'false' ?>,
+    editar:   <?= !empty($_p['editar'])   ? 'true' : 'false' ?>,
+    eliminar: <?= !empty($_p['eliminar']) ? 'true' : 'false' ?>
+};
+</script>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="fw-bold mb-1">Servicios</h2>
@@ -8,9 +17,11 @@
     </div>
     <div class="d-flex align-items-center gap-2">
         <span class="badge bg-primary fs-6" id="total-badge">–</span>
+        <?php if (!empty($_p['agregar'])): ?>
         <button class="btn btn-primary" id="btn-nuevo-srv">
             <i class="bi bi-plus-circle me-2"></i>Nuevo Servicio
         </button>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -269,7 +280,7 @@ function renderGrid(data, totalFiltrado, page) {
             </td>
             <td class="text-end pe-4 py-2">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary btn-editar"
+                    ${PERMS.editar ? `<button class="btn btn-outline-primary btn-editar"
                         data-id="${srv.id}"
                         data-titulo="${escHtml(srv.titulo)}"
                         data-descripcion="${escHtml(srv.descripcion||'')}"
@@ -279,10 +290,10 @@ function renderGrid(data, totalFiltrado, page) {
                         data-orden="${parseInt(srv.orden)||0}"
                         data-activo="${srv.activo ? '1' : '0'}"
                         title="Editar"><i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-eliminar" data-id="${srv.id}" data-nombre="${tit}" title="Eliminar">
+                    </button>` : ''}
+                    ${PERMS.eliminar ? `<button class="btn btn-outline-danger btn-eliminar" data-id="${srv.id}" data-nombre="${tit}" title="Eliminar">
                         <i class="bi bi-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </div>
             </td>
         </tr>`;

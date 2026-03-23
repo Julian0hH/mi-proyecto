@@ -1,6 +1,11 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php $_p = session('permisos')['admin/sobre-mi'] ?? []; ?>
+<script>
+const PERMS = { editar: <?= !empty($_p['editar']) ? 'true' : 'false' ?> };
+</script>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="fw-bold mb-1">Sobre Mí</h2>
@@ -139,7 +144,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 btn-lg" id="btn-guardar">
+            <button type="submit" class="btn btn-primary w-100 btn-lg" id="btn-guardar" <?= empty($_p['editar']) ? 'disabled title="Sin permiso para editar"' : '' ?>>
                 <i class="bi bi-check-circle me-2"></i>Guardar Cambios
             </button>
         </div>

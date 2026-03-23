@@ -1,15 +1,26 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php $_p = session('permisos')['admin/contactos'] ?? []; ?>
+<script>
+const PERMS = {
+    agregar:  <?= !empty($_p['agregar'])  ? 'true' : 'false' ?>,
+    editar:   <?= !empty($_p['editar'])   ? 'true' : 'false' ?>,
+    eliminar: <?= !empty($_p['eliminar']) ? 'true' : 'false' ?>
+};
+</script>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="fw-bold mb-1">Mensajes de Contacto</h2>
         <p class="text-muted small mb-0">Tabla avanzada con filtros en tiempo real</p>
     </div>
     <div class="d-flex align-items-center gap-2">
+        <?php if (!empty($_p['agregar'])): ?>
         <button class="btn btn-primary btn-sm" id="btn-nuevo-contacto">
             <i class="bi bi-plus-circle me-1"></i>Nuevo Contacto
         </button>
+        <?php endif; ?>
         <span class="badge bg-primary fs-6" id="total-badge">–</span>
     </div>
 </div>
@@ -230,8 +241,8 @@ async function cargarDatos(page = 1) {
                 <td class="text-center pe-4">
                     <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-secondary btn-ver" data-id="${c.id}" title="Ver detalle"><i class="bi bi-eye"></i></button>
-                        <button class="btn btn-outline-primary btn-edit" data-id="${c.id}" title="Editar"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-outline-danger btn-del" data-id="${c.id}" data-nombre="${escHtml(c.nombre)}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        ${PERMS.editar ? `<button class="btn btn-outline-primary btn-edit" data-id="${c.id}" title="Editar"><i class="bi bi-pencil"></i></button>` : ''}
+                        ${PERMS.eliminar ? `<button class="btn btn-outline-danger btn-del" data-id="${c.id}" data-nombre="${escHtml(c.nombre)}" title="Eliminar"><i class="bi bi-trash"></i></button>` : ''}
                     </div>
                 </td>
             </tr>`).join('');
