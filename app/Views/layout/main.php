@@ -37,36 +37,31 @@
         </div>
 
         <?php
-        $permisos  = session('permisos') ?? [];
-        $isLogued  = (bool) session('logueado');
+        $permisos       = session('permisos')        ?? [];
+        $sidebarModulos = session('sidebar_modulos') ?? [];
+        $isLogued       = (bool) session('logueado');
 
         function canSee(array $p, string $ruta): bool {
             return !empty($p[$ruta]['consulta']);
         }
+        $rutaUrlMap = [
+            'admin/carrusel' => 'carrusel',
+        ];
 
-       $verContenido = canSee($permisos,'admin/sobre-mi')
-                     || canSee($permisos,'admin/carrusel')
-                     || canSee($permisos,'admin/proyectos')
-                     || canSee($permisos,'admin/servicios')
-                     || canSee($permisos,'admin/contactos');
+        $grupoMeta = [
+            'Portafolio' => ['icono' => 'bi-pencil-square',      'color' => 'nav-icon-blue'],
+            'Seguridad'  => ['icono' => 'bi-shield-lock-fill',   'color' => 'nav-icon-orange'],
+        ];
+        $grupoMetaDefault = ['icono' => 'bi-folder2-open', 'color' => 'nav-icon-cyan'];
 
-        $verSeguridad = canSee($permisos,'admin/seguridad/perfiles')
-                     || canSee($permisos,'admin/seguridad/modulos')
-                     || canSee($permisos,'admin/seguridad/permisos')
-                     || canSee($permisos,'admin/seguridad/usuarios');
+        $gruposMods = [];
+        foreach ($sidebarModulos as $mod) {
+            if ($mod['grupo'] === 'General') continue;
+            $gruposMods[$mod['grupo']][] = $mod;
+        }
 
-        $verPri1 = canSee($permisos,'admin/principal1/modulo1')
-                || canSee($permisos,'admin/principal1/modulo2');
-
-        $verPri2 = canSee($permisos,'admin/principal2/modulo1')
-                || canSee($permisos,'admin/principal2/modulo2');
-
-        $isSegSection       = url_is('admin/seguridad*');
-        $isPri1Section      = url_is('admin/principal1*');
-        $isPri2Section      = url_is('admin/principal2*');
-        $isPortSection      = url_is('/') || url_is('portafolio*') || url_is('servicios*')
-                           || url_is('detalles*') || url_is('contratar*') || url_is('sobre-mi*') || url_is('contacto*');
-        $isContenidoSection = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section;
+        $isPortSection = url_is('/') || url_is('portafolio*') || url_is('servicios*')
+                      || url_is('detalles*') || url_is('contratar*') || url_is('sobre-mi*') || url_is('contacto*');
         ?>
 
         <ul class="sidebar-nav" id="sidebar-nav">
@@ -115,150 +110,38 @@
                 </a>
             </li>
 
-            <?php if ($verContenido): ?>
-            <li class="nav-section"><span>Contenido</span></li>
-            <li class="nav-accordion <?= $isContenidoSection ? 'open' : '' ?>">
+            <?php foreach ($gruposMods as $grupo => $mods):
+                $meta    = $grupoMeta[$grupo] ?? $grupoMetaDefault;
+                $isOpen  = false;
+                foreach ($mods as $m) {
+                    $u = $rutaUrlMap[$m['ruta']] ?? $m['ruta'];
+                    if (url_is($u.'*') || url_is($m['ruta'].'*')) { $isOpen = true; break; }
+                }
+            ?>
+            <li class="nav-section"><span><?= esc($grupo) ?></span></li>
+            <li class="nav-accordion <?= $isOpen ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
-                    <i class="bi bi-pencil-square nav-icon-blue"></i>
-                    <span>Gestión de Contenido</span>
+                    <i class="bi <?= esc($meta['icono']) ?> <?= esc($meta['color']) ?>"></i>
+                    <span><?= esc($grupo) ?></span>
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
-                    <?php if (canSee($permisos,'admin/sobre-mi')): ?>
+                    <?php foreach ($mods as $mod):
+                        $url = $rutaUrlMap[$mod['ruta']] ?? $mod['ruta'];
+                    ?>
                     <li>
-                        <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
-                            <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/carrusel')): ?>
-                    <li>
-                        <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
-                            <i class="bi bi-images"></i><span>Carrusel</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/proyectos')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
-                            <i class="bi bi-folder-symlink"></i><span>Proyectos</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/servicios')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/servicios') ?>" class="<?= url_is('admin/servicios*') ? 'active' : '' ?>">
-                            <i class="bi bi-gear-wide-connected"></i><span>Servicios</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/contactos')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/contactos') ?>" class="<?= url_is('admin/contactos*') ? 'active' : '' ?>">
-                            <i class="bi bi-chat-left-dots"></i>
-                            <span>Contactos</span>
+                        <a href="<?= base_url($url) ?>" class="<?= (url_is($url.'*') || url_is($mod['ruta'].'*')) ? 'active' : '' ?>">
+                            <i class="bi <?= esc($mod['icono']) ?>"></i>
+                            <span><?= esc($mod['nombre']) ?></span>
+                            <?php if ($mod['ruta'] === 'admin/contactos'): ?>
                             <span class="badge-count" id="badge-contactos" style="display:none"></span>
+                            <?php endif; ?>
                         </a>
                     </li>
-                    <?php endif; ?>
+                    <?php endforeach; ?>
                 </ul>
             </li>
-            <?php endif; ?>
-
-            <?php if ($verSeguridad): ?>
-            <li class="nav-section"><span>Control de Acceso</span></li>
-            <li class="nav-accordion <?= $isSegSection ? 'open' : '' ?>">
-                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
-                    <i class="bi bi-shield-lock-fill nav-icon-orange"></i>
-                    <span>Seguridad</span>
-                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
-                </a>
-                <ul class="nav-accordion-body">
-                    <?php if (canSee($permisos,'admin/seguridad/perfiles')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/seguridad/perfiles') ?>" class="<?= url_is('admin/seguridad/perfiles*') ? 'active' : '' ?>">
-                            <i class="bi bi-shield-check"></i><span>Perfiles de Acceso</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/seguridad/modulos')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/seguridad/modulos') ?>" class="<?= url_is('admin/seguridad/modulos*') ? 'active' : '' ?>">
-                            <i class="bi bi-grid-3x3-gap"></i><span>Páginas Protegidas</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/seguridad/permisos')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/seguridad/permisos') ?>" class="<?= url_is('admin/seguridad/permisos*') ? 'active' : '' ?>">
-                            <i class="bi bi-key"></i><span>Permisos por Perfil</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/seguridad/usuarios')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/seguridad/usuarios') ?>" class="<?= url_is('admin/seguridad/usuarios*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Usuarios</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-            </li>
-            <?php endif; ?>
-
-            <?php if ($verPri1): ?>
-            <li class="nav-section"><span>Ventas</span></li>
-            <li class="nav-accordion <?= $isPri1Section ? 'open' : '' ?>">
-                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
-                    <i class="bi bi-graph-up-arrow nav-icon-cyan"></i>
-                    <span>Ventas</span>
-                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
-                </a>
-                <ul class="nav-accordion-body">
-                    <?php if (canSee($permisos,'admin/principal1/modulo1')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/principal1/modulo1') ?>" class="<?= url_is('admin/principal1/modulo1*') ? 'active' : '' ?>">
-                            <i class="bi bi-funnel"></i><span>Pipeline de Ventas</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/principal1/modulo2')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/principal1/modulo2') ?>" class="<?= url_is('admin/principal1/modulo2*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Clientes y Leads</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-            </li>
-            <?php endif; ?>
-
-            <?php if ($verPri2): ?>
-            <li class="nav-section"><span>Operaciones</span></li>
-            <li class="nav-accordion <?= $isPri2Section ? 'open' : '' ?>">
-                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
-                    <i class="bi bi-kanban nav-icon-purple"></i>
-                    <span>Operaciones</span>
-                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
-                </a>
-                <ul class="nav-accordion-body">
-                    <?php if (canSee($permisos,'admin/principal2/modulo1')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/principal2/modulo1') ?>" class="<?= url_is('admin/principal2/modulo1*') ? 'active' : '' ?>">
-                            <i class="bi bi-kanban"></i><span>Gestión de Proyectos</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canSee($permisos,'admin/principal2/modulo2')): ?>
-                    <li>
-                        <a href="<?= base_url('admin/principal2/modulo2') ?>" class="<?= url_is('admin/principal2/modulo2*') ? 'active' : '' ?>">
-                            <i class="bi bi-bar-chart-line"></i><span>Reportes y Analítica</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-            </li>
-            <?php endif; ?>
+            <?php endforeach; ?>
 
             <?php endif; // isLogued ?>
         </ul>

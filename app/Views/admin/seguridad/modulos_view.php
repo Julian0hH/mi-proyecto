@@ -176,7 +176,7 @@ function renderTabla(data, totalReg, page) {
                 <span class="fw-semibold">${escHtml(m.nombre)}</span>
             </td>
             <td><code class="small">${escHtml(m.ruta)}</code></td>
-            <td><span class="badge bg-secondary bg-opacity-15 text-secondary">${escHtml(m.grupo||'—')}</span></td>
+            <td><span class="badge bg-secondary text-white">${escHtml(m.grupo||'—')}</span></td>
             <td class="text-center">
                 ${m.activo
                     ? '<span class="badge bg-success">Activo</span>'
