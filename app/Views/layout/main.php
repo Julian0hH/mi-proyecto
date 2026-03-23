@@ -71,8 +71,6 @@
 
         <ul class="sidebar-nav" id="sidebar-nav">
 
-            <?php if ($isLogued): ?>
-
             <li class="nav-section"><span>Portafolio</span></li>
             <li class="nav-accordion <?= $isPortSection ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
@@ -109,6 +107,7 @@
                 </ul>
             </li>
 
+            <?php if ($isLogued): ?>
             <li class="nav-section"><span>General</span></li>
             <li>
                 <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
