@@ -338,7 +338,7 @@ function renderPaginacion(total, actual, totalReg) {
 }
 
 // ── Abrir modal Nuevo ─────────────────────────────────────────
-document.getElementById('btn-nuevo-srv').addEventListener('click', () => {
+document.getElementById('btn-nuevo-srv')?.addEventListener('click', () => {
     editingId = null;
     form.reset();
     document.getElementById('srv-icono').value = 'bi-gear';

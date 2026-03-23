@@ -452,7 +452,7 @@ document.getElementById('btn-guardar-contacto').addEventListener('click', async 
     }
 });
 
-document.getElementById('btn-nuevo-contacto').addEventListener('click', abrirCrear);
+document.getElementById('btn-nuevo-contacto')?.addEventListener('click', abrirCrear);
 
 // Filtros con debounce
 function triggerFilter() { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => cargarDatos(1), 350); }

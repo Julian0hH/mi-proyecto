@@ -181,7 +181,7 @@ const modalCrear  = new bootstrap.Modal(document.getElementById('modalCrear'));
 const modalEditar = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar'));
 
 // ── Nuevo Proyecto ─────────────────────────────────────────────
-document.getElementById('btn-nuevo-proy').addEventListener('click', () => {
+document.getElementById('btn-nuevo-proy')?.addEventListener('click', () => {
     document.getElementById('formCrearProyecto').reset();
     document.getElementById('imagePreviewContainer').style.display = 'none';
     document.getElementById('imagePreview').innerHTML = '';
