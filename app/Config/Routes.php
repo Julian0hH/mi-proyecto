@@ -156,6 +156,8 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('principal1/modulo2', 'PrincipalController::p1_2');
     $routes->get('principal2/modulo1', 'PrincipalController::p2_1');
     $routes->get('principal2/modulo2', 'PrincipalController::p2_2');
+
+    $routes->get('(:any)', 'DynamicPageController::show/$1');
 });
 
 // ============================================================

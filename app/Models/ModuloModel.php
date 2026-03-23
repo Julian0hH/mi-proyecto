@@ -55,6 +55,12 @@ class ModuloModel
         return ($res['code'] === 200 && !empty($res['body'])) ? $res['body'][0] : [];
     }
 
+    public function obtenerPorRuta(string $ruta): array
+    {
+        $res = $this->request('GET', 'modulos?ruta=eq.' . urlencode($ruta) . '&limit=1');
+        return ($res['code'] === 200 && !empty($res['body'])) ? $res['body'][0] : [];
+    }
+
     public function crear(array $data): bool
     {
         $res = $this->request('POST', 'modulos', $data, ['Prefer: return=minimal']);
