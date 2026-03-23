@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class UsuarioModel
+class ModuloModel
 {
     protected string $supabaseUrl;
     protected string $supabaseKey;
@@ -37,55 +37,39 @@ class UsuarioModel
         return ['code' => $code, 'body' => json_decode($response, true)];
     }
 
-    public function buscarPorEmail(string $email): array
-    {
-        $res = $this->request(
-            'GET',
-            'usuarios?email=eq.' . urlencode($email)
-            . '&select=*,perfiles(nombre)'
-            . '&activo=eq.true&limit=1'
-        );
-        return ($res['code'] === 200 && !empty($res['body'])) ? $res['body'][0] : [];
-    }
-
     public function obtenerTodos(): array
     {
-        $res = $this->request(
-            'GET',
-            'usuarios?select=*,perfiles(nombre)&order=created_at.desc'
-        );
+        $res = $this->request('GET', 'modulos?select=*&order=grupo.asc,orden.asc');
+        return ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
+    }
+
+    public function obtenerActivos(): array
+    {
+        $res = $this->request('GET', 'modulos?select=*&activo=eq.true&order=grupo.asc,orden.asc');
         return ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
     }
 
     public function obtenerPorId(int $id): array
     {
-        $res = $this->request(
-            'GET',
-            'usuarios?id=eq.' . $id . '&select=*,perfiles(nombre)&limit=1'
-        );
+        $res = $this->request('GET', 'modulos?id=eq.' . $id . '&limit=1');
         return ($res['code'] === 200 && !empty($res['body'])) ? $res['body'][0] : [];
     }
 
     public function crear(array $data): bool
     {
-        $res = $this->request('POST', 'usuarios', $data, ['Prefer: return=minimal']);
+        $res = $this->request('POST', 'modulos', $data, ['Prefer: return=minimal']);
         return $res['code'] === 201;
     }
 
     public function actualizar(int $id, array $data): bool
     {
-        $res = $this->request('PATCH', 'usuarios?id=eq.' . $id, $data);
+        $res = $this->request('PATCH', 'modulos?id=eq.' . $id, $data);
         return in_array($res['code'], [200, 204]);
     }
 
     public function eliminar(int $id): bool
     {
-        $res = $this->request('DELETE', 'usuarios?id=eq.' . $id);
+        $res = $this->request('DELETE', 'modulos?id=eq.' . $id);
         return in_array($res['code'], [200, 204]);
-    }
-
-    public function actualizarUltimoLogin(int $id): void
-    {
-        $this->request('PATCH', 'usuarios?id=eq.' . $id, ['ultimo_login' => date('c')]);
     }
 }

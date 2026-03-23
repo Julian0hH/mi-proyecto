@@ -23,7 +23,7 @@ class PerfilModel
             CURLOPT_CUSTOMREQUEST  => strtoupper($method),
             CURLOPT_TIMEOUT        => 10,
             CURLOPT_HTTPHEADER     => array_merge([
-                'apikey: ' . $this->supabaseKey,
+                'apikey: '        . $this->supabaseKey,
                 'Authorization: Bearer ' . $this->supabaseKey,
                 'Content-Type: application/json',
             ], $extra),
@@ -40,6 +40,12 @@ class PerfilModel
     public function obtenerTodos(): array
     {
         $res = $this->request('GET', 'perfiles?select=*&order=id.asc');
+        return ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
+    }
+
+    public function obtenerActivos(): array
+    {
+        $res = $this->request('GET', 'perfiles?select=id,nombre&activo=eq.true&order=nombre.asc');
         return ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
     }
 
