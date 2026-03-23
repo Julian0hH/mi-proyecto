@@ -2,24 +2,16 @@
 
 namespace App\Controllers;
 
-/**
- * DebugController — diagnóstico temporal.
- * BUG CORREGIDO #4: el endpoint original no tenía ninguna protección.
- * Cualquier visitante podía ver las claves de Supabase accediendo a /debug/env.
- * Ahora requiere sesión de admin activa.
- */
 class DebugController extends BaseController
 {
     public function env()
     {
-        // Protección: solo accesible con sesión admin activa
-        if (!session()->get('admin_logueado')) {
+        if (!session('logueado')) {
             return $this->response->setStatusCode(403)->setJSON([
                 'error' => 'Acceso denegado'
             ]);
         }
 
-        // Protección adicional: solo en entorno development
         if (getenv('CI_ENVIRONMENT') !== 'development') {
             return $this->response->setStatusCode(403)->setJSON([
                 'error' => 'Solo disponible en entorno development'

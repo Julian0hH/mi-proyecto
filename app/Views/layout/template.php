@@ -50,7 +50,7 @@
                 </a>
             </li>
             
-            <?php if (session()->get('admin_logueado')): ?>
+            <?php if (session('logueado')): ?>
             <li>
                 <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
                     <i class="bi bi-folder"></i><span>Mis Proyectos</span>
@@ -60,13 +60,13 @@
         </ul>
 
         <div class="sidebar-footer">
-            <?php if (session()->get('admin_logueado')): ?>
+            <?php if (session('logueado')): ?>
                 <div class="user-info">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-person-circle fs-4 me-2"></i>
                         <div class="flex-grow-1 text-truncate">
                             <small class="d-block text-muted">Admin</small>
-                            <span class="fw-semibold small"><?= esc(session()->get('admin_email')) ?></span>
+                            <span class="fw-semibold small"><?= esc(session('user_email')) ?></span>
                         </div>
                     </div>
                     <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm w-100">
@@ -109,7 +109,7 @@
             </nav>
 
             <div class="ms-auto d-md-none">
-                <?php if (session()->get('admin_logueado')): ?>
+                <?php if (session('logueado')): ?>
                     <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-box-arrow-right"></i>
                     </a>

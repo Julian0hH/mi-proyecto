@@ -47,21 +47,20 @@
                     <?= csrf_field() ?>
 
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">USUARIO O CORREO</label>
+                        <label class="form-label text-muted small fw-bold">CORREO ELECTRÓNICO</label>
                         <div class="input-group">
                             <span class="input-group-text">
-                                <i class="bi bi-person"></i>
+                                <i class="bi bi-envelope"></i>
                             </span>
                             <input
-                                type="text"
-                                name="usuario"
+                                type="email"
+                                name="email"
                                 id="login-usuario"
                                 class="form-control"
-                                placeholder="usuario o correo@ejemplo.com"
-                                value="<?= old('usuario') ?>"
+                                placeholder="correo@ejemplo.com"
+                                value="<?= old('email') ?>"
                                 autofocus
-                                maxlength="150"
-                                data-vt="alnumsym"
+                                maxlength="200"
                             >
                         </div>
                         <div class="form-error text-danger small mt-1" id="err-login-usuario"></div>
@@ -142,20 +141,15 @@ document.getElementById('form-login').addEventListener('submit', function(e) {
     const passwordEl = document.getElementById('login-password');
     let valid = true;
 
-    const usuario = usuarioEl.value.trim();
-    if (!usuario) {
+    const email = usuarioEl.value.trim();
+    if (!email) {
         usuarioEl.classList.add('is-invalid');
-        document.getElementById('err-login-usuario').textContent = 'El usuario o correo es obligatorio';
+        document.getElementById('err-login-usuario').textContent = 'El correo es obligatorio';
         FormValidator.shake(usuarioEl.closest('.input-group'));
         valid = false;
-    } else if (usuario.length < 3) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         usuarioEl.classList.add('is-invalid');
-        document.getElementById('err-login-usuario').textContent = 'Mínimo 3 caracteres';
-        FormValidator.shake(usuarioEl.closest('.input-group'));
-        valid = false;
-    } else if (FormValidator.hasDangerous(usuario)) {
-        usuarioEl.classList.add('is-invalid');
-        document.getElementById('err-login-usuario').textContent = 'Caracteres no permitidos';
+        document.getElementById('err-login-usuario').textContent = 'Ingresa un correo válido';
         FormValidator.shake(usuarioEl.closest('.input-group'));
         valid = false;
     }

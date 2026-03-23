@@ -43,7 +43,7 @@
 <div class="text-center py-5 text-muted mb-5">
     <i class="bi bi-grid fs-1 d-block mb-3 opacity-25"></i>
     <p class="lead">Los servicios estarán disponibles próximamente.</p>
-    <?php if (session()->get('admin_logueado')): ?>
+    <?php if (session('logueado')): ?>
     <a href="<?= base_url('admin/servicios') ?>" class="btn btn-sm btn-primary mt-2">
         <i class="bi bi-plus me-1"></i>Agregar Servicios
     </a>

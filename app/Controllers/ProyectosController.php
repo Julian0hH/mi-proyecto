@@ -24,7 +24,7 @@ class ProyectosController extends BaseController
 
     public function admin()
     {
-        if (!session()->get('admin_logueado')) {
+        if (!session('logueado')) {
             return redirect()->to(base_url('login'))->with('error', 'Debes iniciar sesión');
         }
 

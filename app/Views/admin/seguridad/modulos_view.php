@@ -2,22 +2,22 @@
 <?= $this->section('content') ?>
 
 <?php
-$permisos = session()->get('user_permisos') ?? [];
-$isAdmin  = session()->get('user_type') === 'admin';
-$puedeAgregar  = $isAdmin || !empty($permisos[2]['bitAgregar']);
-$puedeEditar   = $isAdmin || !empty($permisos[2]['bitEditar']);
-$puedeEliminar = $isAdmin || !empty($permisos[2]['bitEliminar']);
-$puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
+$permisos      = session('permisos') ?? [];
+$ruta          = 'admin/seguridad/modulos';
+$puedeAgregar  = !empty($permisos[$ruta]['agregar']);
+$puedeEditar   = !empty($permisos[$ruta]['editar']);
+$puedeEliminar = !empty($permisos[$ruta]['eliminar']);
+$puedeDetalle  = !empty($permisos[$ruta]['detalle']);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-grid-3x3-gap me-2 text-success"></i>Módulos</h2>
-        <p class="text-muted small mb-0">Gestión de módulos del sistema</p>
+        <h2 class="fw-bold mb-1"><i class="bi bi-grid-3x3-gap me-2 text-success"></i>Páginas Protegidas</h2>
+        <p class="text-muted small mb-0">Define qué páginas del admin están bajo control de acceso</p>
     </div>
     <?php if ($puedeAgregar): ?>
     <button class="btn btn-success" id="btn-nuevo">
-        <i class="bi bi-plus-circle me-1"></i>Nuevo Módulo
+        <i class="bi bi-plus-circle me-1"></i>Nueva Página
     </button>
     <?php endif; ?>
 </div>
@@ -39,14 +39,15 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
                 <thead>
                     <tr>
                         <th class="px-4">#</th>
-                        <th>Nombre del Módulo</th>
-                        <th>Ruta protegida</th>
-                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Ruta base</th>
+                        <th>Grupo</th>
+                        <th class="text-center">Estado</th>
                         <th class="text-end px-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body">
-                    <tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -57,34 +58,57 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     </div>
 </div>
 
+<!-- Modal Crear/Editar -->
 <div class="modal fade" id="modalModulo" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modal-titulo"><i class="bi bi-grid-3x3-gap me-2"></i>Nuevo Módulo</h5>
+                <h5 class="modal-title" id="modal-titulo"><i class="bi bi-grid-3x3-gap me-2"></i>Nueva Página</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="form-modulo" novalidate>
                     <input type="hidden" id="modulo-id">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre del Módulo <span class="text-danger">*</span></label>
-                        <input type="text" id="strNombreModulo" class="form-control" maxlength="100"
-                               placeholder="Ej. Inventario, Ventas..." required data-vt="alnum">
-                        <div class="form-text text-end"><span id="cnt-nombre">0</span>/100</div>
-                        <div class="form-error text-danger small" id="err-strNombreModulo"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Ruta protegida</label>
-                        <div class="input-group">
-                            <span class="input-group-text text-muted small">admin/</span>
-                            <input type="text" id="strRuta" class="form-control" maxlength="200"
-                                   placeholder="Ej. servicios, reportes/ventas">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" id="nombre" class="form-control" maxlength="100"
+                                   placeholder="Ej. Inventario, Reportes..." required>
+                            <div class="form-text text-end"><span id="cnt-nombre">0</span>/100</div>
+                            <div class="form-error text-danger small" id="err-nombre"></div>
                         </div>
-                        <div class="form-text">
-                            Ruta (sin <code>admin/</code>) que este módulo protege. Dejar vacío si no controla ninguna página.
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ruta base <span class="text-danger">*</span></label>
+                            <input type="text" id="ruta" class="form-control" maxlength="200"
+                                   placeholder="admin/inventario">
+                            <div class="form-text">
+                                Ruta completa (prefijo URL). Ej: <code>admin/proyectos</code>, <code>admin/seguridad/perfiles</code>
+                            </div>
+                            <div class="form-error text-danger small" id="err-ruta"></div>
                         </div>
-                        <div class="form-error text-danger small" id="err-strRuta"></div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ícono Bootstrap</label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="icono-preview"><i class="bi bi-circle"></i></span>
+                                <input type="text" id="icono" class="form-control" maxlength="60"
+                                       placeholder="bi-folder" value="bi-circle">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Grupo (sidebar)</label>
+                            <input type="text" id="grupo" class="form-control" maxlength="100"
+                                   placeholder="General, Seguridad..." value="General">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Orden</label>
+                            <input type="number" id="orden" class="form-control" min="0" max="999" value="0">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="activo" checked>
+                                <label class="form-check-label" for="activo">Activo</label>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -98,6 +122,7 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     </div>
 </div>
 
+<!-- Modal Detalle -->
 <div class="modal fade" id="modalDetalle" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -112,7 +137,7 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
 
 <script>
 const BASE = '<?= base_url('admin/seguridad/modulos') ?>';
-const PER_PAGE = 5;
+const PER_PAGE = 8;
 let modulos = [], editingId = null;
 
 const modal    = new bootstrap.Modal(document.getElementById('modalModulo'));
@@ -129,25 +154,34 @@ async function cargar() {
 
 function aplicarFiltro(page = 1) {
     const q = document.getElementById('f-busqueda').value.toLowerCase();
-    const filtrados = q ? modulos.filter(m => m.strNombreModulo?.toLowerCase().includes(q)) : modulos;
+    const filtrados = q ? modulos.filter(m =>
+        m.nombre?.toLowerCase().includes(q) || m.ruta?.toLowerCase().includes(q) || m.grupo?.toLowerCase().includes(q)
+    ) : modulos;
     const total = Math.ceil(filtrados.length / PER_PAGE);
-    const slice = filtrados.slice((page-1)*PER_PAGE, page*PER_PAGE);
-    renderTabla(slice, filtrados.length);
+    renderTabla(filtrados.slice((page-1)*PER_PAGE, page*PER_PAGE), filtrados.length, page);
     renderPaginacion(total, page, filtrados.length);
 }
 
-function renderTabla(data, total) {
+function renderTabla(data, totalReg, page) {
     const tbody = document.getElementById('tabla-body');
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
         return;
     }
     tbody.innerHTML = data.map(m => `
         <tr>
             <td class="px-4 text-muted small">${m.id}</td>
-            <td><span class="fw-semibold"><i class="bi bi-box me-2 text-success"></i>${escHtml(m.strNombreModulo)}</span></td>
-            <td class="text-muted small">${m.strRuta ? `<code class="small">admin/${escHtml(m.strRuta)}</code>` : '<span class="text-muted">—</span>'}</td>
-            <td class="text-muted small">${formatDate(m.created_at)}</td>
+            <td>
+                <i class="${escHtml(m.icono||'bi-circle')} me-2 text-success"></i>
+                <span class="fw-semibold">${escHtml(m.nombre)}</span>
+            </td>
+            <td><code class="small">${escHtml(m.ruta)}</code></td>
+            <td><span class="badge bg-secondary bg-opacity-15 text-secondary">${escHtml(m.grupo||'—')}</span></td>
+            <td class="text-center">
+                ${m.activo
+                    ? '<span class="badge bg-success">Activo</span>'
+                    : '<span class="badge bg-secondary">Inactivo</span>'}
+            </td>
             <td class="text-end px-4">
                 <div class="btn-group btn-group-sm">
                     <?php if ($puedeDetalle): ?>
@@ -156,12 +190,16 @@ function renderTabla(data, total) {
                     <?php if ($puedeEditar): ?>
                     <button class="btn btn-outline-primary btn-editar"
                         data-id="${m.id}"
-                        data-nombre="${escHtml(m.strNombreModulo)}"
-                        data-ruta="${escHtml(m.strRuta || '')}"
+                        data-nombre="${escHtml(m.nombre)}"
+                        data-ruta="${escHtml(m.ruta||'')}"
+                        data-icono="${escHtml(m.icono||'bi-circle')}"
+                        data-grupo="${escHtml(m.grupo||'General')}"
+                        data-orden="${m.orden||0}"
+                        data-activo="${m.activo?'1':'0'}"
                         title="Editar"><i class="bi bi-pencil"></i></button>
                     <?php endif; ?>
                     <?php if ($puedeEliminar): ?>
-                    <button class="btn btn-outline-danger btn-eliminar" data-id="${m.id}" data-nombre="${escHtml(m.strNombreModulo)}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    <button class="btn btn-outline-danger btn-eliminar" data-id="${m.id}" data-nombre="${escHtml(m.nombre)}" title="Eliminar"><i class="bi bi-trash"></i></button>
                     <?php endif; ?>
                 </div>
             </td>
@@ -179,6 +217,12 @@ function renderPaginacion(total, actual, totalReg) {
     nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => aplicarFiltro(+b.dataset.page)));
 }
 
+// Preview ícono en tiempo real
+document.getElementById('icono').addEventListener('input', function() {
+    const el = document.querySelector('#icono-preview i');
+    el.className = this.value.trim() || 'bi-circle';
+});
+
 let debounce;
 document.getElementById('f-busqueda').addEventListener('input', () => {
     clearTimeout(debounce); debounce = setTimeout(() => aplicarFiltro(1), 300);
@@ -186,15 +230,20 @@ document.getElementById('f-busqueda').addEventListener('input', () => {
 document.getElementById('btn-clear').addEventListener('click', () => {
     document.getElementById('f-busqueda').value = ''; aplicarFiltro(1);
 });
-document.getElementById('strNombreModulo').addEventListener('input', function() {
+document.getElementById('nombre').addEventListener('input', function() {
     document.getElementById('cnt-nombre').textContent = this.value.length;
 });
 
 document.getElementById('btn-nuevo')?.addEventListener('click', () => {
     editingId = null;
-    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-grid-3x3-gap me-2"></i>Nuevo Módulo';
+    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-grid-3x3-gap me-2"></i>Nueva Página';
     document.getElementById('form-modulo').reset();
     document.getElementById('cnt-nombre').textContent = '0';
+    document.getElementById('icono').value  = 'bi-circle';
+    document.getElementById('grupo').value  = 'General';
+    document.getElementById('orden').value  = '0';
+    document.getElementById('activo').checked = true;
+    document.querySelector('#icono-preview i').className = 'bi-circle';
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
 });
@@ -203,10 +252,15 @@ document.addEventListener('click', e => {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
     editingId = btn.dataset.id;
-    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Módulo';
-    document.getElementById('strNombreModulo').value = btn.dataset.nombre;
-    document.getElementById('strRuta').value = btn.dataset.ruta || '';
+    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Página';
+    document.getElementById('nombre').value  = btn.dataset.nombre;
+    document.getElementById('ruta').value    = btn.dataset.ruta;
+    document.getElementById('icono').value   = btn.dataset.icono;
+    document.getElementById('grupo').value   = btn.dataset.grupo;
+    document.getElementById('orden').value   = btn.dataset.orden;
+    document.getElementById('activo').checked = btn.dataset.activo === '1';
     document.getElementById('cnt-nombre').textContent = btn.dataset.nombre.length;
+    document.querySelector('#icono-preview i').className = btn.dataset.icono;
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
 });
@@ -219,8 +273,12 @@ document.addEventListener('click', e => {
     document.getElementById('detalle-body').innerHTML = `
         <dl class="row mb-0">
             <dt class="col-sm-4">ID</dt><dd class="col-sm-8">${m.id}</dd>
-            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">${escHtml(m.strNombreModulo)}</dd>
-            <dt class="col-sm-4">Ruta</dt><dd class="col-sm-8">${m.strRuta ? `<code>admin/${escHtml(m.strRuta)}</code>` : '<span class="text-muted">Sin ruta asignada</span>'}</dd>
+            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">${escHtml(m.nombre)}</dd>
+            <dt class="col-sm-4">Ruta</dt><dd class="col-sm-8"><code>${escHtml(m.ruta)}</code></dd>
+            <dt class="col-sm-4">Ícono</dt><dd class="col-sm-8"><i class="${escHtml(m.icono||'bi-circle')} me-1"></i><code>${escHtml(m.icono||'')}</code></dd>
+            <dt class="col-sm-4">Grupo</dt><dd class="col-sm-8">${escHtml(m.grupo||'—')}</dd>
+            <dt class="col-sm-4">Orden</dt><dd class="col-sm-8">${m.orden}</dd>
+            <dt class="col-sm-4">Estado</dt><dd class="col-sm-8">${m.activo ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-secondary">Inactivo</span>'}</dd>
             <dt class="col-sm-4">Creado</dt><dd class="col-sm-8">${formatDate(m.created_at)}</dd>
         </dl>`;
     mDetalle.show();
@@ -239,27 +297,27 @@ document.addEventListener('click', e => {
 
 document.getElementById('btn-guardar').addEventListener('click', async function() {
     const valid = FormValidator.validate([
-        { id: 'strNombreModulo', label: 'Nombre del módulo', rules: [
+        { id: 'nombre', label: 'Nombre', rules: ['required', {min:3}, {max:100}, 'noHtml'] },
+        { id: 'ruta',   label: 'Ruta',   rules: [
             'required',
             { min: 3, msg: 'Mínimo 3 caracteres' },
-            { max: 100 },
-            'noHtml',
-        ]},
-        { id: 'strRuta', label: 'Ruta', rules: [
             { max: 200 },
             'noHtml',
-            { fn: v => v === '' || /^[a-zA-Z0-9\-\/]+$/.test(v) || 'Solo letras, números, guiones y barras' },
+            { fn: v => /^[a-zA-Z0-9\-\/]+$/.test(v) || 'Solo letras, números, guiones y barras' },
         ]},
     ], 'form-modulo');
-
     if (!valid) return;
 
-    const btn = this;
-    const fd  = new FormData();
-    fd.append('strNombreModulo', document.getElementById('strNombreModulo').value.trim());
-    fd.append('strRuta',         document.getElementById('strRuta').value.trim());
+    const fd = new FormData();
+    fd.append('nombre', document.getElementById('nombre').value.trim());
+    fd.append('ruta',   document.getElementById('ruta').value.trim());
+    fd.append('icono',  document.getElementById('icono').value.trim());
+    fd.append('grupo',  document.getElementById('grupo').value.trim());
+    fd.append('orden',  document.getElementById('orden').value);
+    if (document.getElementById('activo').checked) fd.append('activo', '1');
+
     const url = editingId ? `${BASE}/actualizar/${editingId}` : `${BASE}/crear`;
-    FormValidator.btnLoad(btn);
+    FormValidator.btnLoad(this);
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
@@ -269,7 +327,7 @@ document.getElementById('btn-guardar').addEventListener('click', async function(
             else Toast.error(data.mensaje);
         }
     } catch { Toast.error('Error de red'); }
-    finally { FormValidator.btnDone(btn); }
+    finally { FormValidator.btnDone(this); }
 });
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

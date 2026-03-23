@@ -408,11 +408,11 @@
     </div>
 </section>
 
-<?php if (session()->get('admin_logueado')): ?>
+<?php if (session('logueado')): ?>
 <div class="alert alert-primary border-0 shadow-sm mt-4 d-flex align-items-center gap-3">
     <i class="bi bi-shield-fill-check fs-4 text-primary"></i>
     <div>
-        <strong>Sesión Administrativa Activa — <?= esc(session()->get('admin_nombre') ?? 'Admin') ?></strong>
+        <strong>Sesión Administrativa Activa — <?= esc(session('user_nombre') ?? 'Admin') ?></strong>
         <small class="d-block text-muted">
             <a href="<?= base_url('admin/dashboard') ?>">Ir al Dashboard</a>
         </small>

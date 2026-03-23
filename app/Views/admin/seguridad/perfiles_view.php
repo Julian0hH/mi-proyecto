@@ -2,18 +2,18 @@
 <?= $this->section('content') ?>
 
 <?php
-$permisos = session()->get('user_permisos') ?? [];
-$isAdmin  = session()->get('user_type') === 'admin';
-$puedeAgregar  = $isAdmin || !empty($permisos[1]['bitAgregar']);
-$puedeEditar   = $isAdmin || !empty($permisos[1]['bitEditar']);
-$puedeEliminar = $isAdmin || !empty($permisos[1]['bitEliminar']);
-$puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
+$permisos      = session('permisos') ?? [];
+$ruta          = 'admin/seguridad/perfiles';
+$puedeAgregar  = !empty($permisos[$ruta]['agregar']);
+$puedeEditar   = !empty($permisos[$ruta]['editar']);
+$puedeEliminar = !empty($permisos[$ruta]['eliminar']);
+$puedeDetalle  = !empty($permisos[$ruta]['detalle']);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-person-badge me-2 text-primary"></i>Perfiles</h2>
-        <p class="text-muted small mb-0">Gestión de perfiles de acceso del sistema</p>
+        <h2 class="fw-bold mb-1"><i class="bi bi-shield-check me-2 text-primary"></i>Perfiles de Acceso</h2>
+        <p class="text-muted small mb-0">Define los perfiles que determinan qué puede hacer cada usuario</p>
     </div>
     <?php if ($puedeAgregar): ?>
     <button class="btn btn-primary" id="btn-nuevo">
@@ -39,14 +39,15 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
                 <thead>
                     <tr>
                         <th class="px-4">#</th>
-                        <th>Nombre del Perfil</th>
-                        <th class="text-center">Administrador</th>
-                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Estado</th>
+                        <th>Creado</th>
                         <th class="text-end px-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body">
-                    <tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
+                    <tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -61,27 +62,29 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modal-titulo"><i class="bi bi-person-badge me-2"></i>Nuevo Perfil</h5>
+                <h5 class="modal-title" id="modal-titulo"><i class="bi bi-shield-check me-2"></i>Nuevo Perfil</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="form-perfil" novalidate>
                     <input type="hidden" id="perfil-id">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre del Perfil <span class="text-danger">*</span></label>
-                        <input type="text" id="strNombrePerfil" class="form-control" maxlength="100"
-                               placeholder="Ej. Vendedor, Supervisor..." required data-vt="alnum">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" id="nombre" class="form-control" maxlength="100"
+                               placeholder="Ej. Editor, Supervisor..." required>
                         <div class="form-text text-end"><span id="cnt-nombre">0</span>/100</div>
-                        <div class="form-error text-danger small" id="err-strNombrePerfil"></div>
+                        <div class="form-error text-danger small" id="err-nombre"></div>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea id="descripcion" class="form-control" rows="2" maxlength="255"
+                                  placeholder="Describe brevemente el propósito de este perfil..."></textarea>
+                    </div>
+                    <div class="mb-1">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="bitAdministrador">
-                            <label class="form-check-label" for="bitAdministrador">
-                                <i class="bi bi-shield-fill-check me-1 text-warning"></i>Es Administrador
-                            </label>
+                            <input class="form-check-input" type="checkbox" id="activo" checked>
+                            <label class="form-check-label" for="activo">Perfil activo</label>
                         </div>
-                        <small class="text-muted">Los administradores tienen acceso completo al sistema.</small>
                     </div>
                 </form>
             </div>
@@ -126,28 +129,28 @@ async function cargar() {
 
 function aplicarFiltro(page = 1) {
     const q = document.getElementById('f-busqueda').value.toLowerCase();
-    const filtrados = q ? perfiles.filter(p => p.strNombrePerfil?.toLowerCase().includes(q)) : perfiles;
+    const filtrados = q ? perfiles.filter(p => p.nombre?.toLowerCase().includes(q)) : perfiles;
     currentPage = page;
     const total = Math.ceil(filtrados.length / PER_PAGE);
-    const slice = filtrados.slice((page-1)*PER_PAGE, page*PER_PAGE);
-    renderTabla(slice, filtrados.length);
+    renderTabla(filtrados.slice((page-1)*PER_PAGE, page*PER_PAGE), filtrados.length);
     renderPaginacion(total, page, filtrados.length);
 }
 
 function renderTabla(data, total) {
     const tbody = document.getElementById('tabla-body');
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
         return;
     }
     tbody.innerHTML = data.map(p => `
         <tr>
             <td class="px-4 text-muted small">${p.id}</td>
-            <td><span class="fw-semibold">${escHtml(p.strNombrePerfil)}</span></td>
+            <td><span class="fw-semibold">${escHtml(p.nombre)}</span></td>
+            <td class="text-muted small">${escHtml(p.descripcion || '—')}</td>
             <td class="text-center">
-                ${p.bitAdministrador
-                    ? '<span class="badge bg-warning text-dark"><i class="bi bi-shield-fill-check me-1"></i>Sí</span>'
-                    : '<span class="badge bg-secondary">No</span>'}
+                ${p.activo
+                    ? '<span class="badge bg-success">Activo</span>'
+                    : '<span class="badge bg-secondary">Inactivo</span>'}
             </td>
             <td class="text-muted small">${formatDate(p.created_at)}</td>
             <td class="text-end px-4">
@@ -160,13 +163,16 @@ function renderTabla(data, total) {
                     <?php if ($puedeEditar): ?>
                     <button class="btn btn-outline-primary btn-editar"
                         data-id="${p.id}"
-                        data-nombre="${escHtml(p.strNombrePerfil)}"
-                        data-admin="${p.bitAdministrador ? '1' : '0'}" title="Editar">
+                        data-nombre="${escHtml(p.nombre)}"
+                        data-descripcion="${escHtml(p.descripcion||'')}"
+                        data-activo="${p.activo ? '1' : '0'}"
+                        title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
                     <?php endif; ?>
                     <?php if ($puedeEliminar): ?>
-                    <button class="btn btn-outline-danger btn-eliminar" data-id="${p.id}" data-nombre="${escHtml(p.strNombrePerfil)}" title="Eliminar">
+                    <button class="btn btn-outline-danger btn-eliminar"
+                        data-id="${p.id}" data-nombre="${escHtml(p.nombre)}" title="Eliminar">
                         <i class="bi bi-trash"></i>
                     </button>
                     <?php endif; ?>
@@ -176,19 +182,16 @@ function renderTabla(data, total) {
     FormValidator.staggerRows(tbody);
 }
 
-function renderPaginacion(total, actual, totalRegistros) {
+function renderPaginacion(total, actual, totalReg) {
     const info = document.getElementById('info-pag');
     const nav  = document.getElementById('paginacion');
-    const inicio = (actual-1)*PER_PAGE + 1;
-    const fin    = Math.min(actual*PER_PAGE, totalRegistros);
-    info.textContent = totalRegistros ? `Mostrando ${inicio}–${fin} de ${totalRegistros}` : '';
-    if (total <= 1) { nav.innerHTML = ''; return; }
-    let html = '';
-    for (let i = 1; i <= total; i++) {
-        html += `<li class="page-item ${i===actual?'active':''}">
-            <button class="page-link btn-pag" data-page="${i}">${i}</button></li>`;
-    }
-    nav.innerHTML = html;
+    const ini  = (actual-1)*PER_PAGE + 1;
+    const fin  = Math.min(actual*PER_PAGE, totalReg);
+    info.textContent = totalReg ? `Mostrando ${ini}–${fin} de ${totalReg}` : '';
+    nav.innerHTML = total <= 1 ? '' : [...Array(total)].map((_,i) =>
+        `<li class="page-item ${i+1===actual?'active':''}">
+            <button class="page-link btn-pag" data-page="${i+1}">${i+1}</button></li>`
+    ).join('');
     nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => aplicarFiltro(+b.dataset.page)));
 }
 
@@ -199,16 +202,16 @@ document.getElementById('f-busqueda').addEventListener('input', () => {
 document.getElementById('btn-clear').addEventListener('click', () => {
     document.getElementById('f-busqueda').value = ''; aplicarFiltro(1);
 });
-
-document.getElementById('strNombrePerfil').addEventListener('input', function() {
+document.getElementById('nombre').addEventListener('input', function() {
     document.getElementById('cnt-nombre').textContent = this.value.length;
 });
 
 document.getElementById('btn-nuevo')?.addEventListener('click', () => {
     editingId = null;
-    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nuevo Perfil';
+    document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-shield-check me-2"></i>Nuevo Perfil';
     document.getElementById('form-perfil').reset();
     document.getElementById('cnt-nombre').textContent = '0';
+    document.getElementById('activo').checked = true;
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
 });
@@ -218,8 +221,9 @@ document.addEventListener('click', e => {
     if (!btn) return;
     editingId = btn.dataset.id;
     document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Perfil';
-    document.getElementById('strNombrePerfil').value = btn.dataset.nombre;
-    document.getElementById('bitAdministrador').checked = btn.dataset.admin === '1';
+    document.getElementById('nombre').value      = btn.dataset.nombre;
+    document.getElementById('descripcion').value = btn.dataset.descripcion;
+    document.getElementById('activo').checked    = btn.dataset.activo === '1';
     document.getElementById('cnt-nombre').textContent = btn.dataset.nombre.length;
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
@@ -233,9 +237,10 @@ document.addEventListener('click', e => {
     document.getElementById('detalle-body').innerHTML = `
         <dl class="row mb-0">
             <dt class="col-sm-4">ID</dt><dd class="col-sm-8">${p.id}</dd>
-            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">${escHtml(p.strNombrePerfil)}</dd>
-            <dt class="col-sm-4">Administrador</dt>
-            <dd class="col-sm-8">${p.bitAdministrador ? '<span class="badge bg-warning text-dark">Sí</span>' : '<span class="badge bg-secondary">No</span>'}</dd>
+            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">${escHtml(p.nombre)}</dd>
+            <dt class="col-sm-4">Descripción</dt><dd class="col-sm-8">${escHtml(p.descripcion||'—')}</dd>
+            <dt class="col-sm-4">Estado</dt>
+            <dd class="col-sm-8">${p.activo ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-secondary">Inactivo</span>'}</dd>
             <dt class="col-sm-4">Creado</dt><dd class="col-sm-8">${formatDate(p.created_at)}</dd>
         </dl>`;
     mDetalle.show();
@@ -260,49 +265,39 @@ document.addEventListener('click', e => {
 
 document.getElementById('btn-guardar').addEventListener('click', async function() {
     const valid = FormValidator.validate([
-        { id: 'strNombrePerfil', label: 'Nombre del perfil', rules: [
+        { id: 'nombre', label: 'Nombre', rules: [
             'required',
             { min: 2, msg: 'Mínimo 2 caracteres' },
             { max: 100, msg: 'Máximo 100 caracteres' },
             'noHtml',
         ]},
     ], 'form-perfil');
-
     if (!valid) return;
 
-    const btn  = this;
-    const nombre = document.getElementById('strNombrePerfil').value.trim();
-    const admin  = document.getElementById('bitAdministrador').checked;
     const fd = new FormData();
-    fd.append('strNombrePerfil', nombre);
-    if (admin) fd.append('bitAdministrador', '1');
+    fd.append('nombre',      document.getElementById('nombre').value.trim());
+    fd.append('descripcion', document.getElementById('descripcion').value.trim());
+    if (document.getElementById('activo').checked) fd.append('activo', '1');
 
     const url = editingId ? `${BASE}/actualizar/${editingId}` : `${BASE}/crear`;
-    FormValidator.btnLoad(btn);
+    FormValidator.btnLoad(this);
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
-        if (data.success) {
-            Toast.success(data.mensaje);
-            modal.hide();
-            cargar();
-        } else {
-            if (data.errors) Object.entries(data.errors).forEach(([k,v]) => {
-                FormValidator.setError(k, v);
-            });
+        if (data.success) { Toast.success(data.mensaje); modal.hide(); cargar(); }
+        else {
+            if (data.errors) Object.entries(data.errors).forEach(([k,v]) => FormValidator.setError(k, v));
             else Toast.error(data.mensaje);
         }
     } catch { Toast.error('Error de red'); }
-    finally { FormValidator.btnDone(btn); }
+    finally { FormValidator.btnDone(this); }
 });
 
 function escHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function formatDate(s) {
-    if (!s) return '-';
-    return new Date(s).toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'});
+    return s ? new Date(s).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : '-';
 }
 
 cargar();

@@ -37,40 +37,42 @@
         </div>
 
         <?php
-        $sessionPermisos = session()->get('user_permisos') ?? [];
-        $userType        = session()->get('user_type') ?? 'admin';
-        $isAdminUser     = ($userType === 'admin') || (session()->get('admin_rol') === 'admin');
-        $isLogued        = (bool) session()->get('admin_logueado');
+        $permisos  = session('permisos') ?? [];
+        $isLogued  = (bool) session('logueado');
 
-        function navPuede(array $perms, int $modId, bool $isAdmin): bool {
-            if ($isAdmin) return true;
-            return !empty($perms[$modId]['bitConsulta']);
+        function canSee(array $p, string $ruta): bool {
+            return !empty($p[$ruta]['consulta']);
         }
 
-        $verSeg  = $isAdminUser
-            || navPuede($sessionPermisos,1,$isAdminUser)
-            || navPuede($sessionPermisos,2,$isAdminUser)
-            || navPuede($sessionPermisos,3,$isAdminUser)
-            || navPuede($sessionPermisos,4,$isAdminUser);
-        $verPri1 = $isAdminUser
-            || navPuede($sessionPermisos,5,$isAdminUser)
-            || navPuede($sessionPermisos,6,$isAdminUser);
-        $verPri2 = $isAdminUser
-            || navPuede($sessionPermisos,7,$isAdminUser)
-            || navPuede($sessionPermisos,8,$isAdminUser);
+       $verContenido = canSee($permisos,'admin/sobre-mi')
+                     || canSee($permisos,'admin/carrusel')
+                     || canSee($permisos,'admin/proyectos')
+                     || canSee($permisos,'admin/servicios')
+                     || canSee($permisos,'admin/contactos');
 
-        $isSegSection  = url_is('admin/seguridad*');
-        $isPri1Section = url_is('admin/principal1*');
-        $isPri2Section = url_is('admin/principal2*');
-        $isPortSection = url_is('/') || url_is('portafolio*') || url_is('servicios*')
-                      || url_is('detalles*') || url_is('contratar*') || url_is('sobre-mi*') || url_is('contacto*');
-        $isContenidoSection = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section && !url_is('admin/roles*');
-        $isRolesSection = url_is('admin/roles*');
+        $verSeguridad = canSee($permisos,'admin/seguridad/perfiles')
+                     || canSee($permisos,'admin/seguridad/modulos')
+                     || canSee($permisos,'admin/seguridad/permisos')
+                     || canSee($permisos,'admin/seguridad/usuarios');
+
+        $verPri1 = canSee($permisos,'admin/principal1/modulo1')
+                || canSee($permisos,'admin/principal1/modulo2');
+
+        $verPri2 = canSee($permisos,'admin/principal2/modulo1')
+                || canSee($permisos,'admin/principal2/modulo2');
+
+        $isSegSection       = url_is('admin/seguridad*');
+        $isPri1Section      = url_is('admin/principal1*');
+        $isPri2Section      = url_is('admin/principal2*');
+        $isPortSection      = url_is('/') || url_is('portafolio*') || url_is('servicios*')
+                           || url_is('detalles*') || url_is('contratar*') || url_is('sobre-mi*') || url_is('contacto*');
+        $isContenidoSection = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section;
         ?>
 
         <ul class="sidebar-nav" id="sidebar-nav">
 
-            <?php if ($isAdminUser): ?>
+            <?php if ($isLogued): ?>
+
             <li class="nav-section"><span>Portafolio</span></li>
             <li class="nav-accordion <?= $isPortSection ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
@@ -106,9 +108,6 @@
                     </li>
                 </ul>
             </li>
-            <?php endif; ?>
-
-            <?php if ($isLogued): ?>
 
             <li class="nav-section"><span>General</span></li>
             <li>
@@ -117,11 +116,8 @@
                 </a>
             </li>
 
-            <?php if ($isAdminUser): ?>
-            <li class="nav-section">
-                <span>Contenido</span>
-                <span class="nav-section-badge">Admin</span>
-            </li>
+            <?php if ($verContenido): ?>
+            <li class="nav-section"><span>Contenido</span></li>
             <li class="nav-accordion <?= $isContenidoSection ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
                     <i class="bi bi-pencil-square nav-icon-blue"></i>
@@ -129,26 +125,35 @@
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
+                    <?php if (canSee($permisos,'admin/sobre-mi')): ?>
                     <li>
                         <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
                             <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (canSee($permisos,'admin/carrusel')): ?>
                     <li>
                         <a href="<?= base_url('carrusel') ?>" class="<?= url_is('carrusel*') ? 'active' : '' ?>">
                             <i class="bi bi-images"></i><span>Carrusel</span>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (canSee($permisos,'admin/proyectos')): ?>
                     <li>
                         <a href="<?= base_url('admin/proyectos') ?>" class="<?= url_is('admin/proyectos*') ? 'active' : '' ?>">
                             <i class="bi bi-folder-symlink"></i><span>Proyectos</span>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (canSee($permisos,'admin/servicios')): ?>
                     <li>
                         <a href="<?= base_url('admin/servicios') ?>" class="<?= url_is('admin/servicios*') ? 'active' : '' ?>">
                             <i class="bi bi-gear-wide-connected"></i><span>Servicios</span>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if (canSee($permisos,'admin/contactos')): ?>
                     <li>
                         <a href="<?= base_url('admin/contactos') ?>" class="<?= url_is('admin/contactos*') ? 'active' : '' ?>">
                             <i class="bi bi-chat-left-dots"></i>
@@ -156,54 +161,45 @@
                             <span class="badge-count" id="badge-contactos" style="display:none"></span>
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </li>
             <?php endif; ?>
 
-            <?php if ($verSeg): ?>
-            <li class="nav-section">
-                <span>Control de Acceso</span>
-                <?php if ($isAdminUser): ?><span class="nav-section-badge">Seg</span><?php endif; ?>
-            </li>
-            <li class="nav-accordion <?= ($isSegSection || $isRolesSection) ? 'open' : '' ?>">
+            <?php if ($verSeguridad): ?>
+            <li class="nav-section"><span>Control de Acceso</span></li>
+            <li class="nav-accordion <?= $isSegSection ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
                     <i class="bi bi-shield-lock-fill nav-icon-orange"></i>
                     <span>Seguridad</span>
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
-                    <?php if (navPuede($sessionPermisos,1,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/seguridad/perfiles')): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/perfiles') ?>" class="<?= url_is('admin/seguridad/perfiles*') ? 'active' : '' ?>">
-                            <i class="bi bi-person-badge"></i><span>Perfiles</span>
+                            <i class="bi bi-shield-check"></i><span>Perfiles de Acceso</span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (navPuede($sessionPermisos,2,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/seguridad/modulos')): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/modulos') ?>" class="<?= url_is('admin/seguridad/modulos*') ? 'active' : '' ?>">
-                            <i class="bi bi-grid-3x3-gap"></i><span>Módulos</span>
+                            <i class="bi bi-grid-3x3-gap"></i><span>Páginas Protegidas</span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (navPuede($sessionPermisos,3,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/seguridad/permisos')): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/permisos') ?>" class="<?= url_is('admin/seguridad/permisos*') ? 'active' : '' ?>">
-                            <i class="bi bi-shield-check"></i><span>Permisos por Perfil</span>
+                            <i class="bi bi-key"></i><span>Permisos por Perfil</span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (navPuede($sessionPermisos,4,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/seguridad/usuarios')): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/usuarios') ?>" class="<?= url_is('admin/seguridad/usuarios*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Usuarios App</span>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if ($isAdminUser): ?>
-                    <li>
-                        <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
-                            <i class="bi bi-person-lock"></i><span>Usuarios Admin</span>
+                            <i class="bi bi-people"></i><span>Usuarios</span>
                         </a>
                     </li>
                     <?php endif; ?>
@@ -220,14 +216,14 @@
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
-                    <?php if (navPuede($sessionPermisos,5,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/principal1/modulo1')): ?>
                     <li>
                         <a href="<?= base_url('admin/principal1/modulo1') ?>" class="<?= url_is('admin/principal1/modulo1*') ? 'active' : '' ?>">
                             <i class="bi bi-funnel"></i><span>Pipeline de Ventas</span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (navPuede($sessionPermisos,6,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/principal1/modulo2')): ?>
                     <li>
                         <a href="<?= base_url('admin/principal1/modulo2') ?>" class="<?= url_is('admin/principal1/modulo2*') ? 'active' : '' ?>">
                             <i class="bi bi-people"></i><span>Clientes y Leads</span>
@@ -247,14 +243,14 @@
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
-                    <?php if (navPuede($sessionPermisos,7,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/principal2/modulo1')): ?>
                     <li>
                         <a href="<?= base_url('admin/principal2/modulo1') ?>" class="<?= url_is('admin/principal2/modulo1*') ? 'active' : '' ?>">
                             <i class="bi bi-kanban"></i><span>Gestión de Proyectos</span>
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (navPuede($sessionPermisos,8,$isAdminUser)): ?>
+                    <?php if (canSee($permisos,'admin/principal2/modulo2')): ?>
                     <li>
                         <a href="<?= base_url('admin/principal2/modulo2') ?>" class="<?= url_is('admin/principal2/modulo2*') ? 'active' : '' ?>">
                             <i class="bi bi-bar-chart-line"></i><span>Reportes y Analítica</span>
@@ -269,15 +265,15 @@
         </ul>
 
         <div class="sidebar-footer">
-            <?php if (session()->get('admin_logueado')): ?>
+            <?php if (session('logueado')): ?>
                 <div class="user-info">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <div class="user-avatar">
                             <i class="bi bi-person-circle"></i>
                         </div>
                         <div class="flex-grow-1 text-truncate">
-                            <small class="d-block fw-semibold user-name"><?= esc(session()->get('admin_nombre') ?? 'Admin') ?></small>
-                            <small class="text-muted user-email"><?= esc(session()->get('admin_email') ?? '') ?></small>
+                            <small class="d-block fw-semibold user-name"><?= esc(session('user_nombre') ?? 'Admin') ?></small>
+                            <small class="text-muted user-email"><?= esc(session('user_email') ?? '') ?></small>
                         </div>
                     </div>
                     <div class="d-flex gap-2">
@@ -364,7 +360,7 @@
                 </ol>
             </nav>
 
-            <?php if (session()->get('admin_logueado')): ?>
+            <?php if (session('logueado')): ?>
             <div class="dropdown">
                 <button class="btn btn-outline-secondary position-relative" id="btn-notificaciones" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell fs-5"></i>
@@ -381,7 +377,7 @@
             <?php endif; ?>
 
             <div class="d-md-none">
-                <?php if (session()->get('admin_logueado')): ?>
+                <?php if (session('logueado')): ?>
                     <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-box-arrow-right"></i>
                     </a>
@@ -395,9 +391,6 @@
 
         <div class="animate-fade-in">
             <?php
-            /*
-
-             */
             ?>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script src="<?= base_url('js/toast.js') ?>"></script>
@@ -406,7 +399,7 @@
         </div>
     </div>
 </div>
-<?php if (session()->get('admin_logueado')): ?>
+<?php if (session('logueado')): ?>
 <div class="modal fade" id="modalSimularError" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -494,7 +487,7 @@ if (searchInput) {
     });
 }
 
-<?php if (session()->get('admin_logueado')): ?>
+<?php if (session('logueado')): ?>
 function cargarNotificaciones() {
     fetch('<?= base_url('admin/notificaciones') ?>')
         .then(r => r.json())

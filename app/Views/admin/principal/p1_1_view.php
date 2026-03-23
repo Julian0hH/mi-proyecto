@@ -3,7 +3,7 @@
 
 <?php
 $permisos = session()->get('user_permisos') ?? [];
-$isAdmin  = session()->get('user_type') === 'admin';
+$isAdmin  = !empty(session('logueado'));
 $puedeAgregar  = $isAdmin || !empty($permisos[5]['bitAgregar']);
 $puedeEditar   = $isAdmin || !empty($permisos[5]['bitEditar']);
 $puedeEliminar = $isAdmin || !empty($permisos[5]['bitEliminar']);

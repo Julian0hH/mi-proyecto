@@ -3,78 +3,88 @@
 namespace App\Controllers;
 
 use App\Models\PerfilModel;
-use App\Models\ModuloSegModel;
-use App\Models\PermisosPerfilModel;
+use App\Models\ModuloModel;
+use App\Models\PermisoModel;
 
 class PermisosPerfilController extends BaseController
 {
-    private PermisosPerfilModel $model;
-    private PerfilModel         $perfilModel;
-    private ModuloSegModel      $moduloModel;
+    private PermisoModel $model;
+    private PerfilModel  $perfilModel;
+    private ModuloModel  $moduloModel;
 
     public function __construct()
     {
-        $this->model       = new PermisosPerfilModel();
+        $this->model       = new PermisoModel();
         $this->perfilModel = new PerfilModel();
-        $this->moduloModel = new ModuloSegModel();
+        $this->moduloModel = new ModuloModel();
     }
 
     public function index()
     {
         $data['pageTitle']   = 'Permisos por Perfil';
         $data['breadcrumbs'] = [
-            ['name' => 'Admin',            'url' => base_url('admin/dashboard'), 'active' => false],
-            ['name' => 'Seguridad',        'url' => '#',                         'active' => false],
-            ['name' => 'Permisos-Perfil',  'url' => '#',                         'active' => true],
+            ['name' => 'Admin',          'url' => base_url('admin/dashboard'), 'active' => false],
+            ['name' => 'Seguridad',      'url' => '#',                         'active' => false],
+            ['name' => 'Permisos',       'url' => '#',                         'active' => true],
         ];
         $data['perfiles'] = $this->perfilModel->obtenerTodos();
-        $data['modulos']  = $this->moduloModel->obtenerTodos();
+        $data['modulos']  = $this->moduloModel->obtenerActivos();
         return view('admin/seguridad/permisos_perfil_view', $data);
     }
 
-    /** Retorna los permisos del perfil seleccionado (para carga AJAX) */
-    public function cargarPorPerfil(int $idPerfil)
+    public function cargarPorPerfil(int $perfilId)
     {
-        $permisos = $this->model->obtenerPorPerfil($idPerfil);
-        return $this->response->setJSON(['success' => true, 'data' => $permisos]);
+        $filas = $this->model->obtenerPorPerfil($perfilId);
+
+        $indexed = [];
+        foreach ($filas as $f) {
+            $indexed[$f['modulo_id']] = [
+                'bit_consulta' => (bool)$f['bit_consulta'],
+                'bit_agregar'  => (bool)$f['bit_agregar'],
+                'bit_editar'   => (bool)$f['bit_editar'],
+                'bit_eliminar' => (bool)$f['bit_eliminar'],
+                'bit_detalle'  => (bool)$f['bit_detalle'],
+            ];
+        }
+
+        return $this->response->setJSON(['success' => true, 'data' => $indexed]);
     }
 
-    /** Guarda (reemplaza) todos los permisos de un perfil */
     public function guardar()
     {
-        $idPerfil = (int)$this->request->getPost('idPerfil');
-        if (!$idPerfil) {
+        $perfilId = (int)$this->request->getPost('perfil_id');
+        if (!$perfilId) {
             return $this->response->setJSON(['success' => false, 'mensaje' => 'Selecciona un perfil']);
         }
 
-        $modulos  = $this->moduloModel->obtenerTodos();
-        $rows     = [];
+        $modulos = $this->moduloModel->obtenerActivos();
+        $rows    = [];
 
         foreach ($modulos as $mod) {
             $mid    = $mod['id'];
             $prefix = "mod_{$mid}_";
 
-            $bitAgregar  = (bool)$this->request->getPost($prefix . 'agregar');
-            $bitEditar   = (bool)$this->request->getPost($prefix . 'editar');
-            $bitConsulta = (bool)$this->request->getPost($prefix . 'consulta');
-            $bitEliminar = (bool)$this->request->getPost($prefix . 'eliminar');
-            $bitDetalle  = (bool)$this->request->getPost($prefix . 'detalle');
+            $consulta = (bool)$this->request->getPost($prefix . 'consulta');
+            $agregar  = (bool)$this->request->getPost($prefix . 'agregar');
+            $editar   = (bool)$this->request->getPost($prefix . 'editar');
+            $eliminar = (bool)$this->request->getPost($prefix . 'eliminar');
+            $detalle  = (bool)$this->request->getPost($prefix . 'detalle');
 
-            // Solo insertar si al menos un permiso está marcado
-            if ($bitAgregar || $bitEditar || $bitConsulta || $bitEliminar || $bitDetalle) {
+            // Solo insertar si al menos un bit está marcado
+            if ($consulta || $agregar || $editar || $eliminar || $detalle) {
                 $rows[] = [
-                    'idModulo'    => $mid,
-                    'idPerfil'    => $idPerfil,
-                    'bitAgregar'  => $bitAgregar,
-                    'bitEditar'   => $bitEditar,
-                    'bitConsulta' => $bitConsulta,
-                    'bitEliminar' => $bitEliminar,
-                    'bitDetalle'  => $bitDetalle,
+                    'perfil_id'    => $perfilId,
+                    'modulo_id'    => $mid,
+                    'bit_consulta' => $consulta,
+                    'bit_agregar'  => $agregar,
+                    'bit_editar'   => $editar,
+                    'bit_eliminar' => $eliminar,
+                    'bit_detalle'  => $detalle,
                 ];
             }
         }
 
-        $ok = $this->model->guardarPorPerfil($idPerfil, $rows);
+        $ok = $this->model->guardarPorPerfil($perfilId, $rows);
 
         return $this->response->setJSON([
             'success' => $ok,
