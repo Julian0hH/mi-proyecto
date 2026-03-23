@@ -657,8 +657,8 @@ label {
 .nav-accordion > .nav-accordion-toggle { cursor: pointer; }
 .nav-accordion > .nav-accordion-toggle .accordion-arrow { transition: transform .2s; font-size: .75rem; color: #475569; }
 .nav-accordion.open > .nav-accordion-toggle .accordion-arrow { transform: rotate(180deg); }
-.nav-accordion-body { list-style: none; padding: 0; margin: 0; max-height: 0; overflow: hidden; transition: max-height .25s ease; }
-.nav-accordion.open > .nav-accordion-body { max-height: 600px; }
+.nav-accordion-body { list-style: none; padding: 0; margin: 0; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .30s cubic-bezier(0.4,0,0.2,1), opacity .20s ease; }
+.nav-accordion.open > .nav-accordion-body { max-height: 600px; opacity: 1; }
 .nav-accordion-body li a { display: flex; align-items: center; gap: .6rem; padding: .42rem .75rem .42rem 2.75rem; font-size: .82rem; color: var(--text-sidebar); text-decoration: none; border-radius: 6px; margin: 0 .5rem; transition: all .15s; }
 .nav-accordion-body li a:hover { color: var(--text-sidebar-hover); background: rgba(255,255,255,.07); }
 .nav-accordion-body li a.active { color: #fff; background: rgba(79,70,229,.35); font-weight: 600; }
@@ -1200,7 +1200,7 @@ label {
 
 /* Submenu accordion con easing más fluido */
 .nav-accordion-body {
-    transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: max-height 0.30s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.20s ease !important;
 }
 
 /* ── Cards con animación de entrada ── */

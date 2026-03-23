@@ -62,59 +62,73 @@
         $isSegSection  = url_is('admin/seguridad*');
         $isPri1Section = url_is('admin/principal1*');
         $isPri2Section = url_is('admin/principal2*');
-        $isOldAdmin    = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section;
+        $isPortSection = url_is('/') || url_is('portafolio*') || url_is('servicios*')
+                      || url_is('detalles*') || url_is('contratar*') || url_is('sobre-mi*') || url_is('contacto*');
+        $isContenidoSection = url_is('admin*') && !$isSegSection && !$isPri1Section && !$isPri2Section && !url_is('admin/roles*');
+        $isRolesSection = url_is('admin/roles*');
         ?>
 
         <ul class="sidebar-nav" id="sidebar-nav">
 
             <?php if ($isAdminUser): ?>
             <li class="nav-section"><span>Portafolio</span></li>
-            <li>
-                <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
-                    <i class="bi bi-house-door nav-icon-blue"></i><span>Inicio</span>
+            <li class="nav-accordion <?= $isPortSection ? 'open' : '' ?>">
+                <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
+                    <i class="bi bi-globe2 nav-icon-cyan"></i>
+                    <span>Sitio Público</span>
+                    <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
-            </li>
-            <li>
-                <a href="<?= base_url('portafolio') ?>" class="<?= url_is('portafolio*') ? 'active' : '' ?>">
-                    <i class="bi bi-briefcase nav-icon-purple"></i><span>Portafolio</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') || url_is('detalles*') || url_is('contratar*') ? 'active' : '' ?>">
-                    <i class="bi bi-grid-3x3-gap nav-icon-cyan"></i><span>Servicios</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('sobre-mi') ?>" class="<?= url_is('sobre-mi*') ? 'active' : '' ?>">
-                    <i class="bi bi-person-circle nav-icon-green"></i><span>Sobre Mí</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= base_url('contacto') ?>" class="<?= url_is('contacto*') ? 'active' : '' ?>">
-                    <i class="bi bi-envelope nav-icon-orange"></i><span>Contacto</span>
-                </a>
+                <ul class="nav-accordion-body">
+                    <li>
+                        <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
+                            <i class="bi bi-house-door"></i><span>Inicio</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('portafolio') ?>" class="<?= url_is('portafolio*') ? 'active' : '' ?>">
+                            <i class="bi bi-briefcase"></i><span>Portafolio</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('servicios') ?>" class="<?= url_is('servicios*') || url_is('detalles*') || url_is('contratar*') ? 'active' : '' ?>">
+                            <i class="bi bi-grid-3x3-gap"></i><span>Servicios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('sobre-mi') ?>" class="<?= url_is('sobre-mi*') ? 'active' : '' ?>">
+                            <i class="bi bi-person-circle"></i><span>Sobre Mí</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('contacto') ?>" class="<?= url_is('contacto*') ? 'active' : '' ?>">
+                            <i class="bi bi-envelope"></i><span>Contacto</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <?php endif; ?>
 
             <?php if ($isLogued): ?>
 
+            <li class="nav-section"><span>General</span></li>
+            <li>
+                <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
+                    <i class="bi bi-speedometer2 nav-icon-indigo"></i><span>Dashboard</span>
+                </a>
+            </li>
+
             <?php if ($isAdminUser): ?>
             <li class="nav-section">
-                <span>Administración</span>
+                <span>Contenido</span>
                 <span class="nav-section-badge">Admin</span>
             </li>
-            <li class="nav-accordion <?= $isOldAdmin ? 'open' : '' ?>">
+            <li class="nav-accordion <?= $isContenidoSection ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
-                    <i class="bi bi-speedometer2 nav-icon-indigo"></i>
-                    <span>Panel Admin</span>
+                    <i class="bi bi-pencil-square nav-icon-blue"></i>
+                    <span>Gestión de Contenido</span>
                     <i class="bi bi-chevron-down accordion-arrow ms-auto"></i>
                 </a>
                 <ul class="nav-accordion-body">
-                    <li>
-                        <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
-                            <i class="bi bi-bar-chart-line"></i><span>Dashboard</span>
-                        </a>
-                    </li>
                     <li>
                         <a href="<?= base_url('admin/sobre-mi') ?>" class="<?= url_is('admin/sobre-mi*') ? 'active' : '' ?>">
                             <i class="bi bi-person-badge"></i><span>Sobre Mí</span>
@@ -142,28 +156,16 @@
                             <span class="badge-count" id="badge-contactos" style="display:none"></span>
                         </a>
                     </li>
-                    <li>
-                        <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
-                            <i class="bi bi-shield-lock"></i><span>Roles y Usuarios</span>
-                        </a>
-                    </li>
                 </ul>
-            </li>
-            <?php else: ?>
-            <li class="nav-section"><span>General</span></li>
-            <li>
-                <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
-                    <i class="bi bi-speedometer2 nav-icon-indigo"></i><span>Dashboard</span>
-                </a>
             </li>
             <?php endif; ?>
 
             <?php if ($verSeg): ?>
             <li class="nav-section">
-                <span>Seguridad</span>
-                <span class="nav-section-badge">Seg</span>
+                <span>Control de Acceso</span>
+                <?php if ($isAdminUser): ?><span class="nav-section-badge">Seg</span><?php endif; ?>
             </li>
-            <li class="nav-accordion <?= $isSegSection ? 'open' : '' ?>">
+            <li class="nav-accordion <?= ($isSegSection || $isRolesSection) ? 'open' : '' ?>">
                 <a href="#" class="nav-accordion-toggle" onclick="toggleAccordion(this);return false;">
                     <i class="bi bi-shield-lock-fill nav-icon-orange"></i>
                     <span>Seguridad</span>
@@ -173,28 +175,35 @@
                     <?php if (navPuede($sessionPermisos,1,$isAdminUser)): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/perfiles') ?>" class="<?= url_is('admin/seguridad/perfiles*') ? 'active' : '' ?>">
-                            <i class="bi bi-person-badge"></i><span>Perfil</span>
+                            <i class="bi bi-person-badge"></i><span>Perfiles</span>
                         </a>
                     </li>
                     <?php endif; ?>
                     <?php if (navPuede($sessionPermisos,2,$isAdminUser)): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/modulos') ?>" class="<?= url_is('admin/seguridad/modulos*') ? 'active' : '' ?>">
-                            <i class="bi bi-grid-3x3-gap"></i><span>Módulo</span>
+                            <i class="bi bi-grid-3x3-gap"></i><span>Módulos</span>
                         </a>
                     </li>
                     <?php endif; ?>
                     <?php if (navPuede($sessionPermisos,3,$isAdminUser)): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/permisos') ?>" class="<?= url_is('admin/seguridad/permisos*') ? 'active' : '' ?>">
-                            <i class="bi bi-shield-check"></i><span>Permisos-Perfil</span>
+                            <i class="bi bi-shield-check"></i><span>Permisos por Perfil</span>
                         </a>
                     </li>
                     <?php endif; ?>
                     <?php if (navPuede($sessionPermisos,4,$isAdminUser)): ?>
                     <li>
                         <a href="<?= base_url('admin/seguridad/usuarios') ?>" class="<?= url_is('admin/seguridad/usuarios*') ? 'active' : '' ?>">
-                            <i class="bi bi-people"></i><span>Usuario</span>
+                            <i class="bi bi-people"></i><span>Usuarios App</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <?php if ($isAdminUser): ?>
+                    <li>
+                        <a href="<?= base_url('admin/roles') ?>" class="<?= url_is('admin/roles*') ? 'active' : '' ?>">
+                            <i class="bi bi-person-lock"></i><span>Usuarios Admin</span>
                         </a>
                     </li>
                     <?php endif; ?>
