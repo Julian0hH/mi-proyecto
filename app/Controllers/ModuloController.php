@@ -3,9 +3,12 @@
 namespace App\Controllers;
 
 use App\Models\ModuloSegModel;
+use App\Traits\InputSanitizer;
 
 class ModuloController extends BaseController
 {
+    use InputSanitizer;
+
     private ModuloSegModel $model;
 
     public function __construct()
@@ -32,15 +35,27 @@ class ModuloController extends BaseController
 
     public function crear()
     {
+        $nombre = $this->sanitize($this->request->getPost('strNombreModulo'));
+        $ruta   = $this->sanitize($this->request->getPost('strRuta'));
+
+        if ($this->hasDangerous($nombre)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strNombreModulo' => 'Contenido no permitido']]);
+        }
+        if ($ruta !== '' && $this->hasDangerous($ruta)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strRuta' => 'Contenido no permitido']]);
+        }
+
         $rules = [
             'strNombreModulo' => 'required|min_length[3]|max_length[100]',
+            'strRuta'         => 'permit_empty|max_length[200]',
         ];
         if (!$this->validate($rules)) {
             return $this->response->setJSON(['success' => false, 'errors' => $this->validator->getErrors()]);
         }
 
         $ok = $this->model->crear([
-            'strNombreModulo' => trim($this->request->getPost('strNombreModulo')),
+            'strNombreModulo' => $nombre,
+            'strRuta'         => $ruta !== '' ? $ruta : null,
         ]);
 
         return $this->response->setJSON([
@@ -51,15 +66,27 @@ class ModuloController extends BaseController
 
     public function actualizar(int $id)
     {
+        $nombre = $this->sanitize($this->request->getPost('strNombreModulo'));
+        $ruta   = $this->sanitize($this->request->getPost('strRuta'));
+
+        if ($this->hasDangerous($nombre)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strNombreModulo' => 'Contenido no permitido']]);
+        }
+        if ($ruta !== '' && $this->hasDangerous($ruta)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strRuta' => 'Contenido no permitido']]);
+        }
+
         $rules = [
             'strNombreModulo' => 'required|min_length[3]|max_length[100]',
+            'strRuta'         => 'permit_empty|max_length[200]',
         ];
         if (!$this->validate($rules)) {
             return $this->response->setJSON(['success' => false, 'errors' => $this->validator->getErrors()]);
         }
 
         $ok = $this->model->actualizar($id, [
-            'strNombreModulo' => trim($this->request->getPost('strNombreModulo')),
+            'strNombreModulo' => $nombre,
+            'strRuta'         => $ruta !== '' ? $ruta : null,
         ]);
 
         return $this->response->setJSON([

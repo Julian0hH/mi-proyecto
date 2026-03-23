@@ -1096,3 +1096,168 @@ label {
 [data-theme="dark"] .ds-tech-pill      { background: var(--bg-card); }
 [data-theme="dark"] .ds-float-card     { background: var(--bg-card); }
 [data-theme="dark"] .ds-testimonial-card { background: var(--bg-card); }
+
+/* ── Page entrance ── */
+@keyframes pageEnter {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+.animate-fade-in {
+    animation: pageEnter 0.42s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Input shake al error ── */
+@keyframes inputShake {
+    0%,100% { transform: translateX(0); }
+    18%     { transform: translateX(-8px); }
+    36%     { transform: translateX(8px); }
+    54%     { transform: translateX(-5px); }
+    72%     { transform: translateX(5px); }
+    90%     { transform: translateX(-2px); }
+}
+.input-shake {
+    animation: inputShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ── Campo inválido — estilo mejorado ── */
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: var(--danger-color) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+    background-image: none !important;
+}
+.form-error:not(:empty) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: fadeInDown 0.2s ease both;
+}
+.form-error:not(:empty)::before {
+    content: '⚠';
+    font-size: 0.7rem;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── Filas de tabla con stagger ── */
+@keyframes rowFadeIn {
+    from { opacity: 0; transform: translateY(7px); }
+    to   { opacity: 1; transform: none; }
+}
+.tr-anim {
+    opacity: 0;
+    animation: rowFadeIn 0.28s ease forwards;
+}
+
+/* ── Botón en estado loading ── */
+.btn-loading {
+    pointer-events: none;
+    opacity: 0.78;
+    cursor: not-allowed;
+}
+
+/* ── Modal con animación al abrir ── */
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+}
+.modal.show .modal-content {
+    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
+.modal-header {
+    border-radius: calc(var(--bs-modal-border-radius) - 1px)
+                   calc(var(--bs-modal-border-radius) - 1px) 0 0;
+}
+
+/* ── Sidebar nav items con stagger de entrada ── */
+@keyframes navItemIn {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: none; }
+}
+#sidebar-nav > li:not(.nav-section) {
+    animation: navItemIn 0.38s ease both;
+}
+#sidebar-nav > li:nth-child(1)  { animation-delay: 0.03s; }
+#sidebar-nav > li:nth-child(2)  { animation-delay: 0.07s; }
+#sidebar-nav > li:nth-child(3)  { animation-delay: 0.11s; }
+#sidebar-nav > li:nth-child(4)  { animation-delay: 0.15s; }
+#sidebar-nav > li:nth-child(5)  { animation-delay: 0.19s; }
+#sidebar-nav > li:nth-child(6)  { animation-delay: 0.23s; }
+#sidebar-nav > li:nth-child(7)  { animation-delay: 0.27s; }
+#sidebar-nav > li:nth-child(8)  { animation-delay: 0.31s; }
+#sidebar-nav > li:nth-child(n+9){ animation-delay: 0.35s; }
+
+/* Icono de sidebar con glow en hover */
+#sidebar ul li a:hover i {
+    filter: drop-shadow(0 0 6px currentColor);
+    transition: filter 0.2s ease;
+}
+#sidebar ul li a.active i {
+    filter: drop-shadow(0 0 5px rgba(165, 180, 252, 0.6));
+}
+
+/* Submenu accordion con easing más fluido */
+.nav-accordion-body {
+    transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ── Cards con animación de entrada ── */
+.card-anim {
+    opacity: 0;
+    animation: rowFadeIn 0.4s ease forwards;
+}
+
+/* ── Breadcrumb activo shimmer sutil ── */
+.breadcrumb-item.active span {
+    position: relative;
+}
+
+/* ── Paginación con transición ── */
+.pagination .page-link {
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.pagination .page-item.active .page-link {
+    transform: scale(1.08);
+}
+
+/* ── Botones de tabla con efecto hover mejorado ── */
+.btn-group .btn {
+    transition: all 0.18s ease;
+}
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Badge con pulso en estado activo ── */
+.badge.bg-success {
+    animation: badgePulse 2.8s ease-in-out infinite;
+}
+@keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+    50%       { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+/* ── Input focus mejorado ── */
+.form-control:focus,
+.form-select:focus {
+    transform: translateY(-1px);
+    transition: all 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+/* ── Confirm dialog elegante ── */
+#confirm-modal-global .modal-content {
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+/* ── Topbar search fade in ── */
+#sidebar-search-input {
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#sidebar-search-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}

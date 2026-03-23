@@ -43,26 +43,24 @@ class PermisosPerfilModel
         return ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
     }
 
-    /** Retorna todos los permisos de un perfil indexados por idModulo */
     public function obtenerPorPerfil(int $idPerfil): array
     {
-        $res = $this->request('GET', 'permisos_perfil?idPerfil=eq.' . $idPerfil . '&select=*');
+        $res = $this->request(
+            'GET',
+            'permisos_perfil?idPerfil=eq.' . $idPerfil . '&select=*,modulos_seg(strRuta)'
+        );
         $rows = ($res['code'] === 200 && is_array($res['body'])) ? $res['body'] : [];
         $indexed = [];
         foreach ($rows as $row) {
+            $row['strRuta'] = $row['modulos_seg']['strRuta'] ?? null;
+            unset($row['modulos_seg']);
             $indexed[$row['idModulo']] = $row;
         }
         return $indexed;
     }
 
-    /**
-     * Upsert de permisos para un perfil: borra todos los permisos del perfil
-     * y vuelve a insertar los nuevos.
-     * $rows = [ ['idModulo'=>1,'idPerfil'=>2,'bitAgregar'=>true,...], ... ]
-     */
     public function guardarPorPerfil(int $idPerfil, array $rows): bool
     {
-        // Eliminar permisos existentes del perfil
         $del = $this->request('DELETE', 'permisos_perfil?idPerfil=eq.' . $idPerfil);
         if (!in_array($del['code'], [200, 204])) {
             return false;
@@ -70,7 +68,6 @@ class PermisosPerfilModel
         if (empty($rows)) {
             return true;
         }
-        // Insertar nuevos
         $res = $this->request('POST', 'permisos_perfil', $rows, ['Prefer: return=minimal']);
         return $res['code'] === 201;
     }

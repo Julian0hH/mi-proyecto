@@ -22,7 +22,6 @@ $puedeDetalle    = $isAdmin || !empty($permisosSession[4]['bitDetalle']);
     <?php endif; ?>
 </div>
 
-<!-- Búsqueda -->
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body py-2 px-3">
         <div class="input-group input-group-sm" style="max-width:350px">
@@ -33,7 +32,6 @@ $puedeDetalle    = $isAdmin || !empty($permisosSession[4]['bitDetalle']);
     </div>
 </div>
 
-<!-- Tabla -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -61,7 +59,6 @@ $puedeDetalle    = $isAdmin || !empty($permisosSession[4]['bitDetalle']);
     </div>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal fade" id="modalUsuario" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -163,7 +160,6 @@ let usuarios = [], editingId = null;
 const modal    = new bootstrap.Modal(document.getElementById('modalUsuario'));
 const mDetalle = new bootstrap.Modal(document.getElementById('modalDetalle'));
 
-// Preview imagen
 document.getElementById('imagen').addEventListener('change', function() {
     const file = this.files[0];
     if (!file) { document.getElementById('img-preview-wrap').style.display='none'; return; }
@@ -175,7 +171,6 @@ document.getElementById('imagen').addEventListener('change', function() {
     reader.readAsDataURL(file);
 });
 
-// Ver contraseña
 document.getElementById('btn-ver-pwd').addEventListener('click', function() {
     const inp = document.getElementById('strPwd');
     const icon = this.querySelector('i');
@@ -246,6 +241,7 @@ function renderTabla(data, totalReg, page) {
                 </div>
             </td>
         </tr>`).join('');
+    FormValidator.staggerRows(tbody);
 }
 
 function renderPaginacion(total, actual, totalReg) {
@@ -337,9 +333,29 @@ document.addEventListener('click', e => {
     }, {confirmLabel:'Eliminar', confirmClass:'btn-danger'});
 });
 
-document.getElementById('btn-guardar').addEventListener('click', async () => {
-    document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
-    const fd = new FormData();
+document.getElementById('btn-guardar').addEventListener('click', async function() {
+    const pwdRequired = !editingId; // contraseña obligatoria solo al crear
+    const pwdRules = pwdRequired
+        ? ['required', { min: 6, msg: 'Mínimo 6 caracteres' }, { max: 100 }]
+        : [{ fn: v => v === '' || v.length >= 6 || 'Mínimo 6 caracteres si desea cambiarla' }];
+
+    const valid = FormValidator.validate([
+        { id: 'strNombreUsuario', label: 'Usuario', rules: [
+            'required',
+            { min: 3, msg: 'Mínimo 3 caracteres' },
+            { max: 100 },
+            'noHtml',
+        ]},
+        { id: 'strCorreo', label: 'Correo', rules: ['email', 'noHtml'] },
+        { id: 'strPwd', label: 'Contraseña', rules: pwdRules },
+        { id: 'strNumeroCelular', label: 'Celular', rules: [{ max: 20 }, 'noHtml'] },
+        { id: 'idPerfil', label: 'Perfil', rules: ['required'] },
+    ], 'form-usuario');
+
+    if (!valid) return;
+
+    const btn = this;
+    const fd  = new FormData();
     fd.append('strNombreUsuario', document.getElementById('strNombreUsuario').value.trim());
     fd.append('strCorreo',        document.getElementById('strCorreo').value.trim());
     fd.append('strPwd',           document.getElementById('strPwd').value);
@@ -351,17 +367,17 @@ document.getElementById('btn-guardar').addEventListener('click', async () => {
     if (imgFile) fd.append('imagen', imgFile);
 
     const url = editingId ? `${BASE}/actualizar/${editingId}` : `${BASE}/crear`;
+    FormValidator.btnLoad(btn);
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
         if (data.success) { Toast.success(data.mensaje); modal.hide(); cargar(); }
         else {
-            if (data.errors) Object.entries(data.errors).forEach(([k,v]) => {
-                const el = document.getElementById('err-'+k); if(el) el.textContent=v;
-            });
+            if (data.errors) Object.entries(data.errors).forEach(([k,v]) => FormValidator.setError(k, v));
             else Toast.error(data.mensaje);
         }
     } catch { Toast.error('Error de red'); }
+    finally { FormValidator.btnDone(btn); }
 });
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

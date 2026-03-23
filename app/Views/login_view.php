@@ -43,9 +43,9 @@
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?= base_url('login/procesar') ?>" autocomplete="off">
+                <form method="POST" action="<?= base_url('login/procesar') ?>" autocomplete="off" id="form-login" novalidate>
                     <?= csrf_field() ?>
-                    
+
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">USUARIO O CORREO</label>
                         <div class="input-group">
@@ -55,14 +55,16 @@
                             <input
                                 type="text"
                                 name="usuario"
+                                id="login-usuario"
                                 class="form-control"
                                 placeholder="usuario o correo@ejemplo.com"
-                                required
                                 value="<?= old('usuario') ?>"
                                 autofocus
                                 maxlength="150"
+                                data-vt="alnumsym"
                             >
                         </div>
+                        <div class="form-error text-danger small mt-1" id="err-login-usuario"></div>
                     </div>
 
                     <div class="mb-4">
@@ -71,25 +73,26 @@
                             <span class="input-group-text">
                                 <i class="bi bi-key"></i>
                             </span>
-                            <input 
-                                type="password" 
-                                name="password" 
-                                id="password" 
-                                class="form-control" 
-                                placeholder="••••••••" 
-                                required
+                            <input
+                                type="password"
+                                name="password"
+                                id="login-password"
+                                class="form-control"
+                                placeholder="••••••••"
+                                maxlength="100"
                             >
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                 <i class="bi bi-eye" id="eyeIcon"></i>
                             </button>
                         </div>
+                        <div class="form-error text-danger small mt-1" id="err-login-password"></div>
                     </div>
 
                     <div class="mb-4">
                         <div class="g-recaptcha" data-sitekey="<?= esc(getenv('RECAPTCHA_SITEKEY')) ?>"></div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow mb-3">
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow mb-3" id="btn-login">
                         <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
                     </button>
 
@@ -116,17 +119,71 @@
 
 <script>
 const togglePassword = document.getElementById('togglePassword');
-const password = document.getElementById('password');
-const eyeIcon = document.getElementById('eyeIcon');
+const passwordField  = document.getElementById('login-password');
+const eyeIcon        = document.getElementById('eyeIcon');
 
-if (togglePassword && password && eyeIcon) {
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        eyeIcon.classList.toggle('bi-eye');
-        eyeIcon.classList.toggle('bi-eye-slash');
+if (togglePassword && passwordField && eyeIcon) {
+    togglePassword.addEventListener('click', () => {
+        const isText = passwordField.type === 'text';
+        passwordField.type = isText ? 'password' : 'text';
+        eyeIcon.className  = isText ? 'bi bi-eye' : 'bi bi-eye-slash';
     });
 }
+
+document.getElementById('form-login').addEventListener('submit', function(e) {
+    ['login-usuario', 'login-password'].forEach(id => {
+        const el = document.getElementById(id);
+        const err = document.getElementById('err-' + id);
+        if (el)  el.classList.remove('is-invalid');
+        if (err) err.textContent = '';
+    });
+
+    const usuarioEl  = document.getElementById('login-usuario');
+    const passwordEl = document.getElementById('login-password');
+    let valid = true;
+
+    const usuario = usuarioEl.value.trim();
+    if (!usuario) {
+        usuarioEl.classList.add('is-invalid');
+        document.getElementById('err-login-usuario').textContent = 'El usuario o correo es obligatorio';
+        FormValidator.shake(usuarioEl.closest('.input-group'));
+        valid = false;
+    } else if (usuario.length < 3) {
+        usuarioEl.classList.add('is-invalid');
+        document.getElementById('err-login-usuario').textContent = 'Mínimo 3 caracteres';
+        FormValidator.shake(usuarioEl.closest('.input-group'));
+        valid = false;
+    } else if (FormValidator.hasDangerous(usuario)) {
+        usuarioEl.classList.add('is-invalid');
+        document.getElementById('err-login-usuario').textContent = 'Caracteres no permitidos';
+        FormValidator.shake(usuarioEl.closest('.input-group'));
+        valid = false;
+    }
+
+    const pwd = passwordEl.value;
+    if (!pwd) {
+        passwordEl.classList.add('is-invalid');
+        document.getElementById('err-login-password').textContent = 'La contraseña es obligatoria';
+        FormValidator.shake(passwordEl.closest('.input-group'));
+        valid = false;
+    } else if (pwd.length < 6) {
+        passwordEl.classList.add('is-invalid');
+        document.getElementById('err-login-password').textContent = 'Mínimo 6 caracteres';
+        FormValidator.shake(passwordEl.closest('.input-group'));
+        valid = false;
+    }
+
+    if (!valid) {
+        e.preventDefault();
+        const card = document.querySelector('.card');
+        card.classList.remove('input-shake');
+        void card.offsetWidth;
+        card.classList.add('input-shake');
+        return;
+    }
+
+    FormValidator.btnLoad(document.getElementById('btn-login'));
+});
 </script>
 
 <?= $this->endSection() ?>

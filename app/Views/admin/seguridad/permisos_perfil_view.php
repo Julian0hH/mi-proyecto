@@ -127,9 +127,10 @@ function renderTabla() {
             ${checks}
         </tr>`;
     }).join('');
+    FormValidator.staggerRows(tbody);
 }
 
-document.getElementById('btn-guardar')?.addEventListener('click', async () => {
+document.getElementById('btn-guardar')?.addEventListener('click', async function() {
     const idPerfil = document.getElementById('sel-perfil').value;
     if (!idPerfil) return;
 
@@ -139,12 +140,14 @@ document.getElementById('btn-guardar')?.addEventListener('click', async () => {
         if (chk.checked) fd.append(chk.name, '1');
     });
 
+    FormValidator.btnLoad(this);
     try {
         const res  = await fetch(`${BASE_PERMISOS}/guardar`, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
         if (data.success) Toast.success(data.mensaje);
         else Toast.error(data.mensaje);
     } catch { Toast.error('Error de red'); }
+    finally { FormValidator.btnDone(this); }
 });
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

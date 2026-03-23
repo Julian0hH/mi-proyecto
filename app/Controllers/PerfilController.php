@@ -3,9 +3,12 @@
 namespace App\Controllers;
 
 use App\Models\PerfilModel;
+use App\Traits\InputSanitizer;
 
 class PerfilController extends BaseController
 {
+    use InputSanitizer;
+
     private PerfilModel $model;
 
     public function __construct()
@@ -32,15 +35,21 @@ class PerfilController extends BaseController
 
     public function crear()
     {
-        $rules = [
-            'strNombrePerfil' => 'required|min_length[3]|max_length[100]',
-        ];
+        $nombre = $this->sanitize($this->request->getPost('strNombrePerfil'));
+
+        if ($this->hasDangerous($nombre)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strNombrePerfil' => 'Contenido no permitido']]);
+        }
+
+        $rules = ['strNombrePerfil' => 'required|min_length[2]|max_length[100]'];
+        $this->request->setGlobal('post', array_merge($_POST, ['strNombrePerfil' => $nombre]));
+
         if (!$this->validate($rules)) {
             return $this->response->setJSON(['success' => false, 'errors' => $this->validator->getErrors()]);
         }
 
         $ok = $this->model->crear([
-            'strNombrePerfil'  => trim($this->request->getPost('strNombrePerfil')),
+            'strNombrePerfil'  => $nombre,
             'bitAdministrador' => (bool)$this->request->getPost('bitAdministrador'),
         ]);
 
@@ -52,15 +61,18 @@ class PerfilController extends BaseController
 
     public function actualizar(int $id)
     {
-        $rules = [
-            'strNombrePerfil' => 'required|min_length[3]|max_length[100]',
-        ];
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(['success' => false, 'errors' => $this->validator->getErrors()]);
+        $nombre = $this->sanitize($this->request->getPost('strNombrePerfil'));
+
+        if ($this->hasDangerous($nombre)) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strNombrePerfil' => 'Contenido no permitido']]);
+        }
+
+        if (empty($nombre) || strlen($nombre) < 2 || strlen($nombre) > 100) {
+            return $this->response->setJSON(['success' => false, 'errors' => ['strNombrePerfil' => 'Nombre entre 2 y 100 caracteres']]);
         }
 
         $ok = $this->model->actualizar($id, [
-            'strNombrePerfil'  => trim($this->request->getPost('strNombrePerfil')),
+            'strNombrePerfil'  => $nombre,
             'bitAdministrador' => (bool)$this->request->getPost('bitAdministrador'),
         ]);
 
@@ -78,4 +90,5 @@ class PerfilController extends BaseController
             'mensaje' => $ok ? 'Perfil eliminado correctamente' : 'Error al eliminar el perfil',
         ]);
     }
+
 }

@@ -5,9 +5,11 @@ namespace App\Controllers;
 use App\Libraries\JwtHelper;
 use App\Models\UsuarioAppModel;
 use App\Models\PermisosPerfilModel;
+use App\Traits\InputSanitizer;
 
 class AuthController extends BaseController
 {
+    use InputSanitizer;
     public function login()
     {
         if (session()->get('admin_logueado')) {
@@ -47,52 +49,61 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // Verificar reCAPTCHA
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
         if (!$this->verificarCaptcha($recaptchaResponse)) {
             return redirect()->back()->withInput()
                 ->with('error', 'Verificación de seguridad fallida. Intenta nuevamente.');
         }
 
-        $usuario  = trim($this->request->getPost('usuario'));
+        $usuario  = $this->sanitize($this->request->getPost('usuario'));
         $password = $this->request->getPost('password');
 
-        // ── 1. Intentar autenticar con usuarios_app ────────────────────────
+        if ($this->hasDangerous($usuario)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Caracteres no permitidos en el usuario.');
+        }
+
         $appModel = new UsuarioAppModel();
         $appUser  = null;
 
-        // Buscar por strNombreUsuario
         $appUser = $appModel->buscarPorUsuario($usuario);
-        // Si no encontrado, intentar por correo
         if (empty($appUser)) {
             $appUser = $appModel->buscarPorCorreo($usuario);
         }
 
         if (!empty($appUser)) {
-            // Validar contraseña
             if (!password_verify($password, $appUser['strPwd'] ?? '')) {
                 return redirect()->back()->withInput()
                     ->with('error', 'Usuario o contraseña incorrectos');
             }
 
-            // Validar estado activo/inactivo
             if (!($appUser['idEstadoUsuario'] ?? true)) {
                 return redirect()->back()->withInput()
                     ->with('error', 'Tu cuenta está inactiva. Contacta al administrador.');
             }
 
-            // Cargar permisos del perfil
-            $permisos = [];
-            $idPerfil = $appUser['idPerfil'] ?? null;
+            $permisos  = [];
+            $userRutas = [];
+            $idPerfil  = $appUser['idPerfil'] ?? null;
             if ($idPerfil) {
                 $permisosModel = new PermisosPerfilModel();
                 $permisos = $permisosModel->obtenerPorPerfil((int)$idPerfil);
+                foreach ($permisos as $p) {
+                    if (!empty($p['strRuta'])) {
+                        $userRutas[$p['strRuta']] = [
+                            'bitAgregar'  => (bool)($p['bitAgregar']  ?? false),
+                            'bitEditar'   => (bool)($p['bitEditar']   ?? false),
+                            'bitConsulta' => (bool)($p['bitConsulta'] ?? false),
+                            'bitEliminar' => (bool)($p['bitEliminar'] ?? false),
+                            'bitDetalle'  => (bool)($p['bitDetalle']  ?? false),
+                        ];
+                    }
+                }
             }
 
-            // Determinar si es admin
+            
             $isAdmin = (bool)($appUser['perfiles']['bitAdministrador'] ?? false);
 
-            // Generar JWT
             $jwt = JwtHelper::generate([
                 'uid'      => $appUser['id'],
                 'tipo'     => 'app',
@@ -108,6 +119,7 @@ class AuthController extends BaseController
                 'admin_rol'       => $isAdmin ? 'admin' : 'app',
                 'user_type'       => 'app',
                 'user_permisos'   => $permisos,
+                'user_rutas'      => $userRutas,
                 'jwt_token'       => $jwt,
             ]);
 
@@ -115,10 +127,8 @@ class AuthController extends BaseController
                 ->with('success', '¡Bienvenido, ' . $appUser['strNombreUsuario'] . '!');
         }
 
-        // ── 2. Fallback: autenticar con tabla usuarios (admin legacy) ─────
         $legacyModel = new \App\Models\UsuarioModel();
 
-        // La tabla usuarios usa email como identificador
         $legacyUser = $legacyModel->buscarPorEmail($usuario);
 
         if (empty($legacyUser) || !password_verify($password, $legacyUser['password_hash'] ?? '')) {
@@ -126,23 +136,19 @@ class AuthController extends BaseController
                 ->with('error', 'Usuario o contraseña incorrectos');
         }
 
-        // Verificar que sea admin
         $rolNombre = $legacyUser['roles']['nombre'] ?? 'usuario';
         if ($rolNombre !== 'admin') {
             return redirect()->back()->withInput()
                 ->with('error', 'No tienes permisos para acceder al panel de administración');
         }
 
-        // Verificar activo
         if (!($legacyUser['activo'] ?? true)) {
             return redirect()->back()->withInput()
                 ->with('error', 'Tu cuenta está inactiva. Contacta al administrador.');
         }
 
-        // Actualizar último login
         $legacyModel->actualizarUltimoLogin($legacyUser['id']);
 
-        // Generar JWT
         $jwt = JwtHelper::generate([
             'uid'      => $legacyUser['id'],
             'tipo'     => 'admin',
@@ -169,7 +175,7 @@ class AuthController extends BaseController
     {
         $secret = getenv('RECAPTCHA_SECRETKEY');
         if (empty($secret)) {
-            return true; // Sin configurar → bypass en dev
+            return true;
         }
         if (empty($response)) {
             return false;

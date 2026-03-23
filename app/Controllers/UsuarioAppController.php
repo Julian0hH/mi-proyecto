@@ -4,9 +4,12 @@ namespace App\Controllers;
 
 use App\Models\UsuarioAppModel;
 use App\Models\PerfilModel;
+use App\Traits\InputSanitizer;
 
 class UsuarioAppController extends BaseController
 {
+    use InputSanitizer;
+
     private UsuarioAppModel $model;
     private PerfilModel     $perfilModel;
 
@@ -36,6 +39,18 @@ class UsuarioAppController extends BaseController
 
     public function crear()
     {
+        $usuario  = $this->sanitize($this->request->getPost('strNombreUsuario'));
+        $correo   = $this->sanitize($this->request->getPost('strCorreo'));
+        $celular  = $this->sanitize($this->request->getPost('strNumeroCelular'));
+        $pwd      = $this->request->getPost('strPwd') ?? '';
+        $idPerfil = (int)$this->request->getPost('idPerfil');
+
+        foreach (['strNombreUsuario' => $usuario, 'strCorreo' => $correo, 'strNumeroCelular' => $celular] as $field => $val) {
+            if ($this->hasDangerous($val)) {
+                return $this->response->setJSON(['success' => false, 'errors' => [$field => 'Contenido no permitido']]);
+            }
+        }
+
         $rules = [
             'strNombreUsuario' => 'required|min_length[3]|max_length[100]',
             'strCorreo'        => 'permit_empty|valid_email|max_length[150]',
@@ -51,18 +66,16 @@ class UsuarioAppController extends BaseController
         $imgFile = $this->request->getFile('imagen');
         if ($imgFile && $imgFile->isValid() && !$imgFile->hasMoved()) {
             $url = $this->subirImagen($imgFile);
-            if ($url) {
-                $imagen = $url;
-            }
+            if ($url) $imagen = $url;
         }
 
         $ok = $this->model->crear([
-            'strNombreUsuario' => trim($this->request->getPost('strNombreUsuario')),
-            'strCorreo'        => trim($this->request->getPost('strCorreo') ?? ''),
-            'strPwd'           => password_hash($this->request->getPost('strPwd'), PASSWORD_BCRYPT),
-            'idPerfil'         => (int)$this->request->getPost('idPerfil'),
+            'strNombreUsuario' => $usuario,
+            'strCorreo'        => $correo,
+            'strPwd'           => password_hash($pwd, PASSWORD_BCRYPT),
+            'idPerfil'         => $idPerfil,
             'idEstadoUsuario'  => (bool)$this->request->getPost('idEstadoUsuario'),
-            'strNumeroCelular' => trim($this->request->getPost('strNumeroCelular') ?? ''),
+            'strNumeroCelular' => $celular,
             'imagen'           => $imagen,
         ]);
 
@@ -74,6 +87,17 @@ class UsuarioAppController extends BaseController
 
     public function actualizar(int $id)
     {
+        $usuario  = $this->sanitize($this->request->getPost('strNombreUsuario'));
+        $correo   = $this->sanitize($this->request->getPost('strCorreo'));
+        $celular  = $this->sanitize($this->request->getPost('strNumeroCelular'));
+        $idPerfil = (int)$this->request->getPost('idPerfil');
+
+        foreach (['strNombreUsuario' => $usuario, 'strCorreo' => $correo, 'strNumeroCelular' => $celular] as $field => $val) {
+            if ($this->hasDangerous($val)) {
+                return $this->response->setJSON(['success' => false, 'errors' => [$field => 'Contenido no permitido']]);
+            }
+        }
+
         $rules = [
             'strNombreUsuario' => 'required|min_length[3]|max_length[100]',
             'strCorreo'        => 'permit_empty|valid_email|max_length[150]',
@@ -85,23 +109,24 @@ class UsuarioAppController extends BaseController
         }
 
         $data = [
-            'strNombreUsuario' => trim($this->request->getPost('strNombreUsuario')),
-            'strCorreo'        => trim($this->request->getPost('strCorreo') ?? ''),
-            'idPerfil'         => (int)$this->request->getPost('idPerfil'),
+            'strNombreUsuario' => $usuario,
+            'strCorreo'        => $correo,
+            'idPerfil'         => $idPerfil,
             'idEstadoUsuario'  => (bool)$this->request->getPost('idEstadoUsuario'),
-            'strNumeroCelular' => trim($this->request->getPost('strNumeroCelular') ?? ''),
+            'strNumeroCelular' => $celular,
         ];
 
-        // Actualizar contraseña solo si se ingresó nueva
         $newPwd = $this->request->getPost('strPwd');
         if (!empty($newPwd)) {
             if (strlen($newPwd) < 6) {
                 return $this->response->setJSON(['success' => false, 'errors' => ['strPwd' => 'Mínimo 6 caracteres']]);
             }
+            if (strlen($newPwd) > 100) {
+                return $this->response->setJSON(['success' => false, 'errors' => ['strPwd' => 'Máximo 100 caracteres']]);
+            }
             $data['strPwd'] = password_hash($newPwd, PASSWORD_BCRYPT);
         }
 
-        // Actualizar imagen si se envió una nueva
         $imgFile = $this->request->getFile('imagen');
         if ($imgFile && $imgFile->isValid() && !$imgFile->hasMoved()) {
             $url = $this->subirImagen($imgFile);

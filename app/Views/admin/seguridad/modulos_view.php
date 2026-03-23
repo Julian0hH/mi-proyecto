@@ -22,7 +22,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     <?php endif; ?>
 </div>
 
-<!-- Búsqueda -->
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body py-2 px-3">
         <div class="input-group input-group-sm" style="max-width:350px">
@@ -33,7 +32,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     </div>
 </div>
 
-<!-- Tabla -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -42,12 +40,13 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
                     <tr>
                         <th class="px-4">#</th>
                         <th>Nombre del Módulo</th>
+                        <th>Ruta protegida</th>
                         <th>Fecha</th>
                         <th class="text-end px-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-body">
-                    <tr><td colspan="4" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
+                    <tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -58,7 +57,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     </div>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal fade" id="modalModulo" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -76,6 +74,18 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
                         <div class="form-text text-end"><span id="cnt-nombre">0</span>/100</div>
                         <div class="form-error text-danger small" id="err-strNombreModulo"></div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ruta protegida</label>
+                        <div class="input-group">
+                            <span class="input-group-text text-muted small">admin/</span>
+                            <input type="text" id="strRuta" class="form-control" maxlength="200"
+                                   placeholder="Ej. servicios, reportes/ventas">
+                        </div>
+                        <div class="form-text">
+                            Ruta (sin <code>admin/</code>) que este módulo protege. Dejar vacío si no controla ninguna página.
+                        </div>
+                        <div class="form-error text-danger small" id="err-strRuta"></div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -88,7 +98,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[2]['bitDetalle']);
     </div>
 </div>
 
-<!-- Modal Detalle -->
 <div class="modal fade" id="modalDetalle" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -130,13 +139,14 @@ function aplicarFiltro(page = 1) {
 function renderTabla(data, total) {
     const tbody = document.getElementById('tabla-body');
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Sin registros</td></tr>';
         return;
     }
     tbody.innerHTML = data.map(m => `
         <tr>
             <td class="px-4 text-muted small">${m.id}</td>
             <td><span class="fw-semibold"><i class="bi bi-box me-2 text-success"></i>${escHtml(m.strNombreModulo)}</span></td>
+            <td class="text-muted small">${m.strRuta ? `<code class="small">admin/${escHtml(m.strRuta)}</code>` : '<span class="text-muted">—</span>'}</td>
             <td class="text-muted small">${formatDate(m.created_at)}</td>
             <td class="text-end px-4">
                 <div class="btn-group btn-group-sm">
@@ -144,7 +154,11 @@ function renderTabla(data, total) {
                     <button class="btn btn-outline-info btn-detalle" data-id="${m.id}" title="Detalle"><i class="bi bi-eye"></i></button>
                     <?php endif; ?>
                     <?php if ($puedeEditar): ?>
-                    <button class="btn btn-outline-primary btn-editar" data-id="${m.id}" data-nombre="${escHtml(m.strNombreModulo)}" title="Editar"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-outline-primary btn-editar"
+                        data-id="${m.id}"
+                        data-nombre="${escHtml(m.strNombreModulo)}"
+                        data-ruta="${escHtml(m.strRuta || '')}"
+                        title="Editar"><i class="bi bi-pencil"></i></button>
                     <?php endif; ?>
                     <?php if ($puedeEliminar): ?>
                     <button class="btn btn-outline-danger btn-eliminar" data-id="${m.id}" data-nombre="${escHtml(m.strNombreModulo)}" title="Eliminar"><i class="bi bi-trash"></i></button>
@@ -152,6 +166,7 @@ function renderTabla(data, total) {
                 </div>
             </td>
         </tr>`).join('');
+    FormValidator.staggerRows(tbody);
 }
 
 function renderPaginacion(total, actual, totalReg) {
@@ -190,6 +205,7 @@ document.addEventListener('click', e => {
     editingId = btn.dataset.id;
     document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Módulo';
     document.getElementById('strNombreModulo').value = btn.dataset.nombre;
+    document.getElementById('strRuta').value = btn.dataset.ruta || '';
     document.getElementById('cnt-nombre').textContent = btn.dataset.nombre.length;
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
@@ -204,6 +220,7 @@ document.addEventListener('click', e => {
         <dl class="row mb-0">
             <dt class="col-sm-4">ID</dt><dd class="col-sm-8">${m.id}</dd>
             <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">${escHtml(m.strNombreModulo)}</dd>
+            <dt class="col-sm-4">Ruta</dt><dd class="col-sm-8">${m.strRuta ? `<code>admin/${escHtml(m.strRuta)}</code>` : '<span class="text-muted">Sin ruta asignada</span>'}</dd>
             <dt class="col-sm-4">Creado</dt><dd class="col-sm-8">${formatDate(m.created_at)}</dd>
         </dl>`;
     mDetalle.show();
@@ -220,19 +237,39 @@ document.addEventListener('click', e => {
     }, {confirmLabel:'Eliminar', confirmClass:'btn-danger'});
 });
 
-document.getElementById('btn-guardar').addEventListener('click', async () => {
-    document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
-    const nombre = document.getElementById('strNombreModulo').value.trim();
-    if (!nombre) { document.getElementById('err-strNombreModulo').textContent = 'El nombre es obligatorio'; return; }
-    const fd = new FormData();
-    fd.append('strNombreModulo', nombre);
+document.getElementById('btn-guardar').addEventListener('click', async function() {
+    const valid = FormValidator.validate([
+        { id: 'strNombreModulo', label: 'Nombre del módulo', rules: [
+            'required',
+            { min: 3, msg: 'Mínimo 3 caracteres' },
+            { max: 100 },
+            'noHtml',
+        ]},
+        { id: 'strRuta', label: 'Ruta', rules: [
+            { max: 200 },
+            'noHtml',
+            { fn: v => v === '' || /^[a-zA-Z0-9\-\/]+$/.test(v) || 'Solo letras, números, guiones y barras' },
+        ]},
+    ], 'form-modulo');
+
+    if (!valid) return;
+
+    const btn = this;
+    const fd  = new FormData();
+    fd.append('strNombreModulo', document.getElementById('strNombreModulo').value.trim());
+    fd.append('strRuta',         document.getElementById('strRuta').value.trim());
     const url = editingId ? `${BASE}/actualizar/${editingId}` : `${BASE}/crear`;
+    FormValidator.btnLoad(btn);
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
         if (data.success) { Toast.success(data.mensaje); modal.hide(); cargar(); }
-        else { if (data.errors) Object.entries(data.errors).forEach(([k,v]) => { const el = document.getElementById('err-'+k); if(el) el.textContent=v; }); else Toast.error(data.mensaje); }
+        else {
+            if (data.errors) Object.entries(data.errors).forEach(([k,v]) => FormValidator.setError(k, v));
+            else Toast.error(data.mensaje);
+        }
     } catch { Toast.error('Error de red'); }
+    finally { FormValidator.btnDone(btn); }
 });
 
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

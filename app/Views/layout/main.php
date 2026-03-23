@@ -12,14 +12,11 @@
 </head>
 <body>
 
-<!-- Toast Container -->
 <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999"></div>
 
-<!-- Overlay móvil -->
 <div id="sidebar-overlay"></div>
 
 <div id="wrapper">
-    <!-- ======================== SIDEBAR ======================== -->
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="d-flex align-items-center gap-2">
@@ -40,10 +37,9 @@
         </div>
 
         <?php
-        // ── Helpers de permisos ────────────────────────────────
         $sessionPermisos = session()->get('user_permisos') ?? [];
         $userType        = session()->get('user_type') ?? 'admin';
-        $isAdminUser     = ($userType === 'admin');
+        $isAdminUser     = ($userType === 'admin') || (session()->get('admin_rol') === 'admin');
         $isLogued        = (bool) session()->get('admin_logueado');
 
         function navPuede(array $perms, int $modId, bool $isAdmin): bool {
@@ -51,11 +47,17 @@
             return !empty($perms[$modId]['bitConsulta']);
         }
 
-        // Secciones de menú (poner en true para mostrar módulos académicos Seguridad/Ventas/Operaciones)
-        $mostrarModulosExtra = false;
-        $verSeg   = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,1,$isAdminUser) || navPuede($sessionPermisos,2,$isAdminUser) || navPuede($sessionPermisos,3,$isAdminUser) || navPuede($sessionPermisos,4,$isAdminUser));
-        $verPri1  = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,5,$isAdminUser) || navPuede($sessionPermisos,6,$isAdminUser));
-        $verPri2  = $mostrarModulosExtra && ($isAdminUser || navPuede($sessionPermisos,7,$isAdminUser) || navPuede($sessionPermisos,8,$isAdminUser));
+        $verSeg  = $isAdminUser
+            || navPuede($sessionPermisos,1,$isAdminUser)
+            || navPuede($sessionPermisos,2,$isAdminUser)
+            || navPuede($sessionPermisos,3,$isAdminUser)
+            || navPuede($sessionPermisos,4,$isAdminUser);
+        $verPri1 = $isAdminUser
+            || navPuede($sessionPermisos,5,$isAdminUser)
+            || navPuede($sessionPermisos,6,$isAdminUser);
+        $verPri2 = $isAdminUser
+            || navPuede($sessionPermisos,7,$isAdminUser)
+            || navPuede($sessionPermisos,8,$isAdminUser);
 
         $isSegSection  = url_is('admin/seguridad*');
         $isPri1Section = url_is('admin/principal1*');
@@ -66,7 +68,6 @@
         <ul class="sidebar-nav" id="sidebar-nav">
 
             <?php if ($isAdminUser): ?>
-            <!-- ── PORTAFOLIO (solo admin legacy) ── -->
             <li class="nav-section"><span>Portafolio</span></li>
             <li>
                 <a href="<?= base_url('/') ?>" class="<?= url_is('/') ? 'active' : '' ?>">
@@ -98,7 +99,6 @@
             <?php if ($isLogued): ?>
 
             <?php if ($isAdminUser): ?>
-            <!-- ── ADMINISTRACIÓN PORTAFOLIO (solo admin legacy) ── -->
             <li class="nav-section">
                 <span>Administración</span>
                 <span class="nav-section-badge">Admin</span>
@@ -150,7 +150,6 @@
                 </ul>
             </li>
             <?php else: ?>
-            <!-- Dashboard para usuarios app -->
             <li class="nav-section"><span>General</span></li>
             <li>
                 <a href="<?= base_url('admin/dashboard') ?>" class="<?= url_is('admin/dashboard*') ? 'active' : '' ?>">
@@ -159,7 +158,6 @@
             </li>
             <?php endif; ?>
 
-            <!-- ── SEGURIDAD ── -->
             <?php if ($verSeg): ?>
             <li class="nav-section">
                 <span>Seguridad</span>
@@ -204,7 +202,6 @@
             </li>
             <?php endif; ?>
 
-            <!-- ── VENTAS (Principal 1) ── -->
             <?php if ($verPri1): ?>
             <li class="nav-section"><span>Ventas</span></li>
             <li class="nav-accordion <?= $isPri1Section ? 'open' : '' ?>">
@@ -232,7 +229,6 @@
             </li>
             <?php endif; ?>
 
-            <!-- ── OPERACIONES (Principal 2) ── -->
             <?php if ($verPri2): ?>
             <li class="nav-section"><span>Operaciones</span></li>
             <li class="nav-accordion <?= $isPri2Section ? 'open' : '' ?>">
@@ -302,15 +298,12 @@
         </div>
     </nav>
 
-    <!-- ======================== CONTENT ======================== -->
     <div id="content">
-        <!-- Topbar -->
         <div class="topbar d-flex align-items-center mb-4 gap-3">
             <button class="btn btn-outline-secondary d-md-none" id="mobile-opener">
                 <i class="bi bi-list fs-5"></i>
             </button>
 
-            <!-- Breadcrumbs -->
             <nav aria-label="breadcrumb" class="flex-grow-1">
                 <ol class="breadcrumb mb-0 align-items-center">
                     <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
@@ -362,7 +355,6 @@
                 </ol>
             </nav>
 
-            <!-- Notificaciones (solo admin) -->
             <?php if (session()->get('admin_logueado')): ?>
             <div class="dropdown">
                 <button class="btn btn-outline-secondary position-relative" id="btn-notificaciones" data-bs-toggle="dropdown" aria-expanded="false">
@@ -379,7 +371,6 @@
             </div>
             <?php endif; ?>
 
-            <!-- Acceso rápido móvil -->
             <div class="d-md-none">
                 <?php if (session()->get('admin_logueado')): ?>
                     <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-danger">
@@ -393,25 +384,19 @@
             </div>
         </div>
 
-        <!-- Contenido principal -->
         <div class="animate-fade-in">
             <?php
             /*
-             * BUG CORREGIDO: Bootstrap JS se cargaba DESPUÉS de renderSection('content').
-             * Todas las vistas tienen inline <script> con `new bootstrap.Modal(...)` que
-             * se ejecutan en el momento que el HTML se parsea — antes de que el bundle
-             * de Bootstrap estuviera disponible → "bootstrap is not defined".
-             * Solución: cargar Bootstrap bundle ANTES de renderizar el contenido.
+
              */
             ?>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script src="<?= base_url('js/toast.js') ?>"></script>
+            <script src="<?= base_url('js/validator.js') ?>"></script>
             <?= $this->renderSection('content') ?>
         </div>
     </div>
 </div>
-
-<!-- Modal simulador de errores -->
 <?php if (session()->get('admin_logueado')): ?>
 <div class="modal fade" id="modalSimularError" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -436,7 +421,6 @@
 <?php endif; ?>
 
 <script>
-// ===== TEMA =====
 const html = document.documentElement;
 const savedTheme = localStorage.getItem('theme') || 'light';
 setTheme(savedTheme);
@@ -454,7 +438,6 @@ function setTheme(theme) {
     if (label) label.textContent = theme === 'dark' ? 'Tema Claro' : 'Tema Oscuro';
 }
 
-// ===== SIDEBAR =====
 const sidebar = document.getElementById('sidebar');
 const content = document.getElementById('content');
 const overlay = document.getElementById('sidebar-overlay');
@@ -469,7 +452,6 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         content.classList.toggle('expanded');
         localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
-        // Cerrar todos los acordeones al colapsar el sidebar
         if (sidebar.classList.contains('collapsed')) {
             document.querySelectorAll('.nav-accordion.open').forEach(el => el.classList.remove('open'));
         }
@@ -492,7 +474,6 @@ overlay.addEventListener('click', () => {
     overlay.classList.remove('show');
 });
 
-// ===== BÚSQUEDA SIDEBAR =====
 const searchInput = document.getElementById('sidebar-search-input');
 if (searchInput) {
     searchInput.addEventListener('input', () => {
@@ -505,7 +486,6 @@ if (searchInput) {
 }
 
 <?php if (session()->get('admin_logueado')): ?>
-// ===== NOTIFICACIONES =====
 function cargarNotificaciones() {
     fetch('<?= base_url('admin/notificaciones') ?>')
         .then(r => r.json())
@@ -554,7 +534,6 @@ document.getElementById('btn-notificaciones')?.addEventListener('click', cargarN
 cargarNotificaciones();
 setInterval(cargarNotificaciones, 30000);
 
-// ===== SIMULADOR DE ERRORES =====
 document.getElementById('btn-simulate-error')?.addEventListener('click', () => {
     new bootstrap.Modal(document.getElementById('modalSimularError')).show();
 });
@@ -578,30 +557,37 @@ function simularError(tipo) {
 }
 <?php endif; ?>
 
-// ===== ACORDEÓN SIDEBAR =====
 function toggleAccordion(el) {
     const li = el.closest('.nav-accordion');
     li.classList.toggle('open');
 }
 document.querySelectorAll('.nav-accordion.open').forEach(li => li.classList.add('open'));
 
-// ===== VALIDACIÓN GLOBAL DE INPUTS (data-vt) =====
-// Bloquea caracteres no permitidos mientras se escribe
 (function() {
     const VT_PATTERNS = {
-        'name':    /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']/g,   // Solo letras, acentos, espacio, guion, apóstrofe
+        'name':    /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']/g,
         'alpha':   /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\']/g,
-        'num':     /[^0-9]/g,                             // Solo dígitos, sin negativos
-        'decimal': /[^0-9.]/g,                            // Dígitos + punto
-        'phone':   /[^0-9+\-\s]/g,                       // Dígitos, +, -, espacio
-        'user':    /[^a-zA-Z0-9_\-]/g,                   // Alfanumérico + _ y -
-        'icon':    /[^a-zA-Z0-9\-]/g,                    // Alfanumérico + guion
-        'nohtml':  /[<>]/g,                               // Sin < >
-        'alnum':   /[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g,    // Alfanumérico + acentos + espacio
-        'alnumsym':/[<>'"`;]/g,                          // Permite casi todo pero sin HTML/JS peligroso
+        'num':     /[^0-9]/g,
+        'decimal': /[^0-9.]/g,
+        'phone':   /[^0-9+\-\s()]/g,
+        'user':    /[^a-zA-Z0-9_\-]/g,
+        'icon':    /[^a-zA-Z0-9\-]/g,
+        'nohtml':  /[<>]/g,
+        'alnum':   /[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s\-]/g,
+        'alnumsym':/[<>'"`;]/g,
+        'slug':    /[^a-zA-Z0-9\-\/]/g,
     };
 
-    // Bloquear escritura de caracteres inválidos en inputs con data-vt
+    const BLOCK_PATTERNS = [/<script/i, /javascript:/i, /on\w+\s*=/i];
+    document.addEventListener('input', function(e) {
+        const el = e.target;
+        if (!el.dataset.vt) return;
+        const v = el.value;
+        if (BLOCK_PATTERNS.some(p => p.test(v))) {
+            el.value = el.value.replace(/<script[\s\S]*/gi, '').replace(/javascript:/gi, '').replace(/on\w+\s*=/gi, '');
+        }
+    }, true);
+
     document.addEventListener('input', function(e) {
         const el = e.target;
         const vt = el.dataset.vt;
@@ -612,26 +598,22 @@ document.querySelectorAll('.nav-accordion.open').forEach(li => li.classList.add(
         const cleaned = prev.replace(pattern, '');
         if (cleaned !== prev) {
             el.value = cleaned;
-            // Restaurar posición del cursor (ajustando por caracteres eliminados)
             const diff = prev.length - cleaned.length;
             el.setSelectionRange(Math.max(0, pos - diff), Math.max(0, pos - diff));
         }
     }, true);
 
-    // Bloquear teclas negativas y exponente en inputs type=number
     document.addEventListener('keydown', function(e) {
         if (e.target.type === 'number' && (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+')) {
             e.preventDefault();
         }
     }, true);
 
-    // Asegurar min=0 en todos los inputs number sin min definido
     document.querySelectorAll('input[type="number"]').forEach(function(inp) {
         if (inp.getAttribute('min') === null) inp.setAttribute('min', '0');
     });
 })();
 
-// ===== HELPERS =====
 function escapeHtml(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

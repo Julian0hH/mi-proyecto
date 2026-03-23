@@ -22,7 +22,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
     <?php endif; ?>
 </div>
 
-<!-- Búsqueda -->
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body py-2 px-3">
         <div class="input-group input-group-sm" style="max-width:350px">
@@ -33,7 +32,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
     </div>
 </div>
 
-<!-- Tabla -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -52,7 +50,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
                 </tbody>
             </table>
         </div>
-        <!-- Paginación -->
         <div class="d-flex align-items-center justify-content-between px-4 py-2 border-top" id="paginacion-wrap">
             <small class="text-muted" id="info-pag"></small>
             <nav><ul class="pagination pagination-sm mb-0" id="paginacion"></ul></nav>
@@ -60,7 +57,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
     </div>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal fade" id="modalPerfil" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -99,7 +95,6 @@ $puedeDetalle  = $isAdmin || !empty($permisos[1]['bitDetalle']);
     </div>
 </div>
 
-<!-- Modal Detalle -->
 <div class="modal fade" id="modalDetalle" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -120,7 +115,6 @@ let perfiles = [], editingId = null, currentPage = 1;
 const modal    = new bootstrap.Modal(document.getElementById('modalPerfil'));
 const mDetalle = new bootstrap.Modal(document.getElementById('modalDetalle'));
 
-// ── Carga inicial ──────────────────────────────────────────────
 async function cargar() {
     try {
         const res  = await fetch(`${BASE}/listar`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
@@ -130,7 +124,6 @@ async function cargar() {
     } catch { Toast.error('Error al cargar los perfiles'); }
 }
 
-// ── Filtro + paginación ────────────────────────────────────────
 function aplicarFiltro(page = 1) {
     const q = document.getElementById('f-busqueda').value.toLowerCase();
     const filtrados = q ? perfiles.filter(p => p.strNombrePerfil?.toLowerCase().includes(q)) : perfiles;
@@ -180,6 +173,7 @@ function renderTabla(data, total) {
                 </div>
             </td>
         </tr>`).join('');
+    FormValidator.staggerRows(tbody);
 }
 
 function renderPaginacion(total, actual, totalRegistros) {
@@ -198,7 +192,6 @@ function renderPaginacion(total, actual, totalRegistros) {
     nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => aplicarFiltro(+b.dataset.page)));
 }
 
-// ── Búsqueda ───────────────────────────────────────────────────
 let debounce;
 document.getElementById('f-busqueda').addEventListener('input', () => {
     clearTimeout(debounce); debounce = setTimeout(() => aplicarFiltro(1), 300);
@@ -207,12 +200,10 @@ document.getElementById('btn-clear').addEventListener('click', () => {
     document.getElementById('f-busqueda').value = ''; aplicarFiltro(1);
 });
 
-// ── Contador caracteres ────────────────────────────────────────
 document.getElementById('strNombrePerfil').addEventListener('input', function() {
     document.getElementById('cnt-nombre').textContent = this.value.length;
 });
 
-// ── Abrir modal Nuevo ──────────────────────────────────────────
 document.getElementById('btn-nuevo')?.addEventListener('click', () => {
     editingId = null;
     document.getElementById('modal-titulo').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nuevo Perfil';
@@ -222,7 +213,6 @@ document.getElementById('btn-nuevo')?.addEventListener('click', () => {
     modal.show();
 });
 
-// ── Editar ─────────────────────────────────────────────────────
 document.addEventListener('click', e => {
     const btn = e.target.closest('.btn-editar');
     if (!btn) return;
@@ -235,7 +225,6 @@ document.addEventListener('click', e => {
     modal.show();
 });
 
-// ── Detalle ────────────────────────────────────────────────────
 document.addEventListener('click', e => {
     const btn = e.target.closest('.btn-detalle');
     if (!btn) return;
@@ -252,7 +241,6 @@ document.addEventListener('click', e => {
     mDetalle.show();
 });
 
-// ── Eliminar ───────────────────────────────────────────────────
 document.addEventListener('click', e => {
     const btn = e.target.closest('.btn-eliminar');
     if (!btn) return;
@@ -270,22 +258,27 @@ document.addEventListener('click', e => {
     );
 });
 
-// ── Guardar ────────────────────────────────────────────────────
-document.getElementById('btn-guardar').addEventListener('click', async () => {
-    document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+document.getElementById('btn-guardar').addEventListener('click', async function() {
+    const valid = FormValidator.validate([
+        { id: 'strNombrePerfil', label: 'Nombre del perfil', rules: [
+            'required',
+            { min: 2, msg: 'Mínimo 2 caracteres' },
+            { max: 100, msg: 'Máximo 100 caracteres' },
+            'noHtml',
+        ]},
+    ], 'form-perfil');
+
+    if (!valid) return;
+
+    const btn  = this;
     const nombre = document.getElementById('strNombrePerfil').value.trim();
     const admin  = document.getElementById('bitAdministrador').checked;
-
-    if (!nombre) {
-        document.getElementById('err-strNombrePerfil').textContent = 'El nombre es obligatorio';
-        return;
-    }
-
     const fd = new FormData();
     fd.append('strNombrePerfil', nombre);
     if (admin) fd.append('bitAdministrador', '1');
 
     const url = editingId ? `${BASE}/actualizar/${editingId}` : `${BASE}/crear`;
+    FormValidator.btnLoad(btn);
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
@@ -295,15 +288,14 @@ document.getElementById('btn-guardar').addEventListener('click', async () => {
             cargar();
         } else {
             if (data.errors) Object.entries(data.errors).forEach(([k,v]) => {
-                const el = document.getElementById('err-' + k);
-                if (el) el.textContent = v;
+                FormValidator.setError(k, v);
             });
             else Toast.error(data.mensaje);
         }
     } catch { Toast.error('Error de red'); }
+    finally { FormValidator.btnDone(btn); }
 });
 
-// ── Helpers ────────────────────────────────────────────────────
 function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
