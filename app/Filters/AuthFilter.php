@@ -21,7 +21,7 @@ class AuthFilter implements FilterInterface
                 ->with('error', 'Debes iniciar sesión primero.');
         }
 
-        $uri = trim($request->uri->getPath(), '/');
+        $uri = trim($request->getUri()->getPath(), '/');
 
         if (!str_starts_with($uri, 'admin/') || in_array($uri, ['admin/login', 'admin/logout', 'admin/dashboard'])) {
             return;
