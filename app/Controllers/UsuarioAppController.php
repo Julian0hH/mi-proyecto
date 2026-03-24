@@ -132,4 +132,37 @@ class UsuarioAppController extends BaseController
             'mensaje' => $ok ? 'Usuario eliminado correctamente' : 'Error al eliminar el usuario',
         ]);
     }
+
+    public function actualizarFoto(int $id)
+    {
+        $file = $this->request->getFile('foto');
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Archivo no válido']);
+        }
+
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Solo se permiten imágenes (JPG, PNG, WEBP)']);
+        }
+
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'La imagen no debe superar 2MB']);
+        }
+
+        $fileName    = 'usuario_' . $id . '_' . time() . '.' . $file->getClientExtension();
+        $fileContent = file_get_contents($file->getTempName());
+        $mimeType    = $file->getMimeType();
+
+        $url = $this->model->subirImagen($fileContent, $fileName, $mimeType);
+        if (!$url) {
+            return $this->response->setJSON(['success' => false, 'mensaje' => 'Error al subir la imagen']);
+        }
+
+        $ok = $this->model->actualizar($id, ['foto_url' => $url]);
+        return $this->response->setJSON([
+            'success' => $ok,
+            'mensaje' => $ok ? 'Foto actualizada correctamente' : 'Error al guardar la URL de la foto',
+            'foto_url' => $ok ? $url : null,
+        ]);
+    }
 }

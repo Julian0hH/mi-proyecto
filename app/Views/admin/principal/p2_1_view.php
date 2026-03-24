@@ -2,12 +2,12 @@
 <?= $this->section('content') ?>
 
 <?php
-$permisos = session()->get('user_permisos') ?? [];
-$isAdmin  = !empty(session('logueado'));
-$puedeAgregar  = $isAdmin || !empty($permisos[7]['bitAgregar']);
-$puedeEditar   = $isAdmin || !empty($permisos[7]['bitEditar']);
-$puedeEliminar = $isAdmin || !empty($permisos[7]['bitEliminar']);
-$puedeDetalle  = $isAdmin || !empty($permisos[7]['bitDetalle']);
+$permisos      = session('permisos') ?? [];
+$ruta          = 'admin/principal2/modulo1';
+$puedeAgregar  = !empty($permisos[$ruta]['agregar']);
+$puedeEditar   = !empty($permisos[$ruta]['editar']);
+$puedeEliminar = !empty($permisos[$ruta]['eliminar']);
+$puedeDetalle  = !empty($permisos[$ruta]['detalle']);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">

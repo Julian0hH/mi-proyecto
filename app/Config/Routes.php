@@ -149,6 +149,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('seguridad/usuarios/listar',           'UsuarioAppController::listar');
     $routes->post('seguridad/usuarios/crear',           'UsuarioAppController::crear');
     $routes->post('seguridad/usuarios/actualizar/(:num)', 'UsuarioAppController::actualizar/$1');
+    $routes->post('seguridad/usuarios/foto/(:num)',       'UsuarioAppController::actualizarFoto/$1');
     $routes->delete('seguridad/usuarios/eliminar/(:num)', 'UsuarioAppController::eliminar/$1');
 
     // ── PRINCIPAL 1 y 2 (pantallas estáticas) ─────────────────

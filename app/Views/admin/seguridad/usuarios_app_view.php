@@ -69,6 +69,25 @@ $puedeDetalle  = !empty($permisos[$ruta]['detalle']);
             <div class="modal-body">
                 <form id="form-usuario" novalidate>
                     <div class="row g-3">
+                        <!-- Foto de perfil (solo en edición) -->
+                        <div class="col-12 text-center" id="foto-section" style="display:none">
+                            <div class="d-inline-block position-relative">
+                                <img id="foto-preview" src="" alt="Foto"
+                                     class="rounded-circle border border-2"
+                                     style="width:80px;height:80px;object-fit:cover;display:none">
+                                <div id="foto-placeholder" class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mx-auto"
+                                     style="width:80px;height:80px;font-size:36px">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-camera me-1"></i>Cambiar foto
+                                    <input type="file" id="foto-input" accept="image/jpeg,image/png,image/webp" style="display:none">
+                                </label>
+                                <small class="text-muted d-block mt-1">JPG, PNG o WEBP · Máx 2 MB</small>
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Nombre completo <span class="text-danger">*</span></label>
                             <input type="text" id="nombre" class="form-control" maxlength="150" placeholder="Nombre del usuario" required>
@@ -182,8 +201,12 @@ function renderTabla(data, totalReg, page) {
             <td class="px-4 text-muted small">${u.id}</td>
             <td>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center"
-                         style="width:32px;height:32px;font-size:16px;flex-shrink:0"><i class="bi bi-person"></i></div>
+                    <div class="rounded-circle overflow-hidden bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width:32px;height:32px;font-size:16px">
+                        ${u.foto_url
+                            ? `<img src="${escHtml(u.foto_url)}" style="width:100%;height:100%;object-fit:cover" alt="">`
+                            : '<i class="bi bi-person"></i>'}
+                    </div>
                     <span class="fw-semibold">${escHtml(u.nombre)}</span>
                 </div>
             </td>
@@ -208,6 +231,7 @@ function renderTabla(data, totalReg, page) {
                         data-telefono="${escHtml(u.telefono||'')}"
                         data-perfil="${u.perfil_id||''}"
                         data-activo="${u.activo?'1':'0'}"
+                        data-foto="${escHtml(u.foto_url||'')}"
                         title="Editar"><i class="bi bi-pencil"></i></button>
                     <?php endif; ?>
                     <?php if ($puedeEliminar): ?>
@@ -223,10 +247,19 @@ function renderPaginacion(total, actual, totalReg) {
     const info = document.getElementById('info-pag');
     const nav  = document.getElementById('paginacion');
     info.textContent = totalReg ? `Mostrando ${(actual-1)*PER_PAGE+1}–${Math.min(actual*PER_PAGE,totalReg)} de ${totalReg}` : '';
-    nav.innerHTML = total <= 1 ? '' : [...Array(total)].map((_,i) =>
+    if (total <= 1) { nav.innerHTML = ''; return; }
+    let items = `<li class="page-item ${actual===1?'disabled':''}">
+        <button class="page-link btn-pag" data-page="${actual-1}">&laquo;&laquo;</button></li>`;
+    items += [...Array(total)].map((_,i) =>
         `<li class="page-item ${i+1===actual?'active':''}"><button class="page-link btn-pag" data-page="${i+1}">${i+1}</button></li>`
     ).join('');
-    nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => aplicarFiltro(+b.dataset.page)));
+    items += `<li class="page-item ${actual===total?'disabled':''}">
+        <button class="page-link btn-pag" data-page="${actual+1}">&raquo;&raquo;</button></li>`;
+    nav.innerHTML = items;
+    nav.querySelectorAll('.btn-pag').forEach(b => b.addEventListener('click', () => {
+        const p = +b.dataset.page;
+        if (p >= 1 && p <= total) aplicarFiltro(p);
+    }));
 }
 
 let debounce;
@@ -244,8 +277,21 @@ document.getElementById('btn-nuevo')?.addEventListener('click', () => {
     document.getElementById('lbl-pwd-req').style.display = '';
     document.getElementById('hint-pwd').style.display = 'none';
     document.getElementById('activo').checked = true;
+    document.getElementById('foto-section').style.display = 'none';
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     modal.show();
+});
+
+document.getElementById('foto-input').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('foto-preview').src = e.target.result;
+        document.getElementById('foto-preview').style.display = '';
+        document.getElementById('foto-placeholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
 });
 
 document.addEventListener('click', e => {
@@ -262,6 +308,18 @@ document.addEventListener('click', e => {
     document.getElementById('lbl-pwd-req').style.display = 'none';
     document.getElementById('hint-pwd').style.display = '';
     document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+    // Foto
+    document.getElementById('foto-section').style.display = '';
+    document.getElementById('foto-input').value = '';
+    const fotoUrl = btn.dataset.foto;
+    if (fotoUrl) {
+        document.getElementById('foto-preview').src = fotoUrl;
+        document.getElementById('foto-preview').style.display = '';
+        document.getElementById('foto-placeholder').style.display = 'none';
+    } else {
+        document.getElementById('foto-preview').style.display = 'none';
+        document.getElementById('foto-placeholder').style.display = '';
+    }
     modal.show();
 });
 
@@ -324,8 +382,22 @@ document.getElementById('btn-guardar').addEventListener('click', async function(
     try {
         const res  = await fetch(url, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
         const data = await res.json();
-        if (data.success) { Toast.success(data.mensaje); modal.hide(); cargar(); }
-        else {
+        if (data.success) {
+            // Subir foto si se seleccionó una (solo en edición)
+            const fotoFile = document.getElementById('foto-input')?.files[0];
+            if (editingId && fotoFile) {
+                const fdFoto = new FormData();
+                fdFoto.append('foto', fotoFile);
+                try {
+                    const rFoto = await fetch(`${BASE}/foto/${editingId}`, {method:'POST', body:fdFoto, headers:{'X-Requested-With':'XMLHttpRequest'}});
+                    const dFoto = await rFoto.json();
+                    if (!dFoto.success) Toast.warning(dFoto.mensaje);
+                } catch { Toast.warning('Error al subir la foto'); }
+            }
+            Toast.success(data.mensaje);
+            modal.hide();
+            cargar();
+        } else {
             if (data.errors) Object.entries(data.errors).forEach(([k,v]) => FormValidator.setError(k, v));
             else Toast.error(data.mensaje);
         }
